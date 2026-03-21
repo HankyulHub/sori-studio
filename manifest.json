@@ -1,0 +1,14 @@
+{
+  "name": "소리 스튜디오",
+  "short_name": "소리",
+  "description": "소리마을 음악교습소 카톡 메시지 관리",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
