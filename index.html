@@ -211,12 +211,12 @@ function rInput(){
         '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span></div>'+
         '<input value="'+esc('(복사완료)')+'" disabled/></div>';
     }else if(rv){
+      var rvPh=KW[s.row]||ph;
       h+='<div class="inp-wrap"><div class="inp-label">'+
         '<div class="inp-num o">'+(i+1)+'</div>'+
         '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+
         '<span onclick="event.stopPropagation();showDet('+s.row+')" style="margin-left:auto;font-size:11px;color:#f59e0b;background:rgba(245,158,11,0.1);padding:3px 8px;border-radius:5px;cursor:pointer;font-weight:600">AI글 확인 ›</span></div>'+
-        '<input value="'+esc(KW[s.row]||'')+'" '+
-        'placeholder="'+esc(ph)+'" oninput="kwCh('+s.row+',this.value)"/></div>';
+        '<input value="" placeholder="'+esc(rvPh)+'" oninput="kwCh('+s.row+',this.value)" data-orig="'+esc(KW[s.row]||'')+'"/></div>';
     }else{
       h+='<div class="inp-wrap"><div class="inp-label">'+
         '<div class="inp-num">'+(i+1)+'</div>'+
@@ -465,7 +465,7 @@ function rDet(slide){
   }
   var btns;
   if(d){btns='<div class="det-btns"><button class="btn btn-d" onclick="undo('+s.row+')">되돌리기</button><button class="btn btn-y" onclick="doCopy('+s.row+')">복사하기</button></div>'}
-  else{btns='<div class="det-btns"><button class="btn btn-d" onclick="delMsg('+s.row+')">삭제</button><button class="btn btn-y" onclick="doCopy('+s.row+')" style="flex:2">복사하기</button></div>'}
+  else{btns='<button class="btn-y-full" onclick="doCopy('+s.row+')">복사하기</button>'}
 
   var msgHtml;
   if(d){msgHtml='<div class="msg-display done">'+esc(m)+'</div>'}
@@ -577,14 +577,6 @@ function tutPrev(){if(TUT_STEP>0){TUT_STEP--;renderTut()}}
 
 function checkFirstRun(){
   if(!localStorage.getItem('sori_tut'))showTutorial();
-}
-
-// ═══ Delete message (reset to 미생성) ═══
-function delMsg(row){
-  delete MSG[row];delete SHORT[row];
-  apiPost('saveMessage',{row:row,text:''});
-  T('메시지가 삭제되었습니다');
-  rInput();
 }
 
 init();
