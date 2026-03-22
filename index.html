@@ -101,7 +101,11 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 /* ═══ Tutorial ═══ */
 .tut-dim{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;pointer-events:none}
 .tut-dim.on{opacity:1;pointer-events:auto}
-.tut-box{width:calc(100% - 48px);max-width:360px;text-align:center;padding:32px 24px 24px}
+.tut-box{width:calc(100% - 48px);max-width:360px;text-align:center;padding:32px 24px 24px;overflow:hidden}
+@keyframes tutSlideLeft{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tutSlideRight{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
+.tut-slide-left{animation:tutSlideLeft .25s ease}
+.tut-slide-right{animation:tutSlideRight .25s ease}
 .tut-emoji{font-size:48px;margin-bottom:16px}
 .tut-step{font-size:11px;color:#FFD43B;font-weight:700;letter-spacing:1.5px;margin-bottom:8px}
 .tut-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.4}
@@ -559,8 +563,8 @@ function T(m){var t=document.getElementById('toast');t.textContent=m;t.classList
 // ═══ Tutorial ═══
 var TUT_STEP=0;
 var TUT_DATA=[
-  {emoji:'🎹',step:'STEP 1',title:'키워드를 입력하세요',desc:'각 학생의 이번 달 레슨 내용을 간단히 적어주세요.',exLabel:'예시',exText:'바이엘 2번, 밝고 긍정적, 손가락 독립 잘됨'},
-  {emoji:'🤖',step:'STEP 2',title:'AI가 카톡 메시지를 작성합니다',desc:'일괄 생성 버튼을 누르면 AI가 카톡 메시지를 만들어줍니다.',exLabel:'생성 흐름',exText:'키워드 입력 → 일괄 생성 → AI가 메시지 완성'},
+  {emoji:'🎹',step:'STEP 1',title:'키워드를 입력하세요',desc:'각 학생의 이번 달 레슨 내용을 간단히 적어주세요.',exLabel:'예시',exText:'바이엘 2번, 항상 밝고 긍정적, 손가락 독립 잘됨'},
+  {emoji:'🤖',step:'STEP 2',title:'AI가 카톡 메시지를 작성합니다',desc:'일괄 생성 버튼을 누르면\nAI가 카톡 메시지를 자동으로 만들어줍니다.',exLabel:'생성 흐름',exText:'키워드 입력 → 일괄 생성 → AI가 메시지 자동 완성'},
   {emoji:'📋',step:'STEP 3',title:'검수 후 복사 → 카톡에 붙여넣기!',desc:'생성된 메시지를 확인하고 수정한 뒤\n복사하기를 누르면 클립보드에 복사됩니다.\n카톡에 바로 붙여넣기 하세요!',exLabel:'상태 안내',exText:'🟡 미생성 → 🟠 검수대기 → 🟢 복사완료'}
 ];
 
@@ -589,8 +593,14 @@ function renderTut(){
     '<div class="tut-dots">'+dots+'</div>'+btns+
     '<div class="tut-skip" onclick="closeTutorial()">다시 보지 않기</div>';
 }
-function tutNext(){if(TUT_STEP<TUT_DATA.length-1){TUT_STEP++;renderTut()}}
-function tutPrev(){if(TUT_STEP>0){TUT_STEP--;renderTut()}}
+function tutNext(){if(TUT_STEP<TUT_DATA.length-1){TUT_STEP++;renderTut();tutAnimate('left')}}
+function tutPrev(){if(TUT_STEP>0){TUT_STEP--;renderTut();tutAnimate('right')}}
+function tutAnimate(dir){
+  var box=document.getElementById('tutBox');
+  box.classList.remove('tut-slide-left','tut-slide-right');
+  void box.offsetWidth;
+  box.classList.add(dir==='left'?'tut-slide-left':'tut-slide-right');
+}
 
 // Tutorial swipe
 var tutTouchX=0;
