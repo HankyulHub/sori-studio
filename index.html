@@ -116,7 +116,7 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .tut-btns .btn{flex:1;padding:13px;font-size:13px}
 .tut-skip{font-size:11px;color:#555;margin-top:14px;cursor:pointer}
 .tut-skip:active{color:#888}
-.help-btn{width:28px;height:28px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;color:#888;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:600;flex-shrink:0}
+.help-btn{width:28px;height:28px;border-radius:50%;background:#1a1a1a;border:1px solid #444;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:600;flex-shrink:0}
 .help-btn:active{background:#222;color:#FFD43B}
 </style>
 </head>
@@ -197,7 +197,7 @@ function rInput(){
   if(dc>0) infoParts.push('<b class="b-g">'+dc+'</b>명 복사완료');
   h+=infoParts.join(' · ')+'</span><div style="display:flex;gap:6px">';
   if(hasMsg())h+='<button class="btn btn-d" onclick="rList()">목록 보기</button>';
-  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()&&isUngen(s)}).length;
+  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()}).length;
   h+='<button class="btn btn-y" id="gbtn" onclick="tryGenAll()" '+(genableCount===0?'disabled':'')+'>일괄 생성</button></div></div>';
 
   S.forEach(function(s,i){
@@ -211,10 +211,12 @@ function rInput(){
         '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span></div>'+
         '<input value="'+esc('(복사완료)')+'" disabled/></div>';
     }else if(rv){
-      h+='<div class="inp-wrap review-inp" onclick="showDet('+s.row+')"><div class="inp-label">'+
+      h+='<div class="inp-wrap"><div class="inp-label">'+
         '<div class="inp-num o">'+(i+1)+'</div>'+
-        '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span></div>'+
-        '<input class="review-input" value="'+esc('(검수대기)')+'" disabled/></div>';
+        '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+
+        '<span onclick="event.stopPropagation();showDet('+s.row+')" style="margin-left:auto;font-size:11px;color:#f59e0b;background:rgba(245,158,11,0.1);padding:3px 8px;border-radius:5px;cursor:pointer;font-weight:600">AI글 확인 ›</span></div>'+
+        '<input value="'+esc(KW[s.row]||'')+'" '+
+        'placeholder="'+esc(ph)+'" oninput="kwCh('+s.row+',this.value)"/></div>';
     }else{
       h+='<div class="inp-wrap"><div class="inp-label">'+
         '<div class="inp-num">'+(i+1)+'</div>'+
@@ -229,7 +231,7 @@ function rInput(){
 function kwCh(row,v){
   KW[row]=v;
   var pending=S.filter(function(s){return!DONE.has(s.row)});
-  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()&&isUngen(s)}).length;
+  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()}).length;
   var b=document.getElementById('gbtn');if(b)b.disabled=genableCount===0;
 }
 
@@ -242,11 +244,11 @@ function tryGenAll(){
     var newOnly=targets.filter(function(s){return!(MSG[s.row]&&MSG[s.row].trim())});
     showModal('<div class="modal-icon">📝</div>'+
       '<div class="modal-title">이미 생성된 메시지가 있습니다</div>'+
-      '<div class="modal-desc">아래 '+existing.length+'명은 복사 전 메시지가 남아있어요.<br>새로 생성하면 기존 메시지가 사라집니다.</div>'+
+      '<div class="modal-desc">아래 '+existing.length+'명은 이미 AI 메시지가 있어요.<br>새로 생성하면 기존 메시지가 사라집니다.</div>'+
       '<div class="modal-names">'+esc(names)+'</div>'+
       '<div class="modal-btns">'+
-      '<button class="btn btn-d" onclick="closeModal();genAllSkip()">'+(newOnly.length>0?'건너뛰기 ('+newOnly.length+'명만)':'취소')+'</button>'+
-      '<button class="btn btn-y" onclick="closeModal();genAllOverwrite()">전체 덮어쓰기</button></div>');
+      '<button class="btn btn-d" onclick="closeModal();genAllSkip()">'+(newOnly.length>0?'새 학생만 생성 ('+newOnly.length+'명)':'취소')+'</button>'+
+      '<button class="btn btn-y" onclick="closeModal();genAllOverwrite()">전체 다시 생성</button></div>');
   }else{genAllOverwrite()}
 }
 
@@ -463,7 +465,7 @@ function rDet(slide){
   }
   var btns;
   if(d){btns='<div class="det-btns"><button class="btn btn-d" onclick="undo('+s.row+')">되돌리기</button><button class="btn btn-y" onclick="doCopy('+s.row+')">복사하기</button></div>'}
-  else{btns='<button class="btn-y-full" onclick="doCopy('+s.row+')">복사하기</button>'}
+  else{btns='<div class="det-btns"><button class="btn btn-d" onclick="delMsg('+s.row+')">삭제</button><button class="btn btn-y" onclick="doCopy('+s.row+')" style="flex:2">복사하기</button></div>'}
 
   var msgHtml;
   if(d){msgHtml='<div class="msg-display done">'+esc(m)+'</div>'}
@@ -575,6 +577,14 @@ function tutPrev(){if(TUT_STEP>0){TUT_STEP--;renderTut()}}
 
 function checkFirstRun(){
   if(!localStorage.getItem('sori_tut'))showTutorial();
+}
+
+// ═══ Delete message (reset to 미생성) ═══
+function delMsg(row){
+  delete MSG[row];delete SHORT[row];
+  apiPost('saveMessage',{row:row,text:''});
+  T('메시지가 삭제되었습니다');
+  rInput();
 }
 
 init();
