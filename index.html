@@ -619,10 +619,15 @@ function checkFirstRun(){
 
 // ═══ Android Back Button ═══
 function handleBack(){
+  // 투토리얼 열려있으면 닫기
+  if(document.getElementById('tut').classList.contains('on')){closeTutorial();return true}
+  // 모달 열려있으면 닫기
+  if(document.getElementById('modal').classList.contains('on')){closeModal();return true}
   var ta=document.getElementById('msgbox');
   if(ta){exitEdit(S[CI].row);return true}
   if(VIEW==='detail'){rList();return true}
   if(VIEW==='list'){rInput();return true}
+  // 메인화면 → false 리턴 → MainActivity에서 종료 팝업
   return false;
 }
 
