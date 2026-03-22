@@ -94,22 +94,51 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .modal-desc{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:6px}
 .modal-names{font-size:12px;color:#FFD43B;background:rgba(255,212,59,0.08);border-radius:8px;padding:8px 12px;margin:10px 0 18px;line-height:1.5;max-height:80px;overflow-y:auto}
 .modal-btns{display:flex;gap:8px}.modal-btns .btn{flex:1;padding:12px;font-size:13px}
-.msg-display{width:100%;padding:14px;background:#111;border:1px solid #222;border-radius:10px;color:#ddd;font-size:13.5px;line-height:1.75;min-height:220px;margin-bottom:14px;white-space:pre-wrap;word-break:break-word;-webkit-user-select:text;user-select:text}
+.msg-display{width:100%;padding:14px;background:#111;border:1px solid #222;border-radius:10px;color:#ddd;font-size:13.5px;line-height:1.75;min-height:220px;margin-bottom:14px;white-space:pre-wrap;word-break:break-word;-webkit-user-select:none;user-select:none}
 .msg-display.done{background:#0d1a0d;border-color:#16a34a;color:#ccc}
 .msg-edit-hint{font-size:11px;color:#555;text-align:center;margin:-8px 0 10px}
+
+/* ═══ Tutorial ═══ */
+.tut-dim{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;pointer-events:none}
+.tut-dim.on{opacity:1;pointer-events:auto}
+.tut-box{width:calc(100% - 48px);max-width:360px;text-align:center;padding:32px 24px 24px}
+.tut-emoji{font-size:48px;margin-bottom:16px}
+.tut-step{font-size:11px;color:#FFD43B;font-weight:700;letter-spacing:1.5px;margin-bottom:8px}
+.tut-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.4}
+.tut-desc{font-size:13px;color:#999;line-height:1.7;margin-bottom:8px}
+.tut-example{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:12px 16px;margin:12px 0 20px;text-align:left}
+.tut-example-label{font-size:10px;color:#FFD43B;font-weight:600;letter-spacing:1px;margin-bottom:6px}
+.tut-example-text{font-size:12.5px;color:#ccc;line-height:1.6}
+.tut-dots{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+.tut-dot{width:8px;height:8px;border-radius:50%;background:#333;transition:.2s}
+.tut-dot.on{background:#FFD43B;width:20px}
+.tut-btns{display:flex;gap:8px}
+.tut-btns .btn{flex:1;padding:13px;font-size:13px}
+.tut-skip{font-size:11px;color:#555;margin-top:14px;cursor:pointer}
+.tut-skip:active{color:#888}
+.help-btn{width:28px;height:28px;border-radius:50%;background:#1a1a1a;border:1px solid #444;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:600;flex-shrink:0}
+.help-btn:active{background:#222;color:#FFD43B}
 </style>
 </head>
 <body>
 <div class="banner" onclick="goHome()">
   <div class="banner-row">
     <div><div class="logo">SORI STUDIO</div><div class="title">카톡 메시지 관리</div></div>
-    <div class="date" id="dt"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="help-btn" onclick="event.stopPropagation();showTutorial()">?</div>
+      <div class="date" id="dt"></div>
+    </div>
   </div>
 </div>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <div class="modal-dim" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card" id="modalCard"></div>
+</div>
+
+<!-- ═══ Tutorial ═══ -->
+<div class="tut-dim" id="tut" onclick="if(event.target===this)closeTutorial()">
+  <div class="tut-box" id="tutBox"></div>
 </div>
 
 <script>
@@ -139,6 +168,7 @@ function init(){
     S=data||[];
     S.forEach(function(s){if(s.kw)KW[s.row]=s.kw;PrevKW[s.row]=s.prevKw||'';if(s.msg)MSG[s.row]=s.msg;if(s.done)DONE.add(s.row)});
     rInput();
+    checkFirstRun();
   }).catch(function(e){
     Q('app','<div style="padding:20px;color:#f87171;font-size:13px;">연결 실패: '+e.message+'</div>');
   });
@@ -164,10 +194,10 @@ function rInput(){
   var infoParts=[];
   if(kwCount>0||pending.filter(function(s){return isUngen(s)}).length>0) infoParts.push('원생 <b>'+kwCount+'</b>/'+pending.filter(function(s){return isUngen(s)}).length+'명 입력');
   if(reviewCount>0) infoParts.push('<b class="b-o">'+reviewCount+'</b>명 검수대기');
-  if(dc>0) infoParts.push('<b class="b-g">'+dc+'</b>명 전송완료');
+  if(dc>0) infoParts.push('<b class="b-g">'+dc+'</b>명 복사완료');
   h+=infoParts.join(' · ')+'</span><div style="display:flex;gap:6px">';
   if(hasMsg())h+='<button class="btn btn-d" onclick="rList()">목록 보기</button>';
-  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()&&isUngen(s)}).length;
+  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()}).length;
   h+='<button class="btn btn-y" id="gbtn" onclick="tryGenAll()" '+(genableCount===0?'disabled':'')+'>일괄 생성</button></div></div>';
 
   S.forEach(function(s,i){
@@ -179,12 +209,14 @@ function rInput(){
       h+='<div class="inp-wrap done-inp"><div class="inp-label">'+
         '<div class="inp-num g">✓</div>'+
         '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span></div>'+
-        '<input value="'+esc('(전송완료)')+'" disabled/></div>';
+        '<input value="'+esc('(복사완료)')+'" disabled/></div>';
     }else if(rv){
-      h+='<div class="inp-wrap review-inp" onclick="showDet('+s.row+')"><div class="inp-label">'+
+      var rvPh=KW[s.row]||ph;
+      h+='<div class="inp-wrap"><div class="inp-label">'+
         '<div class="inp-num o">'+(i+1)+'</div>'+
-        '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span></div>'+
-        '<input class="review-input" value="'+esc('(검수대기)')+'" disabled/></div>';
+        '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+
+        '<span onclick="event.stopPropagation();showDet('+s.row+')" style="margin-left:auto;font-size:11px;color:#f59e0b;background:rgba(245,158,11,0.1);padding:3px 8px;border-radius:5px;cursor:pointer;font-weight:600;white-space:nowrap">AI글 확인 ›</span></div>'+
+        '<input value="" placeholder="'+esc(rvPh)+'" oninput="kwCh('+s.row+',this.value)"/></div>';
     }else{
       h+='<div class="inp-wrap"><div class="inp-label">'+
         '<div class="inp-num">'+(i+1)+'</div>'+
@@ -199,7 +231,7 @@ function rInput(){
 function kwCh(row,v){
   KW[row]=v;
   var pending=S.filter(function(s){return!DONE.has(s.row)});
-  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()&&isUngen(s)}).length;
+  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()}).length;
   var b=document.getElementById('gbtn');if(b)b.disabled=genableCount===0;
 }
 
@@ -212,11 +244,11 @@ function tryGenAll(){
     var newOnly=targets.filter(function(s){return!(MSG[s.row]&&MSG[s.row].trim())});
     showModal('<div class="modal-icon">📝</div>'+
       '<div class="modal-title">이미 생성된 메시지가 있습니다</div>'+
-      '<div class="modal-desc">아래 '+existing.length+'명은 전송 전 메시지가 남아있어요.<br>새로 생성하면 기존 메시지가 사라집니다.</div>'+
+      '<div class="modal-desc">아래 '+existing.length+'명은 이미 AI 메시지가 있어요.<br>새로 생성하면 기존 메시지가 사라집니다.</div>'+
       '<div class="modal-names">'+esc(names)+'</div>'+
       '<div class="modal-btns">'+
-      '<button class="btn btn-d" onclick="closeModal();genAllSkip()">'+(newOnly.length>0?'건너뛰기 ('+newOnly.length+'명만)':'취소')+'</button>'+
-      '<button class="btn btn-y" onclick="closeModal();genAllOverwrite()">전체 덮어쓰기</button></div>');
+      '<button class="btn btn-d" onclick="closeModal();genAllSkip()">'+(newOnly.length>0?'새 학생만 생성 ('+newOnly.length+'명)':'취소')+'</button>'+
+      '<button class="btn btn-y" onclick="closeModal();genAllOverwrite()">전체 다시 생성</button></div>');
   }else{genAllOverwrite()}
 }
 
@@ -296,7 +328,7 @@ function refreshCards(){
     var parts=[];
     if(ungenList.length>0)parts.push('미생성 <b>'+ungenList.length+'</b>명');
     if(reviewList.length>0)parts.push('검수대기 <b class="b-o">'+reviewList.length+'</b>명');
-    if(doneList.length>0)parts.push('전송완료 <b class="b-g">'+doneList.length+'</b>명');
+    if(doneList.length>0)parts.push('복사완료 <b class="b-g">'+doneList.length+'</b>명');
     info.innerHTML=parts.join(' · ');
   }
   var prog=document.querySelector('.progress-fill');if(prog)prog.style.width=pct+'%';
@@ -318,7 +350,7 @@ function rList(){
   var infoParts=[];
   if(ungenList.length>0)infoParts.push('미생성 <b>'+ungenList.length+'</b>명');
   if(reviewList.length>0)infoParts.push('검수대기 <b class="b-o">'+reviewList.length+'</b>명');
-  if(doneList.length>0)infoParts.push('전송완료 <b class="b-g">'+doneList.length+'</b>명');
+  if(doneList.length>0)infoParts.push('복사완료 <b class="b-g">'+doneList.length+'</b>명');
 
   var h='<div class="bar"><span class="bar-info">'+infoParts.join(' · ')+'</span>';
   if(reviewList.length>0)h+='<button class="btn btn-d" id="editBtn" onclick="toggleEdit()">키워드 수정</button>';
@@ -348,7 +380,7 @@ function buildSectionedCards(edit){
     ungenList.forEach(function(s){h+=buildOneCard(s,edit,'ungen')});
   }
   if(doneList.length>0){
-    h+='<div class="sec-header"><div class="sec-dot sec-dot-g"></div><span class="sec-label sec-label-g">전송완료</span><span class="sec-count">'+doneList.length+'명</span><div class="sec-line"></div></div>';
+    h+='<div class="sec-header"><div class="sec-dot sec-dot-g"></div><span class="sec-label sec-label-g">복사완료</span><span class="sec-count">'+doneList.length+'명</span><div class="sec-line"></div></div>';
     doneList.forEach(function(s){h+=buildOneCard(s,edit,'done')});
   }
   return h;
@@ -362,7 +394,7 @@ function buildOneCard(s,edit,status){
       '<input class="card-kw-input" value="'+esc(kw)+'" oninput="onEditKw('+s.row+',this.value)" placeholder="키워드"/></div></div>';
   }
   var avC,stC,stT;
-  if(status==='done'){avC='av-g';stC='#4ade80';stT='전송완료'}
+  if(status==='done'){avC='av-g';stC='#4ade80';stT='복사완료'}
   else if(status==='ungen'){avC='av-y';stC='#FFD43B';stT='미생성'}
   else{avC='av-o';stC='#f59e0b';stT=isShort?'짧음':'검수대기'}
 
@@ -424,7 +456,7 @@ function rDet(slide){
   var s=S[CI],m=MSG[s.row]||'',d=DONE.has(s.row),isShort=SHORT[s.row];
   var gl=S.filter(function(x){return MSG[x.row]});
   var pos=gl.findIndex(function(x){return x.row===s.row})+1;
-  var sentBadge=d?'<div class="sent-badge">전송 완료</div>':'';
+  var sentBadge=d?'<div class="sent-badge">복사 완료</div>':'';
   var shortWarn=(!d&&isShort)?'<div class="short-warn">⚠ 메시지가 짧습니다. 직접 수정하세요.</div>':'';
   var tagHtml='';
   if(!d){
@@ -458,10 +490,27 @@ function enterEdit(row){
   var ta=document.createElement('textarea');
   ta.className='msg-area';ta.id='msgbox';ta.value=m;
   ta.addEventListener('input',function(){MSG[row]=this.value;SHORT[row]=false});
+  ta.addEventListener('touchmove',function(){ta.blur()},{passive:true});
   div.parentNode.replaceChild(ta,div);
-  var hint=document.querySelector('.msg-edit-hint');if(hint)hint.remove();
+  var hint=document.querySelector('.msg-edit-hint');
+  if(hint)hint.innerHTML='<span onclick="exitEdit('+row+')" style="color:#FFD43B;cursor:pointer;font-weight:600">수정 완료 ✓</span>';
   ta.style.height='auto';ta.style.height=Math.max(220,ta.scrollHeight)+'px';
   ta.focus();
+}
+
+function exitEdit(row){
+  var ta=document.getElementById('msgbox');if(!ta)return;
+  MSG[row]=ta.value;
+  apiPost('saveMessage',{row:row,text:ta.value});
+  ta.blur();
+  document.activeElement&&document.activeElement.blur();
+  var div=document.createElement('div');
+  div.className='msg-display';div.id='msgdiv';
+  div.setAttribute('onclick','enterEdit('+row+')');
+  div.textContent=ta.value;
+  ta.parentNode.replaceChild(div,ta);
+  var hint=document.querySelector('.msg-edit-hint');
+  if(hint)hint.innerHTML='탭하여 수정';
 }
 
 function nav(dir){
@@ -483,7 +532,7 @@ function doCopy(row){
   var p=gl.findIndex(function(x){return x.row===row});
   var nextPending=gl.slice(p+1).find(function(x){return!DONE.has(x.row)});
   if(nextPending){CI=S.findIndex(function(x){return x.row===nextPending.row});rDet(true)}
-  else{T('모든 메시지 전송 완료!');setTimeout(function(){rInput()},1200)}
+  else{T('모든 메시지 복사 완료!');setTimeout(function(){rInput()},1200)}
 }
 
 function doRegen(row){
@@ -506,6 +555,55 @@ function undo(row){
 function Q(id,h){document.getElementById(id).innerHTML=h}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function T(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2500)}
+
+// ═══ Tutorial ═══
+var TUT_STEP=0;
+var TUT_DATA=[
+  {emoji:'🎹',step:'STEP 1',title:'키워드를 입력하세요',desc:'각 학생의 이번 달 레슨 내용을 간단히 적어주세요.',exLabel:'예시',exText:'바이엘 2번, 밝고 긍정적, 손가락 독립 잘됨'},
+  {emoji:'🤖',step:'STEP 2',title:'AI가 카톡 메시지를 작성합니다',desc:'일괄 생성 버튼을 누르면\nAI가 학부모 카톡 메시지를 자동으로 만들어줍니다.',exLabel:'생성 흐름',exText:'키워드 입력 → 일괄 생성 → 메시지 완성',exSmall:true},
+  {emoji:'📋',step:'STEP 3',title:'검수 후 복사 → 카톡에 붙여넣기!',desc:'생성된 메시지를 확인하고 수정한 뒤\n복사하기를 누르면 클립보드에 복사됩니다.\n카톡에 바로 붙여넣기 하세요!',exLabel:'상태 안내',exText:'🟡 미생성 → 🟠 검수대기 → 🟢 복사완료'}
+];
+
+function showTutorial(){TUT_STEP=0;renderTut();document.getElementById('tut').classList.add('on')}
+function closeTutorial(){document.getElementById('tut').classList.remove('on');localStorage.setItem('sori_tut','1')}
+
+function renderTut(){
+  var t=TUT_DATA[TUT_STEP],total=TUT_DATA.length;
+  var dots='';for(var i=0;i<total;i++)dots+='<div class="tut-dot'+(i===TUT_STEP?' on':'')+'"></div>';
+  var isLast=TUT_STEP===total-1;
+  var isFirst=TUT_STEP===0;
+  var btns='';
+  if(isFirst){
+    btns='<div class="tut-btns"><button class="btn btn-y" onclick="tutNext()" style="flex:1">다음</button></div>';
+  }else if(isLast){
+    btns='<div class="tut-btns"><button class="btn btn-d" onclick="tutPrev()">이전</button><button class="btn btn-y" onclick="closeTutorial()" style="flex:1">시작하기!</button></div>';
+  }else{
+    btns='<div class="tut-btns"><button class="btn btn-d" onclick="tutPrev()">이전</button><button class="btn btn-y" onclick="tutNext()" style="flex:1">다음</button></div>';
+  }
+  document.getElementById('tutBox').innerHTML=
+    '<div class="tut-emoji">'+t.emoji+'</div>'+
+    '<div class="tut-step">'+t.step+'</div>'+
+    '<div class="tut-title">'+t.title+'</div>'+
+    '<div class="tut-desc">'+t.desc.replace(/\n/g,'<br>')+'</div>'+
+    '<div class="tut-example"><div class="tut-example-label">'+t.exLabel+'</div><div class="tut-example-text"'+(t.exSmall?' style="font-size:11.5px"':'')+'>'+t.exText+'</div></div>'+
+    '<div class="tut-dots">'+dots+'</div>'+btns+
+    '<div class="tut-skip" onclick="closeTutorial()">다시 보지 않기</div>';
+}
+function tutNext(){if(TUT_STEP<TUT_DATA.length-1){TUT_STEP++;renderTut()}}
+function tutPrev(){if(TUT_STEP>0){TUT_STEP--;renderTut()}}
+
+function checkFirstRun(){
+  if(!localStorage.getItem('sori_tut'))showTutorial();
+}
+
+// ═══ Android Back Button ═══
+function handleBack(){
+  var ta=document.getElementById('msgbox');
+  if(ta){exitEdit(S[CI].row);return true}
+  if(VIEW==='detail'){rList();return true}
+  if(VIEW==='list'){rInput();return true}
+  return false;
+}
 
 init();
 </script>
