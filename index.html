@@ -491,9 +491,24 @@ function enterEdit(row){
   ta.className='msg-area';ta.id='msgbox';ta.value=m;
   ta.addEventListener('input',function(){MSG[row]=this.value;SHORT[row]=false});
   div.parentNode.replaceChild(ta,div);
-  var hint=document.querySelector('.msg-edit-hint');if(hint)hint.remove();
+  var hint=document.querySelector('.msg-edit-hint');
+  if(hint)hint.innerHTML='<span onclick="exitEdit('+row+')" style="color:#FFD43B;cursor:pointer;font-weight:600">수정 완료 ✓</span>';
   ta.style.height='auto';ta.style.height=Math.max(220,ta.scrollHeight)+'px';
   ta.focus();
+}
+
+function exitEdit(row){
+  var ta=document.getElementById('msgbox');if(!ta)return;
+  MSG[row]=ta.value;
+  apiPost('saveMessage',{row:row,text:ta.value});
+  var div=document.createElement('div');
+  div.className='msg-display';div.id='msgdiv';
+  div.setAttribute('onclick','enterEdit('+row+')');
+  div.textContent=ta.value;
+  ta.parentNode.replaceChild(div,ta);
+  var hint=document.querySelector('.msg-edit-hint');
+  if(hint)hint.innerHTML='탭하여 수정';
+  ta.blur();
 }
 
 function nav(dir){
