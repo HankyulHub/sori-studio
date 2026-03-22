@@ -490,6 +490,7 @@ function enterEdit(row){
   var ta=document.createElement('textarea');
   ta.className='msg-area';ta.id='msgbox';ta.value=m;
   ta.addEventListener('input',function(){MSG[row]=this.value;SHORT[row]=false});
+  ta.addEventListener('touchmove',function(){ta.blur()},{passive:true});
   div.parentNode.replaceChild(ta,div);
   var hint=document.querySelector('.msg-edit-hint');
   if(hint)hint.innerHTML='<span onclick="exitEdit('+row+')" style="color:#FFD43B;cursor:pointer;font-weight:600">수정 완료 ✓</span>';
