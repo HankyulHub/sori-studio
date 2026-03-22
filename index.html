@@ -502,6 +502,8 @@ function exitEdit(row){
   var ta=document.getElementById('msgbox');if(!ta)return;
   MSG[row]=ta.value;
   apiPost('saveMessage',{row:row,text:ta.value});
+  ta.blur();
+  document.activeElement&&document.activeElement.blur();
   var div=document.createElement('div');
   div.className='msg-display';div.id='msgdiv';
   div.setAttribute('onclick','enterEdit('+row+')');
@@ -509,7 +511,6 @@ function exitEdit(row){
   ta.parentNode.replaceChild(div,ta);
   var hint=document.querySelector('.msg-edit-hint');
   if(hint)hint.innerHTML='탭하여 수정';
-  ta.blur();
 }
 
 function nav(dir){
