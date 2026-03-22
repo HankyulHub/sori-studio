@@ -595,6 +595,15 @@ function checkFirstRun(){
   if(!localStorage.getItem('sori_tut'))showTutorial();
 }
 
+// ═══ Android Back Button ═══
+function handleBack(){
+  var ta=document.getElementById('msgbox');
+  if(ta){exitEdit(S[CI].row);return true}
+  if(VIEW==='detail'){rList();return true}
+  if(VIEW==='list'){rInput();return true}
+  return false;
+}
+
 init();
 </script>
 </body>
