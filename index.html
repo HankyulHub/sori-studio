@@ -9,19 +9,16 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f0f0f0;max-width:500px;margin:0 auto;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;padding-bottom:80px}
 *{font-family:'Noto Sans KR',sans-serif!important}
-
 .banner{background:#111;padding:16px 20px 14px;border-bottom:2px solid #FFD43B}
 .banner-row{display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:11px;letter-spacing:2.5px;color:#FFD43B;font-weight:700}
 .title{font-size:17px;font-weight:700;color:#fff;margin-top:3px}
 .date{font-size:13px;color:#888}
-
 .mode-tabs{display:flex;background:#111;border-bottom:1px solid #1e1e1e}
 .mode-tab{flex:1;padding:12px 0;text-align:center;font-size:13px;font-weight:500;color:#555;cursor:pointer;transition:.2s;position:relative}
 .mode-tab:active{background:#141414}
 .mode-tab.active{color:#FFD43B;font-weight:700}
 .mode-tab.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:#FFD43B;border-radius:1px}
-
 .section{border-bottom:1px solid #1a1a1a}
 .section-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:.1s}
 .section-header:active{background:#111}
@@ -33,12 +30,10 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .section-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
 .section-body.open{max-height:3000px}
 .section-inner{padding:0 20px 16px}
-
 .month-sel{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .month-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#888;transition:.15s;font-family:inherit}
 .month-chip:active{transform:scale(.95)}
 .month-chip.active{background:rgba(255,212,59,.12);color:#FFD43B;border-color:rgba(255,212,59,.3)}
-
 .greeting-box{background:#111;border:1px solid #222;border-radius:10px;padding:14px;color:#ddd;font-size:13px;line-height:1.7;white-space:pre-wrap;min-height:60px;outline:none;transition:border-color .2s}
 .greeting-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .chip-btn{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:.15s}
@@ -46,7 +41,6 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .chip-btn-o{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
 .chip-btn-g{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
 .chip-btn-d{background:#1a1a1a;color:#999;border:1px solid #2a2a2a}
-
 .stu-item{margin:0;border-bottom:1px solid #1a1a1a}
 .stu-item:last-child{border-bottom:none}
 .stu-row{padding:12px 0;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.1s}
@@ -59,21 +53,17 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .stu-detail{max-height:0;overflow:hidden;transition:max-height .25s ease;padding:0 0 0 40px}
 .stu-detail.open{max-height:600px}
 .stu-detail-inner{padding:4px 0 12px}
-
 .fee-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .fee-chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#aaa;transition:.15s;font-family:inherit}
 .fee-chip:active{transform:scale(.95)}
 .fee-chip.selected{background:rgba(255,212,59,.12);color:#FFD43B;border-color:rgba(255,212,59,.3)}
-
 .fee-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .fee-label{font-size:12px;color:#888;width:50px;flex-shrink:0}
 .fee-input{flex:1;padding:8px 10px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#eee;font-size:12px;font-family:inherit;outline:none}
 .fee-input:focus{border-color:#FFD43B}
 .fee-input::placeholder{color:#333}
-
 .add-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px dashed #333;background:transparent;color:#666;font-family:inherit;transition:.15s;margin-top:6px}
 .add-btn:active{background:#111;color:#aaa;transform:scale(.95)}
-
 .added-item{background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;margin-top:8px;position:relative}
 .added-item-row{display:flex;align-items:center;gap:8px}
 .added-item-remove{width:20px;height:20px;border-radius:50%;background:#1a1a1a;border:1px solid #333;color:#666;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1}
@@ -82,7 +72,6 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .added-item input:focus{border-color:#FFD43B}
 .added-item input::placeholder{color:#444}
 .material-note{font-size:11px;color:#f59e0b;margin-top:6px;padding-left:2px}
-
 .sched-item{background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;margin-bottom:8px}
 .sched-row{display:flex;align-items:center;gap:8px}
 .sched-title-input{padding:6px 8px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#FFD43B;font-size:12px;font-weight:600;font-family:inherit;outline:none;width:80px}
@@ -90,16 +79,13 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .sched-value-input{flex:1;padding:6px 8px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#eee;font-size:12px;font-family:inherit;outline:none}
 .sched-value-input:focus{border-color:#FFD43B}
 .sched-value-input::placeholder{color:#444}
-
 .edit-block{background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:12px;font-size:12.5px;color:#999;line-height:1.6;white-space:pre-wrap;outline:none;transition:border-color .2s,color .2s;min-height:40px;cursor:pointer}
 .edit-block:focus,.edit-block.editing{border-color:#FFD43B;color:#eee;cursor:text}
 .edit-hint{font-size:10px;color:#444;margin-top:4px;text-align:right}
-
 .notice-block{background:rgba(255,212,59,.04);border:1px solid rgba(255,212,59,.15);border-radius:8px;padding:10px 12px;margin-top:8px}
 .notice-input{width:100%;padding:8px;background:transparent;border:none;color:#eee;font-size:12.5px;font-family:inherit;outline:none;line-height:1.6;resize:none;min-height:36px}
 .notice-input::placeholder{color:#555}
 .notice-label{font-size:10px;color:#FFD43B;font-weight:600;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
-
 .pagi{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 0}
 .pagi-btn{width:32px;height:32px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;color:#888;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-family:inherit;transition:.15s}
 .pagi-btn:active{background:#222}
@@ -107,18 +93,15 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .pagi-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;cursor:pointer;transition:.15s}
 .pagi-num.active{background:#FFD43B;color:#111}
 .pagi-num:not(.active){color:#555}
-
 .swipe-hint{display:flex;justify-content:space-between;padding:2px 0 8px;pointer-events:none}
 .swipe-hint span{font-size:11px;color:#2a2a2a;transition:color .2s}
 .swipe-hint.has-prev span:first-child{color:#555}
 .swipe-hint.has-next span:last-child{color:#555}
-
 .gen-area{padding:16px 20px;background:#0a0a0a;position:sticky;bottom:0;border-top:1px solid #1a1a1a}
 .btn-gen{background:#FFD43B;color:#111;width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.15s}
 .btn-gen:active{transform:scale(.97)}
 .total-hint{font-size:12px;color:#888;text-align:center;margin-bottom:8px}
 .total-hint b{color:#4ade80}
-
 .car-header{padding:12px 16px;background:#111;border-bottom:1px solid #1e1e1e}
 .car-row1{display:flex;align-items:center;justify-content:space-between}
 .car-back{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#ccc;font-family:inherit}
@@ -131,7 +114,6 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .car-name{font-size:12px;color:#444;transition:all .25s;white-space:nowrap;cursor:pointer;flex-shrink:0}
 .car-name.active{font-size:15px;color:#FFD43B;font-weight:600}
 .car-name.near{font-size:12px;color:#555}
-
 .car-body{padding:16px 20px}
 .car-stu{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .car-av{width:38px;height:38px;border-radius:50%;background:#FFD43B;color:#111;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
@@ -139,18 +121,15 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .car-sname{font-size:16px;font-weight:700}
 .car-ssub{font-size:12px;color:#666;margin-top:1px}
 .car-status{font-size:11px;padding:4px 0;margin-bottom:8px}
-
 .msg-display{width:100%;padding:14px;background:#111;border:1px solid #222;border-radius:10px;color:#ddd;font-size:13px;line-height:1.8;min-height:200px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;cursor:pointer;transition:border-color .2s}
 .msg-display .hl-name{color:#FFD43B;font-weight:600}
 .msg-display .hl-money{color:#4ade80;font-weight:600}
 .msg-edit-area{width:100%;padding:14px;background:#111;border:1px solid #FFD43B;border-radius:10px;color:#eee;font-size:13px;line-height:1.8;min-height:200px;margin-bottom:4px;font-family:inherit;outline:none;resize:none}
 .msg-edit-hint{font-size:11px;color:#555;text-align:center;margin-bottom:10px}
-
 .copy-btn-full{width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.15s}
 .copy-btn-full:active{transform:scale(.97)}
 .copy-btn-full.ready{background:#FFD43B;color:#111}
 .copy-btn-full.done{background:#0d1a0d;color:#4ade80;border:1px solid #16a34a}
-
 .summary-wrap{padding:20px}
 .summary-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a;font-size:13px}
@@ -163,7 +142,6 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .summary-total-val{font-size:18px;font-weight:700;color:#4ade80}
 .summary-back{width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;background:#1a1a1a;color:#ccc;margin-top:16px}
 .summary-back:active{background:#222}
-
 .loading{display:flex;flex-direction:column;align-items:center;padding:60px 20px;color:#666;font-size:13px;gap:12px}
 .spin{width:22px;height:22px;border:2.5px solid #1a1a1a;border-top-color:#FFD43B;border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -178,27 +156,24 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 </style>
 </head>
 <body>
-
 <div class="banner">
   <div class="banner-row">
     <div><div class="logo">SORI MANAGER</div><div class="title">소리마을 매니저</div></div>
     <div class="date" id="headerDate"></div>
   </div>
 </div>
-
 <div class="mode-tabs">
   <div class="mode-tab" onclick="switchMode('kakao')">💬 카톡 대본</div>
   <div class="mode-tab active" onclick="switchMode('invoice')">💳 월비 명세서</div>
 </div>
-
 <div id="app"></div>
 <div class="toast" id="toast"></div>
-
 <script>
-var API_URL = 'https://script.google.com/macros/s/AKfycbzW7VPXPRW0Ltf8ws_1xtdLM0rceMsumj7oi6bLD3jSjOCtYG8_WYGAqjd_UyRjPrQ1/exec?test=1';
+var API_URL='https://script.google.com/macros/s/AKfycbzW7VPXPRW0Ltf8ws_1xtdLM0rceMsumj7oi6bLD3jSjOCtYG8_WYGAqjd_UyRjPrQ1/exec';
+var IS_TEST=true;
 
-var MODE='invoice', VIEW='setting';
-var stuPage=0, carIdx=0, PER_PAGE=5;
+var MODE='invoice',VIEW='setting';
+var stuPage=0,carIdx=0,PER_PAGE=5;
 var copied=new Set();
 var editingMsg={};
 var students=[];
@@ -213,16 +188,16 @@ var selectedMonth=targetMonth;
 document.getElementById('headerDate').textContent=targetYear+'년 '+selectedMonth+'월';
 
 var presets=[
-  {label:'주 2회 / 90,000원', freq:'주 2회', fee:'90,000'},
-  {label:'주 2회 / 110,000원',freq:'주 2회', fee:'110,000'},
-  {label:'주 3회 / 130,000원',freq:'주 3회', fee:'130,000'},
-  {label:'주 3회 / 150,000원',freq:'주 3회', fee:'150,000'}
+  {label:'주 2회 / 90,000원',freq:'주 2회',fee:'90,000'},
+  {label:'주 2회 / 110,000원',freq:'주 2회',fee:'110,000'},
+  {label:'주 3회 / 130,000원',freq:'주 3회',fee:'130,000'},
+  {label:'주 3회 / 150,000원',freq:'주 3회',fee:'150,000'}
 ];
 
 var scheduleItems=[
-  {title:'휴강',         value:'', placeholder:'예: '+selectedMonth+'/2(월) 대체공휴일'},
-  {title:'악기특강',     value:'', placeholder:'예: '+selectedMonth+'/4, '+selectedMonth+'/11'},
-  {title:'예술융합특강', value:'', placeholder:'예: '+selectedMonth+'/25'}
+  {title:'휴강',value:'',placeholder:'예: '+selectedMonth+'/2(월) 대체공휴일'},
+  {title:'악기특강',value:'',placeholder:'예: '+selectedMonth+'/4, '+selectedMonth+'/11'},
+  {title:'예술융합특강',value:'',placeholder:'예: '+selectedMonth+'/25'}
 ];
 
 var greeting='안녕하세요, 소리마을음악교습소입니다🎶\n따뜻한 봄바람과 함께 새로운 시작을 알리는 '+selectedMonth+'월입니다. 새 학기를 맞이하여 우리 아이들이 음악 속에서 더 큰 꿈을 키워가길 바랍니다.☘️';
@@ -237,10 +212,12 @@ var openSections={greeting:false,students:true,schedule:false,pay:false,closing:
 var openStudents=new Set();
 
 function apiGet(action){
-  return fetch(API_URL+'?action='+action).then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
+  var url=API_URL+'?action='+action+(IS_TEST?'&test=1':'');
+  return fetch(url).then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
 function apiPost(action,body){
   body.action=action;
+  if(IS_TEST)body.test='1';
   return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)})
     .then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
@@ -248,8 +225,8 @@ function apiPost(action,body){
 function init(){
   Q('app','<div class="loading"><div class="spin"></div>데이터 불러오는 중...</div>');
   apiGet('loadInvoiceStudents').then(function(data){
-    students = data || [];
-    loaded = true;
+    students=data||[];
+    loaded=true;
     render();
   }).catch(function(e){
     Q('app','<div style="padding:20px;color:#f87171">연결 실패: '+e.message+'</div>');
@@ -257,19 +234,19 @@ function init(){
 }
 
 function switchMode(m){
-  MODE=m; VIEW='setting'; stuPage=0; copied.clear(); editingMsg={};
+  MODE=m;VIEW='setting';stuPage=0;copied.clear();editingMsg={};
   document.querySelectorAll('.mode-tab').forEach(function(t,i){
     t.classList.toggle('active',(i===0&&m==='kakao')||(i===1&&m==='invoice'));
   });
-  if(m==='invoice'&&!loaded) init();
+  if(m==='invoice'&&!loaded)init();
   else render();
 }
 
 function render(){
-  if(MODE==='kakao') renderKakao();
-  else if(VIEW==='setting') renderSetting();
-  else if(VIEW==='carousel') renderCarousel();
-  else if(VIEW==='summary') renderSummary();
+  if(MODE==='kakao')renderKakao();
+  else if(VIEW==='setting')renderSetting();
+  else if(VIEW==='carousel')renderCarousel();
+  else if(VIEW==='summary')renderSummary();
 }
 
 function renderKakao(){
@@ -297,7 +274,7 @@ function calcTotal(){
   var sum=0;
   students.forEach(function(s){
     var n=parseInt((s.fee||'0').replace(/,/g,''),10);
-    if(!isNaN(n)) sum+=n;
+    if(!isNaN(n))sum+=n;
   });
   return sum.toLocaleString();
 }
@@ -320,10 +297,10 @@ function buildGreeting(){
   s+='</div>';
   if(greetLoading){
     s+='<div class="loading" style="padding:20px 0"><div class="spin"></div><span>AI 생성 중...</span></div>';
-  } else if(greetEditing){
+  }else if(greetEditing){
     s+='<textarea class="msg-edit-area" id="greetTA" oninput="greeting=this.value" style="min-height:100px">'+esc(greeting)+'</textarea>';
     s+='<div class="greeting-actions"><div class="chip-btn chip-btn-g" onclick="saveGreetEdit()">✓ 수정 완료</div></div>';
-  } else {
+  }else{
     s+='<div class="greeting-box">'+esc(greeting)+'</div>';
     s+='<div class="greeting-actions">';
     s+='<div class="chip-btn chip-btn-o" onclick="regenGreeting()">↻ 재생성</div>';
@@ -334,18 +311,18 @@ function buildGreeting(){
 }
 
 function regenGreeting(){
-  greetLoading=true; openSections.greeting=true; renderSetting();
+  greetLoading=true;openSections.greeting=true;renderSetting();
   apiPost('generateGreeting',{month:selectedMonth}).then(function(text){
-    greeting=text; greetLoading=false; renderSetting();
+    greeting=text;greetLoading=false;renderSetting();
   }).catch(function(){
-    greetLoading=false; toast('생성 실패, 다시 시도해주세요'); renderSetting();
+    greetLoading=false;toast('생성 실패, 다시 시도해주세요');renderSetting();
   });
 }
 
 function saveGreetEdit(){
   var ta=document.getElementById('greetTA');
-  if(ta) greeting=ta.value;
-  greetEditing=false; renderSetting();
+  if(ta)greeting=ta.value;
+  greetEditing=false;renderSetting();
 }
 
 function setMonth(m){
@@ -357,8 +334,8 @@ function setMonth(m){
 
 function buildStudents(){
   var totalPages=Math.ceil(students.length/PER_PAGE);
-  var start=stuPage*PER_PAGE, end=Math.min(start+PER_PAGE,students.length);
-  var hasPrev=stuPage>0, hasNext=stuPage<totalPages-1;
+  var start=stuPage*PER_PAGE,end=Math.min(start+PER_PAGE,students.length);
+  var hasPrev=stuPage>0,hasNext=stuPage<totalPages-1;
   var s='';
   s+='<div id="stuListWrap">';
   s+='<div class="swipe-hint'+(hasPrev?' has-prev':'')+(hasNext?' has-next':'')+'">';
@@ -366,7 +343,7 @@ function buildStudents(){
   s+='<span>'+(hasNext?'다음 ▶':'')+'</span>';
   s+='</div>';
   for(var i=start;i<end;i++){
-    var st=students[i], isOpen=openStudents.has(i);
+    var st=students[i],isOpen=openStudents.has(i);
     s+='<div class="stu-item">';
     s+='<div class="stu-row" onclick="toggleStu('+i+')">';
     s+='<div class="stu-av">'+st.name[0]+'</div>';
@@ -421,8 +398,8 @@ function attachSwipe(){
     var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
     if(Math.abs(dx)<Math.abs(dy)||Math.abs(dx)<40)return;
     var totalPages=Math.ceil(students.length/PER_PAGE);
-    if(dx<0&&stuPage<totalPages-1)goPage(stuPage+1);
-    else if(dx>0&&stuPage>0)goPage(stuPage-1);
+    if(dx<0&&stuPage<totalPages-1)goPage(stuPage+1,'left');
+    else if(dx>0&&stuPage>0)goPage(stuPage-1,'right');
   },{passive:true});
 }
 
@@ -466,7 +443,17 @@ function buildClosing(){
 
 function toggleSec(k){openSections[k]=!openSections[k];renderSetting()}
 function toggleStu(i){openStudents.has(i)?openStudents.delete(i):openStudents.add(i);renderSetting()}
-function goPage(p){var mx=Math.ceil(students.length/PER_PAGE)-1;if(p<0||p>mx)return;var dir=p>stuPage?'left':'right';stuPage=p;openStudents.clear();renderSetting();var el=document.getElementById('stuListWrap');if(el){el.classList.add('stu-slide-'+(dir==='left'?'left':'right'));setTimeout(function(){if(el)el.classList.remove('stu-slide-left','stu-slide-right')},300)}}
+function goPage(p,dir){
+  var mx=Math.ceil(students.length/PER_PAGE)-1;
+  if(p<0||p>mx)return;
+  var d=dir||(p>stuPage?'left':'right');
+  stuPage=p;openStudents.clear();renderSetting();
+  var el=document.getElementById('stuListWrap');
+  if(el){
+    el.classList.add('stu-slide-'+d);
+    setTimeout(function(){if(el)el.classList.remove('stu-slide-left','stu-slide-right')},300);
+  }
+}
 function selPreset(si,pi){var p=presets[pi];students[si].freq=p.freq;students[si].fee=p.fee;autoSave(si);renderSetting()}
 function updateFee(i,v){students[i].fee=v;autoSave(i)}
 function addMat(i){students[i].materials.push({text:''});renderSetting()}
@@ -495,7 +482,6 @@ function renderCarousel(){
   var prev=carIdx>0?students[carIdx-1]:null;
   var next=carIdx<students.length-1?students[carIdx+1]:null;
   var isCopied=copied.has(carIdx);
-
   var h='<div class="car-header"><div class="car-row1">';
   h+='<button class="car-back" onclick="VIEW=\'setting\';render()">← 설정</button>';
   h+='<span class="car-counter">'+(carIdx+1)+' / '+students.length+'</span>';
@@ -505,13 +491,11 @@ function renderCarousel(){
   h+='<span class="car-name active">'+s.name+'</span>';
   if(next)h+='<span class="car-name near" onclick="carNav(1)">'+next.name+'</span>';
   h+='</div></div>';
-
   h+='<div class="car-body fade-in">';
   h+='<div class="car-stu"><div class="car-av'+(isCopied?' copied':'')+'">'+s.name[0]+'</div><div>';
   h+='<div class="car-sname">'+s.name+'</div>';
   h+='<div class="car-ssub">'+s.gg+' · '+(s.freq||'')+'</div></div></div>';
   if(isCopied)h+='<div class="car-status" style="color:#4ade80">✓ 복사 완료</div>';
-
   var msg=editingMsg[carIdx]||buildMessage(s);
   h+='<div class="msg-display" id="msgDisp" onclick="enterMsgEdit()">'+highlightMsg(msg,s)+'</div>';
   h+='<div class="msg-edit-hint" id="editHint">탭하여 수정</div>';
@@ -563,10 +547,10 @@ function buildMessage(s){
   m+='━━━━━━━━━━━\n💳 납부 안내\n'+payInfo+'\n';
   m+='━━━━━━━━━━━\n🎵 '+selectedMonth+'월 수업 일정\n';
   scheduleItems.forEach(function(item){
-    if(item.title.trim()&&item.value.trim()) m+='• '+item.title+' - '+item.value+'\n';
+    if(item.title.trim()&&item.value.trim())m+='• '+item.title+' - '+item.value+'\n';
   });
   m+=scheduleNote+'\n';
-  if(noticeOn&&notice.trim()) m+='━━━━━━━━━━━\n📢 공지\n'+notice+'\n';
+  if(noticeOn&&notice.trim())m+='━━━━━━━━━━━\n📢 공지\n'+notice+'\n';
   m+='━━━━━━━━━━━\n'+closing;
   return m;
 }
@@ -593,7 +577,7 @@ function doCopy(idx){
 }
 
 function renderSummary(){
-  var totalFee=0, totalMat=0;
+  var totalFee=0,totalMat=0;
   var h='<div class="summary-wrap fade-in">';
   h+='<div class="summary-title">🎉 전체 명세서 완료!</div>';
   students.forEach(function(s){
@@ -603,12 +587,12 @@ function renderSummary(){
     var matSum=0;
     mats.forEach(function(x){
       var n=x.text.match(/[\d,]+원/);
-      if(n) matSum+=parseInt(n[0].replace(/,|원/g,''),10)||0;
+      if(n)matSum+=parseInt(n[0].replace(/,|원/g,''),10)||0;
     });
     totalMat+=matSum;
     h+='<div class="summary-row">';
     h+='<div><div class="summary-name">'+s.name+' <span style="color:#555;font-size:11px">'+s.freq+'</span></div>';
-    if(mats.length>0) h+='<div class="summary-mat">교재비 포함</div>';
+    if(mats.length>0)h+='<div class="summary-mat">교재비 포함</div>';
     h+='</div>';
     h+='<div class="summary-fee">'+fee.toLocaleString()+'원</div></div>';
   });
