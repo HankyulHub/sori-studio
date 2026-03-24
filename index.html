@@ -3,279 +3,608 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>소리 스튜디오 & 매니저</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<title>소리마을 매니저</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f0f0f0;max-width:500px;margin:0 auto;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;padding-bottom:60px}
+body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f0f0f0;max-width:500px;margin:0 auto;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;padding-bottom:80px}
+*{font-family:'Noto Sans KR',sans-serif!important}
 
-/* Banner & Tabs */
-.banner{background:#111;padding:16px 20px 14px;}
+.banner{background:#111;padding:16px 20px 14px;border-bottom:2px solid #FFD43B}
 .banner-row{display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:11px;letter-spacing:2.5px;color:#FFD43B;font-weight:700}
 .title{font-size:17px;font-weight:700;color:#fff;margin-top:3px}
 .date{font-size:13px;color:#888}
 
 .mode-tabs{display:flex;background:#111;border-bottom:1px solid #1e1e1e}
-.mode-tab{flex:1;padding:14px 0;text-align:center;font-size:14px;font-weight:500;color:#555;cursor:pointer;transition:.2s;position:relative}
+.mode-tab{flex:1;padding:12px 0;text-align:center;font-size:13px;font-weight:500;color:#555;cursor:pointer;transition:.2s;position:relative}
 .mode-tab:active{background:#141414}
 .mode-tab.active{color:#FFD43B;font-weight:700}
 .mode-tab.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:#FFD43B;border-radius:1px}
 
-/* 공통 UI 요소 */
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:.15s;white-space:nowrap}
-.btn:active{transform:scale(0.97)}.btn-y{background:#FFD43B;color:#111}.btn-d{background:#1a1a1a;color:#ccc;border:1px solid #2a2a2a}
-.btn:disabled{opacity:.3;cursor:default;transform:none}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:#1a1a1a;border:1px solid #252525;color:#eee;padding:8px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.section{border-bottom:1px solid #1a1a1a}
+.section-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:.1s}
+.section-header:active{background:#111}
+.section-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.section-dot{width:7px;height:7px;border-radius:50%;background:#FFD43B;flex-shrink:0}
+.section-badge{font-size:11px;color:#888;font-weight:400;margin-left:4px}
+.section-arrow{font-size:14px;color:#555;transition:transform .2s}
+.section-arrow.open{transform:rotate(180deg)}
+.section-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.section-body.open{max-height:3000px}
+.section-inner{padding:0 20px 16px}
 
-/* 로딩 */
+.month-sel{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.month-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#888;transition:.15s;font-family:inherit}
+.month-chip:active{transform:scale(.95)}
+.month-chip.active{background:rgba(255,212,59,.12);color:#FFD43B;border-color:rgba(255,212,59,.3)}
+
+.greeting-box{background:#111;border:1px solid #222;border-radius:10px;padding:14px;color:#ddd;font-size:13px;line-height:1.7;white-space:pre-wrap;min-height:60px;outline:none;transition:border-color .2s}
+.greeting-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.chip-btn{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:.15s}
+.chip-btn:active{transform:scale(.95)}
+.chip-btn-o{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
+.chip-btn-g{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
+.chip-btn-d{background:#1a1a1a;color:#999;border:1px solid #2a2a2a}
+
+.stu-item{margin:0;border-bottom:1px solid #1a1a1a}
+.stu-item:last-child{border-bottom:none}
+.stu-row{padding:12px 0;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.1s}
+.stu-row:active{opacity:.8}
+.stu-av{width:30px;height:30px;border-radius:50%;background:#FFD43B;color:#111;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.stu-name{font-size:14px;font-weight:500;flex:1}
+.stu-summary{font-size:12px;color:#666;margin-left:auto;flex-shrink:0}
+.stu-arrow{font-size:12px;color:#444;flex-shrink:0;transition:transform .2s}
+.stu-arrow.open{transform:rotate(90deg)}
+.stu-detail{max-height:0;overflow:hidden;transition:max-height .25s ease;padding:0 0 0 40px}
+.stu-detail.open{max-height:600px}
+.stu-detail-inner{padding:4px 0 12px}
+
+.fee-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.fee-chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#aaa;transition:.15s;font-family:inherit}
+.fee-chip:active{transform:scale(.95)}
+.fee-chip.selected{background:rgba(255,212,59,.12);color:#FFD43B;border-color:rgba(255,212,59,.3)}
+
+.fee-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.fee-label{font-size:12px;color:#888;width:50px;flex-shrink:0}
+.fee-input{flex:1;padding:8px 10px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#eee;font-size:12px;font-family:inherit;outline:none}
+.fee-input:focus{border-color:#FFD43B}
+.fee-input::placeholder{color:#333}
+
+.add-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px dashed #333;background:transparent;color:#666;font-family:inherit;transition:.15s;margin-top:6px}
+.add-btn:active{background:#111;color:#aaa;transform:scale(.95)}
+
+.added-item{background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;margin-top:8px;position:relative}
+.added-item-row{display:flex;align-items:center;gap:8px}
+.added-item-remove{width:20px;height:20px;border-radius:50%;background:#1a1a1a;border:1px solid #333;color:#666;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1}
+.added-item-remove:active{background:#333;color:#f87171}
+.added-item input{flex:1;padding:6px 8px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#eee;font-size:12px;font-family:inherit;outline:none}
+.added-item input:focus{border-color:#FFD43B}
+.added-item input::placeholder{color:#444}
+.material-note{font-size:11px;color:#f59e0b;margin-top:6px;padding-left:2px}
+
+.sched-item{background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.sched-row{display:flex;align-items:center;gap:8px}
+.sched-title-input{padding:6px 8px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#FFD43B;font-size:12px;font-weight:600;font-family:inherit;outline:none;width:80px}
+.sched-title-input:focus{border-color:#FFD43B}
+.sched-value-input{flex:1;padding:6px 8px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#eee;font-size:12px;font-family:inherit;outline:none}
+.sched-value-input:focus{border-color:#FFD43B}
+.sched-value-input::placeholder{color:#444}
+
+.edit-block{background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:12px;font-size:12.5px;color:#999;line-height:1.6;white-space:pre-wrap;outline:none;transition:border-color .2s,color .2s;min-height:40px;cursor:pointer}
+.edit-block:focus,.edit-block.editing{border-color:#FFD43B;color:#eee;cursor:text}
+.edit-hint{font-size:10px;color:#444;margin-top:4px;text-align:right}
+
+.notice-block{background:rgba(255,212,59,.04);border:1px solid rgba(255,212,59,.15);border-radius:8px;padding:10px 12px;margin-top:8px}
+.notice-input{width:100%;padding:8px;background:transparent;border:none;color:#eee;font-size:12.5px;font-family:inherit;outline:none;line-height:1.6;resize:none;min-height:36px}
+.notice-input::placeholder{color:#555}
+.notice-label{font-size:10px;color:#FFD43B;font-weight:600;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+
+.pagi{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 0}
+.pagi-btn{width:32px;height:32px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;color:#888;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-family:inherit;transition:.15s}
+.pagi-btn:active{background:#222}
+.pagi-btn.disabled{opacity:.3;cursor:default}
+.pagi-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;cursor:pointer;transition:.15s}
+.pagi-num.active{background:#FFD43B;color:#111}
+.pagi-num:not(.active){color:#555}
+
+.gen-area{padding:16px 20px;background:#0a0a0a;position:sticky;bottom:0;border-top:1px solid #1a1a1a}
+.btn-gen{background:#FFD43B;color:#111;width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.15s}
+.btn-gen:active{transform:scale(.97)}
+.total-hint{font-size:12px;color:#888;text-align:center;margin-bottom:8px}
+.total-hint b{color:#4ade80}
+
+.car-header{padding:12px 16px;background:#111;border-bottom:1px solid #1e1e1e}
+.car-row1{display:flex;align-items:center;justify-content:space-between}
+.car-back{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#ccc;font-family:inherit}
+.car-back:active{background:#222}
+.car-counter{font-size:13px;font-weight:600;color:#888}
+.car-nav{display:flex;gap:5px}
+.car-nav-btn{width:32px;height:32px;border-radius:50%;background:#1a1a1a;border:1px solid #252525;color:#aaa;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+.car-nav-btn:active{background:#222}
+.car-names{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0 4px;overflow:hidden}
+.car-name{font-size:12px;color:#444;transition:all .25s;white-space:nowrap;cursor:pointer;flex-shrink:0}
+.car-name.active{font-size:15px;color:#FFD43B;font-weight:600}
+.car-name.near{font-size:12px;color:#555}
+
+.car-body{padding:16px 20px}
+.car-stu{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.car-av{width:38px;height:38px;border-radius:50%;background:#FFD43B;color:#111;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+.car-av.copied{background:#0a0a0a;color:#4ade80;border:2px solid #16a34a}
+.car-sname{font-size:16px;font-weight:700}
+.car-ssub{font-size:12px;color:#666;margin-top:1px}
+.car-status{font-size:11px;padding:4px 0;margin-bottom:8px}
+
+.msg-display{width:100%;padding:14px;background:#111;border:1px solid #222;border-radius:10px;color:#ddd;font-size:13px;line-height:1.8;min-height:200px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;cursor:pointer;transition:border-color .2s}
+.msg-display .hl-name{color:#FFD43B;font-weight:600}
+.msg-display .hl-money{color:#4ade80;font-weight:600}
+.msg-edit-area{width:100%;padding:14px;background:#111;border:1px solid #FFD43B;border-radius:10px;color:#eee;font-size:13px;line-height:1.8;min-height:200px;margin-bottom:4px;font-family:inherit;outline:none;resize:none}
+.msg-edit-hint{font-size:11px;color:#555;text-align:center;margin-bottom:10px}
+
+.copy-btn-full{width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.15s}
+.copy-btn-full:active{transform:scale(.97)}
+.copy-btn-full.ready{background:#FFD43B;color:#111}
+.copy-btn-full.done{background:#0d1a0d;color:#4ade80;border:1px solid #16a34a}
+
+/* 매출 요약 페이지 */
+.summary-wrap{padding:20px}
+.summary-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a;font-size:13px}
+.summary-row:last-child{border-bottom:none}
+.summary-name{color:#aaa}
+.summary-fee{color:#eee;font-weight:500}
+.summary-mat{font-size:11px;color:#f59e0b;margin-top:2px}
+.summary-total{background:#111;border:1px solid #222;border-radius:10px;padding:14px;margin-top:16px;display:flex;justify-content:space-between;align-items:center}
+.summary-total-label{font-size:13px;color:#888}
+.summary-total-val{font-size:18px;font-weight:700;color:#4ade80}
+.summary-back{width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;background:#1a1a1a;color:#ccc;margin-top:16px}
+.summary-back:active{background:#222}
+
 .loading{display:flex;flex-direction:column;align-items:center;padding:60px 20px;color:#666;font-size:13px;gap:12px}
 .spin{width:22px;height:22px;border:2.5px solid #1a1a1a;border-top-color:#FFD43B;border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-
-/* 카톡 모드 전용 */
-.bar{padding:12px 20px;background:#141414;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e1e1e;gap:6px}
-.bar-info{font-size:13px;color:#888}.bar-info b{color:#FFD43B}
-.inp-wrap{padding:4px 20px}
-.inp-label{display:flex;align-items:center;gap:10px;margin:10px 0 5px}
-.inp-num{width:24px;height:24px;border-radius:50%;background:#FFD43B;color:#111;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
-.inp-name{font-size:14px;font-weight:500}
-.inp-gg{font-size:12px;color:#555}
-.inp-wrap input{width:100%;padding:10px 12px;background:#111;border:1px solid #222;border-radius:8px;color:#eee;font-size:13px;font-family:inherit;outline:none}
-.inp-wrap input:focus{border-color:#FFD43B}
-
-/* 명세서 롤링 탭(캐러셀) & 뷰 */
-.det-head{padding:12px 16px;background:#111;border-bottom:1px solid #1e1e1e}
-.det-row1{display:flex;align-items:center;justify-content:space-between}
-.det-nav{display:flex;gap:5px}
-.nav-b{width:32px;height:32px;border-radius:50%;background:#1a1a1a;border:1px solid #252525;color:#aaa;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
-.nav-b:active{background:#222}
-.carousel{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 0 4px;overflow:hidden}
-.car-name{font-size:13px;color:#444;transition:all .25s;white-space:nowrap;cursor:pointer;flex-shrink:0}
-.car-name.active{font-size:16px;color:#FFD43B;font-weight:700}
-.car-name.near{font-size:13px;color:#666}
-
-.inv-section{padding:16px 20px;}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
-.toggle-label{font-size:13px;color:#ccc;font-weight:500}
-.toggle-switch{width:42px;height:24px;border-radius:12px;background:#2a2a2a;cursor:pointer;position:relative;transition:.2s;flex-shrink:0}
-.toggle-switch.on{background:#FFD43B}
-.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
-.toggle-switch.on::after{left:21px}
-.toggle-input{margin-top:4px;width:100%;padding:10px 12px;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:#eee;font-size:12px;font-family:inherit;outline:none;display:none}
-.toggle-input.show{display:block}
-
-.preview-box{background:#111;border:1px solid #222;border-radius:10px;padding:16px;font-size:13px;color:#ddd;line-height:1.8;white-space:pre-wrap;word-break:break-word}
-.copy-btn{display:flex;align-items:center;justify-content:center;width:100%;padding:14px;background:#FFD43B;border-radius:10px;color:#111;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;font-family:inherit;border:none;}
-.copy-btn:active{transform:scale(0.97);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:#1a1a1a;border:1px solid #252525;color:#eee;padding:8px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .25s ease}
 </style>
 </head>
 <body>
 
 <div class="banner">
   <div class="banner-row">
-    <div>
-      <div class="logo">SORI STUDIO</div>
-      <div class="title">통합 매니저</div>
-    </div>
-    <div class="date" id="dt"></div>
+    <div><div class="logo">SORI MANAGER</div><div class="title">소리마을 매니저</div></div>
+    <div class="date" id="headerDate"></div>
   </div>
 </div>
 
 <div class="mode-tabs">
-  <div class="mode-tab active" onclick="switchMode('kakao')">💬 카톡 대본</div>
-  <div class="mode-tab" onclick="switchMode('invoice')">💳 월비 명세서</div>
+  <div class="mode-tab" onclick="switchMode('kakao')">💬 카톡 대본</div>
+  <div class="mode-tab active" onclick="switchMode('invoice')">💳 월비 명세서</div>
 </div>
 
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 
 <script>
-// 배포하신 웹앱 URL로 교체하세요!
-var API_URL = 'https://script.google.com/macros/s/AKfycb.../exec'; 
+// ★ 배포된 웹앱 URL로 교체
+var API_URL = 'https://script.google.com/macros/s/AKfycbzW7VPXPRW0Ltf8ws_1xtdLM0rceMsumj7oi6bLD3jSjOCtYG8_WYGAqjd_UyRjPrQ1/exec';
 
-var S = []; // 학생 통합 데이터
-var MODE = 'kakao';
-var INV_IDX = 0; // 명세서 현재 학생 인덱스
+var MODE='invoice', VIEW='setting';
+var stuPage=0, carIdx=0, PER_PAGE=5;
+var copied=new Set();
+var editingMsg={};
+var students=[];
+var loaded=false;
 
-// 명세서 템플릿 설정
-var toggles = {
-  holiday: {label:'휴강', on:true, value:'3/2(월) : 대체공휴일'},
-  instrument: {label:'악기특강', on:true, value:'3/4, 3/11, 3/18'},
-  art: {label:'예술융합특강', on:true, value:'3/25'},
-};
+var now=new Date();
+var targetMonth=now.getMonth()+2;
+var targetYear=now.getFullYear();
+if(targetMonth>12){targetMonth=1;targetYear++}
+var selectedMonth=targetMonth;
 
+document.getElementById('headerDate').textContent=targetYear+'년 '+selectedMonth+'월';
+
+var presets=[
+  {label:'주 2회 / 90,000원', freq:'주 2회', fee:'90,000'},
+  {label:'주 2회 / 110,000원',freq:'주 2회', fee:'110,000'},
+  {label:'주 3회 / 130,000원',freq:'주 3회', fee:'130,000'},
+  {label:'주 3회 / 150,000원',freq:'주 3회', fee:'150,000'}
+];
+
+var scheduleItems=[
+  {title:'휴강',         value:'', placeholder:'예: '+selectedMonth+'/2(월) 대체공휴일'},
+  {title:'악기특강',     value:'', placeholder:'예: '+selectedMonth+'/4, '+selectedMonth+'/11'},
+  {title:'예술융합특강', value:'', placeholder:'예: '+selectedMonth+'/25'}
+];
+
+var greeting='안녕하세요, 소리마을음악교습소입니다🎶\n따뜻한 봄바람과 함께 새로운 시작을 알리는 '+selectedMonth+'월입니다. 새 학기를 맞이하여 우리 아이들이 음악 속에서 더 큰 꿈을 키워가길 바랍니다.☘️';
+var greetLoading=false;
+var greetEditing=false;
+var payInfo='• 납부 기간: 매월 25일 ~ 말일\n• 납부 방법: 비대면 카드 / 방문 카드 / 계좌이체\n• 계좌번호: 국민은행 528702-04-052815 김수지';
+var scheduleNote='* 학기 중 수업시간, 요일 변동사항이 있으시면 연락 부탁드립니다♡';
+var closing='문의 사항은 언제든 연락주세요^^ 감사합니다❤️\n소리마을음악교습소 드림';
+var notice='';
+var noticeOn=false;
+var openSections={greeting:false,students:true,schedule:false,pay:false,closing:false};
+var openStudents=new Set();
+
+// ═══ API ═══
 function apiGet(action){
-  return fetch(API_URL+'?action='+action).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.error);return j.data});
+  return fetch(API_URL+'?action='+action).then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
 function apiPost(action,body){
   body.action=action;
-  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.error);return j.data});
+  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)})
+    .then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
 
+// ═══ 초기화 ═══
 function init(){
-  var d=new Date();
-  document.getElementById('dt').textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월';
-  document.getElementById('app').innerHTML='<div class="loading"><div class="spin"></div>데이터 불러오는 중...</div>';
-  
-  apiGet('loadStudents').then(function(data){
-    S = data || [];
+  Q('app','<div class="loading"><div class="spin"></div>데이터 불러오는 중...</div>');
+  apiGet('loadInvoiceStudents').then(function(data){
+    students = data || [];
+    loaded = true;
     render();
   }).catch(function(e){
-    document.getElementById('app').innerHTML='<div style="padding:20px;color:#f87171;">연결 실패: '+e.message+'</div>';
+    Q('app','<div style="padding:20px;color:#f87171">연결 실패: '+e.message+'</div>');
   });
 }
 
-function switchMode(mode){
-  MODE = mode;
+function switchMode(m){
+  MODE=m; VIEW='setting'; stuPage=0; copied.clear(); editingMsg={};
   document.querySelectorAll('.mode-tab').forEach(function(t,i){
-    t.classList.toggle('active', (i===0 && mode==='kakao') || (i===1 && mode==='invoice'));
+    t.classList.toggle('active',(i===0&&m==='kakao')||(i===1&&m==='invoice'));
   });
-  render();
+  if(m==='invoice'&&!loaded) init();
+  else render();
 }
 
 function render(){
-  if(MODE === 'kakao') renderKakao();
-  else renderInvoice();
+  if(MODE==='kakao') renderKakao();
+  else if(VIEW==='setting') renderSetting();
+  else if(VIEW==='carousel') renderCarousel();
+  else if(VIEW==='summary') renderSummary();
 }
 
-// ═══ 카톡 모드 (입력 리스트만 간단히) ═══
 function renderKakao(){
-  var h='<div class="bar"><span class="bar-info">카톡 키워드 입력 화면</span></div>';
-  S.forEach(function(s,i){
-    h+='<div class="inp-wrap"><div class="inp-label">'+
-       '<div class="inp-num">'+(i+1)+'</div>'+
-       '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span></div>'+
-       '<input value="'+(s.kw||'')+'" placeholder="'+(s.prevKw?'이전: '+s.prevKw:'키워드 입력')+'" oninput="S['+i+'].kw=this.value"/></div>';
+  Q('app','<div style="padding:40px 20px;text-align:center;color:#555"><p style="font-size:14px;margin-bottom:8px">💬 카톡 대본 기능</p><p style="font-size:12px;color:#444">(기존 화면 그대로)</p></div>');
+}
+
+// ═══ 설정 화면 ═══
+function renderSetting(){
+  var total=calcTotal();
+  var h='';
+  h+=buildSec('greeting','🎶 인삿말',null,openSections.greeting,buildGreeting);
+  h+=buildSec('students','📌 수강료 안내',students.length+'명',openSections.students,buildStudents);
+  h+=buildSec('schedule','🎵 수업 일정',null,openSections.schedule,buildSchedule);
+  h+=buildSec('pay','💳 납부 안내',null,openSections.pay,buildPay);
+  h+=buildNotice();
+  h+=buildSec('closing','❤️ 마무리 인사',null,openSections.closing,buildClosing);
+  h+='<div class="gen-area">';
+  h+='<div class="total-hint">이번 달 예상 매출 <b>'+total+'원</b></div>';
+  h+='<button class="btn-gen" onclick="goCarousel()">전체 명세서 생성 ('+students.length+'명)</button>';
+  h+='</div>';
+  Q('app',h);
+}
+
+function calcTotal(){
+  var sum=0;
+  students.forEach(function(s){
+    var n=parseInt((s.fee||'0').replace(/,/g,''),10);
+    if(!isNaN(n)) sum+=n;
   });
-  document.getElementById('app').innerHTML = h;
+  return sum.toLocaleString();
 }
 
-// ═══ 명세서 모드 (롤링 탭 캐러셀) ═══
-function renderInvoice() {
-  if (S.length === 0) return;
-  var s = S[INV_IDX];
-  var h = '';
-
-  // 1. 롤링 탭 (캐러셀)
-  h += '<div class="det-head">' +
-       '<div class="det-row1"><div style="font-size:13px;color:#888;">학생 선택</div>' +
-       '<div class="det-nav"><div class="nav-b" onclick="navInv(-1)">‹</div><div class="nav-b" onclick="navInv(1)">›</div></div></div>' +
-       '<div class="carousel">';
-       
-  var prev = INV_IDX > 0 ? S[INV_IDX-1].name : '';
-  var cur = s.name;
-  var nxt = INV_IDX < S.length - 1 ? S[INV_IDX+1].name : '';
-  
-  if(prev) h += '<span class="car-name near" onclick="navInv(-1)">'+prev+'</span>';
-  h += '<span class="car-name active">'+cur+'</span>';
-  if(nxt) h += '<span class="car-name near" onclick="navInv(1)">'+nxt+'</span>';
-  h += '</div></div>';
-
-  // 2. 수강 정보 입력 (이전 데이터 placeholder)
-  var phFreq = s.prevFreq || '예: 주 3회';
-  var phFee = s.prevFee || '130,000';
-  
-  h += '<div class="inv-section">' +
-       '<div class="inp-label" style="margin-top:0"><span class="inp-name">' + s.name + ' 수강 정보</span></div>' +
-       '<div style="display:flex;gap:10px;margin-bottom:10px;">' +
-       '<input id="invFreq" style="flex:1;padding:12px;background:#111;border:1px solid #333;color:#eee;border-radius:8px;" placeholder="'+phFreq+'" value="'+(s.freq||'')+'" oninput="updateInvData()" />' +
-       '<input id="invFee" style="flex:2;padding:12px;background:#111;border:1px solid #333;color:#eee;border-radius:8px;" placeholder="'+phFee+'" value="'+(s.fee||'')+'" oninput="updateInvData()" />' +
-       '</div>';
-
-  // 3. 교재비 토글
-  var hasMat = !!(s.matFee && s.matFee.trim() !== '');
-  h += '<div class="toggle-row" style="padding-top:0;">' +
-       '<span class="toggle-label">교재비 추가</span>' +
-       '<div class="toggle-switch '+(hasMat?'on':'')+'" onclick="toggleMat(this)"></div></div>' +
-       '<input id="invMat" class="toggle-input '+(hasMat?'show':'')+'" value="'+(s.matFee||'')+'" placeholder="예: 2/6 반주1 : 7,000원" oninput="updateInvData()"/>' +
-       '</div>';
-
-  // 4. 미리보기 영역
-  h += '<div id="invPreview" style="padding:0 20px 20px;"></div>';
-  
-  document.getElementById('app').innerHTML = h;
-  renderInvPreview();
+function buildSec(key,title,badge,isOpen,contentFn){
+  var badgeHtml=badge?'<span class="section-badge">'+badge+'</span>':'';
+  return '<div class="section">'+
+    '<div class="section-header" onclick="toggleSec(\''+key+'\')">'+
+    '<div class="section-title"><div class="section-dot"></div>'+title+badgeHtml+'</div>'+
+    '<span class="section-arrow'+(isOpen?' open':'')+'">▾</span></div>'+
+    '<div class="section-body'+(isOpen?' open':'')+'"><div class="section-inner">'+contentFn()+'</div></div></div>';
 }
 
-function navInv(dir) {
-  var n = INV_IDX + dir;
-  if (n >= 0 && n < S.length) {
-    INV_IDX = n;
-    renderInvoice();
+function buildGreeting(){
+  var s='<div class="month-sel">';
+  for(var m=selectedMonth-1;m<=selectedMonth+1;m++){
+    var mm=m<1?m+12:m>12?m-12:m;
+    s+='<div class="month-chip'+(mm===selectedMonth?' active':'')+'" onclick="setMonth('+mm+')">'+mm+'월</div>';
   }
-}
-
-function toggleMat(el) {
-  el.classList.toggle('on');
-  var input = document.getElementById('invMat');
-  input.classList.toggle('show');
-  if(!el.classList.contains('on')) input.value = ''; 
-  updateInvData();
-}
-
-function updateInvData() {
-  var s = S[INV_IDX];
-  s.freq = document.getElementById('invFreq').value;
-  s.fee = document.getElementById('invFee').value;
-  s.matFee = document.getElementById('invMat').value;
-  renderInvPreview();
-  
-  // 구글 시트 2번 시트에 자동 저장
-  apiPost('saveInvoice', {name: s.name, freq: s.freq, fee: s.fee, matFee: s.matFee});
-}
-
-function renderInvPreview() {
-  var s = S[INV_IDX];
-  // 입력값이 없으면 이전값(placeholder)을 기준으로 미리보기 생성
-  var freqStr = s.freq || s.prevFreq || '주 3회';
-  var feeStr = s.fee || s.prevFee || '130,000';
-  var matStr = s.matFee || '';
-  
-  var msg = '안녕하세요, 소리마을음악교습소입니다🎶\n\n따뜻한 봄바람과 함께 새로운 시작을 알리는 3월입니다. 새 학기를 맞이하여 우리 아이들이 음악 속에서 더 큰 꿈을 키워가길 바랍니다.☘️\n\n━━━━━━━━━━━\n📌 3월 수강료 안내\n\n';
-  
-  // 이름 첫 글자 빼기 (예: 이원재 -> 원재)
-  var shortName = s.name.length > 2 ? s.name.substring(1) : s.name;
-  msg += '• ' + shortName + ' (' + freqStr + ') - ' + feeStr + '원\n';
-  
-  if (matStr.trim() !== '') {
-    msg += '\n• 교재비\n- ' + matStr + '\n\n* 교재비는 이체 부탁드립니다🩷\n';
+  s+='</div>';
+  if(greetLoading){
+    s+='<div class="loading" style="padding:20px 0"><div class="spin"></div><span>AI 생성 중...</span></div>';
+  } else if(greetEditing){
+    s+='<textarea class="msg-edit-area" id="greetTA" oninput="greeting=this.value" style="min-height:100px">'+esc(greeting)+'</textarea>';
+    s+='<div class="greeting-actions"><div class="chip-btn chip-btn-g" onclick="saveGreetEdit()">✓ 수정 완료</div></div>';
+  } else {
+    s+='<div class="greeting-box">'+esc(greeting)+'</div>';
+    s+='<div class="greeting-actions">';
+    s+='<div class="chip-btn chip-btn-o" onclick="regenGreeting()">↻ 재생성</div>';
+    s+='<div class="chip-btn chip-btn-d" onclick="greetEditing=true;renderSetting()">✏️ 직접 수정</div>';
+    s+='</div>';
   }
-  
-  msg += '\n━━━━━━━━━━━\n💳 납부 안내\n\n• 납부 기간: 매월 25일 ~ 말일\n• 납부 방법: 비대면 카드 / 방문 카드 / 계좌이체\n• 계좌번호: 국민은행 528702-04-052815 김수지\n\n━━━━━━━━━━━\n🎵 3월 수업 일정\n\n';
-  
-  Object.keys(toggles).forEach(function(key){
-    var t = toggles[key];
-    if(t.on && t.value.trim()){
-      msg += '• ' + t.label + ' - ' + t.value + '\n';
+  return s;
+}
+
+function regenGreeting(){
+  greetLoading=true; openSections.greeting=true; renderSetting();
+  apiPost('generateGreeting',{month:selectedMonth}).then(function(text){
+    greeting=text; greetLoading=false; renderSetting();
+  }).catch(function(){
+    greetLoading=false; toast('생성 실패, 다시 시도해주세요'); renderSetting();
+  });
+}
+
+function saveGreetEdit(){
+  var ta=document.getElementById('greetTA');
+  if(ta) greeting=ta.value;
+  greetEditing=false; renderSetting();
+}
+
+function setMonth(m){
+  selectedMonth=m;
+  document.getElementById('headerDate').textContent=targetYear+'년 '+m+'월';
+  scheduleItems.forEach(function(si){si.placeholder=si.placeholder.replace(/\d+\//g,m+'/')});
+  renderSetting();
+}
+
+function buildStudents(){
+  var totalPages=Math.ceil(students.length/PER_PAGE);
+  var start=stuPage*PER_PAGE, end=Math.min(start+PER_PAGE,students.length);
+  var s='';
+  for(var i=start;i<end;i++){
+    var st=students[i], isOpen=openStudents.has(i);
+    s+='<div class="stu-item">';
+    s+='<div class="stu-row" onclick="toggleStu('+i+')">';
+    s+='<div class="stu-av">'+st.name[0]+'</div>';
+    s+='<span class="stu-name">'+st.name+'</span>';
+    s+='<span class="stu-summary">'+(st.freq||'미입력')+' · '+(st.fee||'0')+'원</span>';
+    s+='<span class="stu-arrow'+(isOpen?' open':'')+'">›</span></div>';
+    s+='<div class="stu-detail'+(isOpen?' open':'')+'">';
+    s+='<div class="stu-detail-inner">';
+    s+='<div class="fee-chips">';
+    presets.forEach(function(p,pi){
+      var sel=(st.freq===p.freq&&st.fee===p.fee);
+      s+='<div class="fee-chip'+(sel?' selected':'')+'" onclick="selPreset('+i+','+pi+')">'+p.label+'</div>';
+    });
+    s+='</div>';
+    s+='<div class="fee-row"><span class="fee-label">수강료</span>';
+    s+='<input class="fee-input" value="'+esc(st.fee||'')+'" placeholder="직접 입력" onchange="updateFee('+i+',this.value)"/></div>';
+    if(st.materials&&st.materials.length>0){
+      st.materials.forEach(function(mat,mi){
+        s+='<div class="added-item"><div class="added-item-row">';
+        s+='<div class="added-item-remove" onclick="removeMat('+i+','+mi+')">✕</div>';
+        s+='<input value="'+esc(mat.text)+'" placeholder="예: 3/6 반주1 : 7,000원" oninput="students['+i+'].materials['+mi+'].text=this.value;autoSave('+i+')"/>';
+        s+='</div></div>';
+      });
+      s+='<div class="material-note">* 교재비는 이체 부탁드립니다🩷</div>';
     }
+    s+='<div class="add-btn" onclick="addMat('+i+')">+ 교재비 추가</div>';
+    s+='</div></div></div>';
+  }
+  if(totalPages>1){
+    s+='<div class="pagi">';
+    s+='<div class="pagi-btn'+(stuPage===0?' disabled':'')+'" onclick="goPage('+(stuPage-1)+')">‹</div>';
+    for(var p=0;p<totalPages;p++){
+      s+='<div class="pagi-num'+(p===stuPage?' active':'')+'" onclick="goPage('+p+')">'+(p+1)+'</div>';
+    }
+    s+='<div class="pagi-btn'+(stuPage>=totalPages-1?' disabled':'')+'" onclick="goPage('+(stuPage+1)+')">›</div>';
+    s+='</div>';
+  }
+  return s;
+}
+
+function buildSchedule(){
+  var s='';
+  scheduleItems.forEach(function(item,idx){
+    s+='<div class="sched-item"><div class="sched-row">';
+    s+='<div class="added-item-remove" onclick="removeSched('+idx+')">✕</div>';
+    s+='<input class="sched-title-input" value="'+esc(item.title)+'" oninput="scheduleItems['+idx+'].title=this.value"/>';
+    s+='<input class="sched-value-input" value="'+esc(item.value)+'" placeholder="'+esc(item.placeholder)+'" oninput="scheduleItems['+idx+'].value=this.value"/>';
+    s+='</div></div>';
   });
-
-  msg += '\n* 학기 중 수업시간, 요일 변동사항이 있으시면 연락 부탁드립니다♡\n\n━━━━━━━━━━━\n문의 사항은 언제든 연락주세요^^ 감사합니다❤️\n\n소리마을음악교습소 드림';
-
-  var h = '<div class="preview-box" id="finalMsgText" style="margin-bottom:12px;">' + (msg.replace(/\n/g, '<br>')) + '</div>' +
-          '<button class="copy-btn" onclick="copyInvoice()">📋 ' + s.name + ' 명세서 복사</button>';
-          
-  document.getElementById('invPreview').innerHTML = h;
+  s+='<div class="add-btn" onclick="addSched()">+ 항목 추가</div>';
+  s+='<div style="margin-top:10px">';
+  s+='<div class="edit-block" contenteditable="false" onclick="makeEditable(this)" onblur="scheduleNote=this.textContent">'+esc(scheduleNote)+'</div>';
+  s+='<div class="edit-hint">탭하여 수정</div></div>';
+  return s;
 }
 
-function copyInvoice() {
-  var text = document.getElementById('finalMsgText').innerText;
-  try { navigator.clipboard.writeText(text); } catch(e) {}
-  toast('✓ ' + S[INV_IDX].name + ' 명세서 복사 완료!');
+function buildPay(){
+  return '<div class="edit-block" contenteditable="false" onclick="makeEditable(this)" onblur="payInfo=this.textContent">'+esc(payInfo)+'</div>'+
+    '<div class="edit-hint">탭하여 수정</div>';
 }
 
-function toast(m){
-  var t=document.getElementById('toast');
-  t.textContent=m; t.classList.add('on');
-  setTimeout(function(){t.classList.remove('on')}, 2000);
+function buildNotice(){
+  if(!noticeOn){
+    return '<div style="padding:8px 20px;border-bottom:1px solid #1a1a1a">'+
+      '<div class="add-btn" onclick="noticeOn=true;renderSetting()" style="width:100%;justify-content:center;padding:10px">+ 📢 공지 추가</div></div>';
+  }
+  return '<div class="section"><div style="padding:12px 20px">'+
+    '<div class="notice-block">'+
+    '<div class="notice-label"><span>📢 공지사항</span><span class="added-item-remove" onclick="noticeOn=false;notice=\'\';renderSetting()">✕</span></div>'+
+    '<textarea class="notice-input" placeholder="예: 다음 달부터 인상된 원비가 적용됩니다" oninput="notice=this.value">'+esc(notice)+'</textarea>'+
+    '</div></div></div>';
 }
 
-// 시작
-init();
+function buildClosing(){
+  return '<div class="edit-block" contenteditable="false" onclick="makeEditable(this)" onblur="closing=this.textContent">'+esc(closing)+'</div>'+
+    '<div class="edit-hint">탭하여 수정</div>';
+}
+
+// ═══ 헬퍼 ═══
+function toggleSec(k){openSections[k]=!openSections[k];renderSetting()}
+function toggleStu(i){openStudents.has(i)?openStudents.delete(i):openStudents.add(i);renderSetting()}
+function goPage(p){var mx=Math.ceil(students.length/PER_PAGE)-1;if(p<0||p>mx)return;stuPage=p;openStudents.clear();renderSetting()}
+function selPreset(si,pi){var p=presets[pi];students[si].freq=p.freq;students[si].fee=p.fee;autoSave(si);renderSetting()}
+function updateFee(i,v){students[i].fee=v;autoSave(i)}
+function addMat(i){students[i].materials.push({text:''});renderSetting()}
+function removeMat(si,mi){students[si].materials.splice(mi,1);autoSave(si);renderSetting()}
+function addSched(){scheduleItems.push({title:'',value:'',placeholder:'날짜와 내용 입력'});openSections.schedule=true;renderSetting();toast('항목 추가됨')}
+function removeSched(idx){scheduleItems.splice(idx,1);renderSetting()}
+function makeEditable(el){
+  el.contentEditable='true';el.classList.add('editing');el.focus();
+  el.parentNode.querySelector('.edit-hint').textContent='수정 중... (다른 곳을 탭하면 저장)';
+  el.addEventListener('blur',function(){el.contentEditable='false';el.classList.remove('editing');el.parentNode.querySelector('.edit-hint').textContent='탭하여 수정'},{once:true});
+}
+
+// 자동 저장 (백그라운드)
+function autoSave(i){
+  var s=students[i];
+  apiPost('saveInvoiceStudent',{name:s.name,freq:s.freq,fee:s.fee,materials:s.materials}).catch(function(){});
+}
+
+// ═══ 캐러셀 ═══
+function goCarousel(){
+  VIEW='carousel';carIdx=0;copied.clear();editingMsg={};
+  students.forEach(function(s,i){editingMsg[i]=buildMessage(s)});
+  render();
+}
+
+function renderCarousel(){
+  var s=students[carIdx];
+  var prev=carIdx>0?students[carIdx-1]:null;
+  var next=carIdx<students.length-1?students[carIdx+1]:null;
+  var isCopied=copied.has(carIdx);
+
+  var h='<div class="car-header"><div class="car-row1">';
+  h+='<button class="car-back" onclick="VIEW=\'setting\';render()">← 설정</button>';
+  h+='<span class="car-counter">'+(carIdx+1)+' / '+students.length+'</span>';
+  h+='<div class="car-nav"><div class="car-nav-btn" onclick="carNav(-1)">‹</div><div class="car-nav-btn" onclick="carNav(1)">›</div></div></div>';
+  h+='<div class="car-names">';
+  if(prev)h+='<span class="car-name near" onclick="carNav(-1)">'+prev.name+'</span>';
+  h+='<span class="car-name active">'+s.name+'</span>';
+  if(next)h+='<span class="car-name near" onclick="carNav(1)">'+next.name+'</span>';
+  h+='</div></div>';
+
+  h+='<div class="car-body fade-in">';
+  h+='<div class="car-stu"><div class="car-av'+(isCopied?' copied':'')+'">'+s.name[0]+'</div><div>';
+  h+='<div class="car-sname">'+s.name+'</div>';
+  h+='<div class="car-ssub">'+s.gg+' · '+(s.freq||'')+'</div></div></div>';
+  if(isCopied)h+='<div class="car-status" style="color:#4ade80">✓ 복사 완료</div>';
+
+  var msg=editingMsg[carIdx]||buildMessage(s);
+  h+='<div class="msg-display" id="msgDisp" onclick="enterMsgEdit()">'+highlightMsg(msg,s)+'</div>';
+  h+='<div class="msg-edit-hint" id="editHint">탭하여 수정</div>';
+  h+='<button class="copy-btn-full '+(isCopied?'done':'ready')+'" onclick="doCopy('+carIdx+')">';
+  h+=isCopied?'✓ '+s.name+' 복사 완료':'📋 '+s.name+' 명세서 복사';
+  h+='</button></div>';
+  Q('app',h);
+}
+
+function highlightMsg(msg,s){
+  var h=esc(msg);
+  h=h.split(esc(s.name)).join('<span class="hl-name">'+esc(s.name)+'</span>');
+  h=h.split(esc(s.fee)+'원').join('<span class="hl-money">'+esc(s.fee)+'원</span>');
+  return h;
+}
+
+function enterMsgEdit(){
+  var disp=document.getElementById('msgDisp');
+  if(!disp)return;
+  var ta=document.createElement('textarea');
+  ta.className='msg-edit-area';ta.id='msgTA';ta.value=editingMsg[carIdx];
+  ta.style.minHeight='200px';
+  ta.addEventListener('input',function(){editingMsg[carIdx]=this.value});
+  disp.parentNode.replaceChild(ta,disp);
+  var hint=document.getElementById('editHint');
+  if(hint)hint.innerHTML='<span onclick="exitMsgEdit()" style="color:#FFD43B;cursor:pointer;font-weight:600">수정 완료 ✓</span>';
+  ta.style.height='auto';ta.style.height=Math.max(200,ta.scrollHeight)+'px';
+  ta.focus();
+}
+
+function exitMsgEdit(){
+  var ta=document.getElementById('msgTA');
+  if(!ta)return;
+  editingMsg[carIdx]=ta.value;
+  ta.blur();renderCarousel();
+}
+
+function buildMessage(s){
+  var m=greeting+'\n━━━━━━━━━━━\n📌 '+selectedMonth+'월 수강료 안내\n';
+  m+='• '+s.name+' ('+s.freq+') - '+s.fee+'원\n';
+  if(s.materials&&s.materials.length>0){
+    var mats=s.materials.filter(function(x){return x.text.trim()});
+    if(mats.length>0){
+      m+='• 교재비\n';
+      mats.forEach(function(x){m+='- '+x.text+'\n'});
+      m+='* 교재비는 이체 부탁드립니다🩷\n';
+    }
+  }
+  m+='━━━━━━━━━━━\n💳 납부 안내\n'+payInfo+'\n';
+  m+='━━━━━━━━━━━\n🎵 '+selectedMonth+'월 수업 일정\n';
+  scheduleItems.forEach(function(item){
+    if(item.title.trim()&&item.value.trim()) m+='• '+item.title+' - '+item.value+'\n';
+  });
+  m+=scheduleNote+'\n';
+  if(noticeOn&&notice.trim()) m+='━━━━━━━━━━━\n📢 공지\n'+notice+'\n';
+  m+='━━━━━━━━━━━\n'+closing;
+  return m;
+}
+
+function carNav(dir){
+  var ta=document.getElementById('msgTA');
+  if(ta)editingMsg[carIdx]=ta.value;
+  var ni=carIdx+dir;
+  if(ni>=0&&ni<students.length){carIdx=ni;renderCarousel()}
+}
+
+function doCopy(idx){
+  var ta=document.getElementById('msgTA');
+  if(ta)editingMsg[idx]=ta.value;
+  try{navigator.clipboard.writeText(editingMsg[idx])}catch(e){}
+  copied.add(idx);
+  toast(students[idx].name+' 명세서 복사 완료!');
+  setTimeout(function(){
+    for(var i=idx+1;i<students.length;i++){
+      if(!copied.has(i)){carIdx=i;renderCarousel();return}
+    }
+    // 전체 완료 → 매출 요약으로
+    VIEW='summary';render();
+  },800);
+}
+
+// ═══ 매출 요약 ═══
+function renderSummary(){
+  var totalFee=0, totalMat=0;
+  var h='<div class="summary-wrap fade-in">';
+  h+='<div class="summary-title">🎉 전체 명세서 완료!</div>';
+  students.forEach(function(s){
+    var fee=parseInt((s.fee||'0').replace(/,/g,''),10)||0;
+    totalFee+=fee;
+    var mats=s.materials?s.materials.filter(function(x){return x.text.trim()}):[];
+    var matSum=0;
+    mats.forEach(function(x){
+      var n=x.text.match(/[\d,]+원/);
+      if(n) matSum+=parseInt(n[0].replace(/,|원/g,''),10)||0;
+    });
+    totalMat+=matSum;
+    h+='<div class="summary-row">';
+    h+='<div><div class="summary-name">'+s.name+' <span style="color:#555;font-size:11px">'+s.freq+'</span></div>';
+    if(mats.length>0) h+='<div class="summary-mat">교재비 포함</div>';
+    h+='</div>';
+    h+='<div class="summary-fee">'+fee.toLocaleString()+'원</div></div>';
+  });
+  h+='<div class="summary-total">';
+  h+='<span class="summary-total-label">수강료 합계</span>';
+  h+='<span class="summary-total-val">'+totalFee.toLocaleString()+'원</span></div>';
+  if(totalMat>0){
+    h+='<div class="summary-total" style="margin-top:8px">';
+    h+='<span class="summary-total-label">교재비 합계</span>';
+    h+='<span class="summary-total-val" style="color:#f59e0b">'+totalMat.toLocaleString()+'원</span></div>';
+  }
+  h+='<button class="summary-back" onclick="VIEW=\'setting\';render()">← 설정으로 돌아가기</button>';
+  h+='</div>';
+  Q('app',h);
+}
+
+function Q(id,h){document.getElementById(id).innerHTML=h}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2200)}
+
+switchMode('invoice');
 </script>
 </body>
 </html>
