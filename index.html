@@ -108,6 +108,11 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .pagi-num.active{background:#FFD43B;color:#111}
 .pagi-num:not(.active){color:#555}
 
+.swipe-hint{display:flex;justify-content:space-between;padding:2px 0 8px;pointer-events:none}
+.swipe-hint span{font-size:11px;color:#2a2a2a;transition:color .2s}
+.swipe-hint.has-prev span:first-child{color:#555}
+.swipe-hint.has-next span:last-child{color:#555}
+
 .gen-area{padding:16px 20px;background:#0a0a0a;position:sticky;bottom:0;border-top:1px solid #1a1a1a}
 .btn-gen{background:#FFD43B;color:#111;width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.15s}
 .btn-gen:active{transform:scale(.97)}
@@ -146,7 +151,6 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .copy-btn-full.ready{background:#FFD43B;color:#111}
 .copy-btn-full.done{background:#0d1a0d;color:#4ade80;border:1px solid #16a34a}
 
-/* 매출 요약 페이지 */
 .summary-wrap{padding:20px}
 .summary-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a;font-size:13px}
@@ -187,7 +191,6 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 <div class="toast" id="toast"></div>
 
 <script>
-// ★ 배포된 웹앱 URL로 교체
 var API_URL = 'https://script.google.com/macros/s/AKfycbzW7VPXPRW0Ltf8ws_1xtdLM0rceMsumj7oi6bLD3jSjOCtYG8_WYGAqjd_UyRjPrQ1/exec';
 
 var MODE='invoice', VIEW='setting';
@@ -229,7 +232,6 @@ var noticeOn=false;
 var openSections={greeting:false,students:true,schedule:false,pay:false,closing:false};
 var openStudents=new Set();
 
-// ═══ API ═══
 function apiGet(action){
   return fetch(API_URL+'?action='+action).then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
@@ -239,7 +241,6 @@ function apiPost(action,body){
     .then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
 
-// ═══ 초기화 ═══
 function init(){
   Q('app','<div class="loading"><div class="spin"></div>데이터 불러오는 중...</div>');
   apiGet('loadInvoiceStudents').then(function(data){
@@ -271,7 +272,6 @@ function renderKakao(){
   Q('app','<div style="padding:40px 20px;text-align:center;color:#555"><p style="font-size:14px;margin-bottom:8px">💬 카톡 대본 기능</p><p style="font-size:12px;color:#444">(기존 화면 그대로)</p></div>');
 }
 
-// ═══ 설정 화면 ═══
 function renderSetting(){
   var total=calcTotal();
   var h='';
@@ -286,6 +286,7 @@ function renderSetting(){
   h+='<button class="btn-gen" onclick="goCarousel()">전체 명세서 생성 ('+students.length+'명)</button>';
   h+='</div>';
   Q('app',h);
+  attachSwipe();
 }
 
 function calcTotal(){
@@ -353,7 +354,13 @@ function setMonth(m){
 function buildStudents(){
   var totalPages=Math.ceil(students.length/PER_PAGE);
   var start=stuPage*PER_PAGE, end=Math.min(start+PER_PAGE,students.length);
+  var hasPrev=stuPage>0, hasNext=stuPage<totalPages-1;
   var s='';
+  s+='<div id="stuListWrap">';
+  s+='<div class="swipe-hint'+(hasPrev?' has-prev':'')+(hasNext?' has-next':'')+'">';
+  s+='<span>'+(hasPrev?'◀ 이전':'')+'</span>';
+  s+='<span>'+(hasNext?'다음 ▶':'')+'</span>';
+  s+='</div>';
   for(var i=start;i<end;i++){
     var st=students[i], isOpen=openStudents.has(i);
     s+='<div class="stu-item">';
@@ -393,7 +400,26 @@ function buildStudents(){
     s+='<div class="pagi-btn'+(stuPage>=totalPages-1?' disabled':'')+'" onclick="goPage('+(stuPage+1)+')">›</div>';
     s+='</div>';
   }
+  s+='</div>';
   return s;
+}
+
+function attachSwipe(){
+  var el=document.getElementById('stuListWrap');
+  if(!el)return;
+  var sx=0,sy=0;
+  el.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  el.addEventListener('touchmove',function(e){
+    var dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>8)e.preventDefault();
+  },{passive:false});
+  el.addEventListener('touchend',function(e){
+    var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)<Math.abs(dy)||Math.abs(dx)<40)return;
+    var totalPages=Math.ceil(students.length/PER_PAGE);
+    if(dx<0&&stuPage<totalPages-1)goPage(stuPage+1);
+    else if(dx>0&&stuPage>0)goPage(stuPage-1);
+  },{passive:true});
 }
 
 function buildSchedule(){
@@ -434,7 +460,6 @@ function buildClosing(){
     '<div class="edit-hint">탭하여 수정</div>';
 }
 
-// ═══ 헬퍼 ═══
 function toggleSec(k){openSections[k]=!openSections[k];renderSetting()}
 function toggleStu(i){openStudents.has(i)?openStudents.delete(i):openStudents.add(i);renderSetting()}
 function goPage(p){var mx=Math.ceil(students.length/PER_PAGE)-1;if(p<0||p>mx)return;stuPage=p;openStudents.clear();renderSetting()}
@@ -450,13 +475,11 @@ function makeEditable(el){
   el.addEventListener('blur',function(){el.contentEditable='false';el.classList.remove('editing');el.parentNode.querySelector('.edit-hint').textContent='탭하여 수정'},{once:true});
 }
 
-// 자동 저장 (백그라운드)
 function autoSave(i){
   var s=students[i];
   apiPost('saveInvoiceStudent',{name:s.name,freq:s.freq,fee:s.fee,materials:s.materials}).catch(function(){});
 }
 
-// ═══ 캐러셀 ═══
 function goCarousel(){
   VIEW='carousel';carIdx=0;copied.clear();editingMsg={};
   students.forEach(function(s,i){editingMsg[i]=buildMessage(s)});
@@ -561,12 +584,10 @@ function doCopy(idx){
     for(var i=idx+1;i<students.length;i++){
       if(!copied.has(i)){carIdx=i;renderCarousel();return}
     }
-    // 전체 완료 → 매출 요약으로
     VIEW='summary';render();
   },800);
 }
 
-// ═══ 매출 요약 ═══
 function renderSummary(){
   var totalFee=0, totalMat=0;
   var h='<div class="summary-wrap fade-in">';
