@@ -167,6 +167,10 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .loading{display:flex;flex-direction:column;align-items:center;padding:60px 20px;color:#666;font-size:13px;gap:12px}
 .spin{width:22px;height:22px;border:2.5px solid #1a1a1a;border-top-color:#FFD43B;border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+@keyframes stuSlideLeft{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes stuSlideRight{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+.stu-slide-left{animation:stuSlideLeft .2s ease}
+.stu-slide-right{animation:stuSlideRight .2s ease}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:#1a1a1a;border:1px solid #252525;color:#eee;padding:8px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -462,7 +466,7 @@ function buildClosing(){
 
 function toggleSec(k){openSections[k]=!openSections[k];renderSetting()}
 function toggleStu(i){openStudents.has(i)?openStudents.delete(i):openStudents.add(i);renderSetting()}
-function goPage(p){var mx=Math.ceil(students.length/PER_PAGE)-1;if(p<0||p>mx)return;stuPage=p;openStudents.clear();renderSetting()}
+function goPage(p){var mx=Math.ceil(students.length/PER_PAGE)-1;if(p<0||p>mx)return;var dir=p>stuPage?'left':'right';stuPage=p;openStudents.clear();renderSetting();var el=document.getElementById('stuListWrap');if(el){el.classList.add('stu-slide-'+(dir==='left'?'left':'right'));setTimeout(function(){if(el)el.classList.remove('stu-slide-left','stu-slide-right')},300)}}
 function selPreset(si,pi){var p=presets[pi];students[si].freq=p.freq;students[si].fee=p.fee;autoSave(si);renderSetting()}
 function updateFee(i,v){students[i].fee=v;autoSave(i)}
 function addMat(i){students[i].materials.push({text:''});renderSetting()}
