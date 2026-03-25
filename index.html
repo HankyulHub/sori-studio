@@ -295,14 +295,24 @@ var API_URL='https://script.google.com/macros/s/AKfycbzW7VPXPRW0Ltf8ws_1xtdLM0rc
 var IS_TEST=true;
 var MODE='kakao'; // 'kakao' or 'invoice'
 
-function apiGet(action){
-  var url=API_URL+'?action='+action+(IS_TEST?'&test=1':'');
+function apiGet(action,params){
+  // params: {key:value} 형태로 추가 쿼리 파라미터 전송
+  var url=API_URL+'?action='+action;
+  if(IS_TEST)url+='&test=1';
+  if(params){
+    for(var k in params){
+      if(params[k]===undefined||params[k]===null)continue;
+      url+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k]);
+    }
+  }
   return fetch(url).then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
 function apiPost(action,body){
   body.action=action;
-  if(IS_TEST)body.test='1';
-  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)})
+  // POST에서도 test 쿼리를 같이 보내야 doPost(e)에서 isTest가 확실히 갈라집니다.
+  var url=API_URL+(IS_TEST?'?test=1':'');
+  if(IS_TEST)body.test='1'; // 호환용(백엔드가 body.test를 읽도록 바꿀 수도 있으니 유지)
+  return fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)})
     .then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
 function Q(id,h){document.getElementById(id).innerHTML=h}
@@ -723,6 +733,7 @@ var inv_VIEW='setting';
 var inv_stuPage=0,inv_carIdx=0,inv_PER_PAGE=5;
 var inv_copied=new Set();
 var inv_editingMsg={};
+var inv_historySaving=false;
 
 var inv_targetMonth=now.getMonth()+2;
 var inv_targetYear=now.getFullYear();
@@ -754,8 +765,12 @@ var inv_openSections={greeting:false,students:true,schedule:false,pay:false,clos
 var inv_openStudents=new Set();
 
 function inv_init(){
+  inv_loadStudents();
+}
+
+function inv_loadStudents(){
   Q('app','<div class="loading"><div class="spin"></div>데이터 불러오는 중...</div>');
-  apiGet('loadInvoiceStudents').then(function(data){
+  apiGet('loadInvoiceStudents',{month:inv_selectedMonth,year:inv_targetYear}).then(function(data){
     inv_students=data||[];
     inv_loaded=true;
     inv_render();
@@ -841,7 +856,7 @@ function inv_setMonth(m){
   inv_selectedMonth=m;
   document.getElementById('headerDate').textContent=inv_targetYear+'년 '+m+'월';
   inv_scheduleItems.forEach(function(si){si.placeholder=si.placeholder.replace(/\d+\//g,m+'/')});
-  inv_renderSetting();
+  inv_loadStudents();
 }
 
 function inv_buildStudents(){
@@ -853,10 +868,12 @@ function inv_buildStudents(){
   s+='<span>'+(hasPrev?'◀ 이전':'')+'</span><span>'+(hasNext?'다음 ▶':'')+'</span></div>';
   for(var i=start;i<end;i++){
     var st=inv_students[i],isOpen=inv_openStudents.has(i);
+    var hintFreq=(!st.freq&&st.prevFreq)?(' (전월: '+esc(st.prevFreq)+')'):'';
+    var hintFee=(!st.fee&&st.prevFee)?('전월: '+esc(st.prevFee)+'원'):'직접 입력';
     s+='<div class="stu-item"><div class="stu-row" onclick="inv_toggleStu('+i+')">';
     s+='<div class="stu-av">'+st.name[0]+'</div>';
     s+='<span class="stu-name">'+st.name+'</span>';
-    s+='<span class="stu-summary">'+(st.freq||'미입력')+' · '+(st.fee||'0')+'원</span>';
+    s+='<span class="stu-summary">'+(st.freq||'미입력')+hintFreq+' · '+(st.fee||'0')+'원</span>';
     s+='<span class="stu-arrow'+(isOpen?' open':'')+'">›</span></div>';
     s+='<div class="stu-detail'+(isOpen?' open':'')+'"><div class="stu-detail-inner">';
     s+='<div class="fee-chips">';
@@ -865,12 +882,14 @@ function inv_buildStudents(){
       s+='<div class="fee-chip'+(sel?' selected':'')+'" onclick="inv_selPreset('+i+','+pi+')">'+p.label+'</div>';
     });
     s+='</div>';
-    s+='<div class="fee-row"><span class="fee-label">수강료</span><input class="fee-input" value="'+esc(st.fee||'')+'" placeholder="직접 입력" onchange="inv_updateFee('+i+',this.value)"/></div>';
+    s+='<div class="fee-row"><span class="fee-label">수강료</span><input class="fee-input" value="'+esc(st.fee||'')+'" placeholder="'+hintFee+'" onchange="inv_updateFee('+i+',this.value)"/></div>';
     if(st.materials&&st.materials.length>0){
       st.materials.forEach(function(mat,mi){
         s+='<div class="added-item"><div class="added-item-row"><div class="added-item-remove" onclick="inv_removeMat('+i+','+mi+')">✕</div><input value="'+esc(mat.text)+'" placeholder="예: 3/6 반주1 : 7,000원" oninput="inv_students['+i+'].materials['+mi+'].text=this.value;inv_autoSave('+i+')"/></div></div>';
       });
       s+='<div class="material-note">* 교재비는 이체 부탁드립니다🩷</div>';
+    }else if(st.prevMaterials&&st.prevMaterials.length>0){
+      s+='<div class="material-note">* 전월 교재비 기록이 있어요 (자동 입력 안 함)</div>';
     }
     s+='<div class="add-btn" onclick="inv_addMat('+i+')">+ 교재비 추가</div>';
     s+='</div></div></div>';
@@ -944,7 +963,7 @@ function inv_autoSave(i){
 }
 
 function inv_goCarousel(){
-  inv_VIEW='carousel';inv_carIdx=0;inv_copied.clear();inv_editingMsg={};
+  inv_VIEW='carousel';inv_carIdx=0;inv_copied.clear();inv_editingMsg={};inv_historySaving=false;
   inv_students.forEach(function(s,i){inv_editingMsg[i]=inv_buildMessage(s)});
   inv_render();
 }
@@ -980,7 +999,11 @@ function inv_renderCarousel(){
 function inv_highlightMsg(msg,s){
   var h=esc(msg);
   h=h.split(esc(s.name)).join('<span class="hl-name">'+esc(s.name)+'</span>');
-  h=h.split(esc(s.fee)+'원').join('<span class="hl-money">'+esc(s.fee)+'원</span>');
+  var fee=String(s.fee||'').trim();
+  // fee가 비어있으면 '원' 전체가 하이라이트되어 "원비/원장/학원"까지 전부 물드는 문제가 생깁니다.
+  if(fee && /^[\d,]+$/.test(fee)){
+    h=h.split(esc(fee)+'원').join('<span class="hl-money">'+esc(fee)+'원</span>');
+  }
   return h;
 }
 
@@ -1042,8 +1065,20 @@ function inv_doCopy(idx){
     for(var i=idx+1;i<inv_students.length;i++){
       if(!inv_copied.has(i)){inv_carIdx=i;inv_renderCarousel();return}
     }
+    inv_saveHistoryBatch();
     inv_VIEW='summary';inv_render();
   },800);
+}
+
+function inv_saveHistoryBatch(){
+  if(inv_historySaving)return;
+  inv_historySaving=true;
+  var students=inv_students.map(function(s){
+    return {name:s.name,freq:s.freq,fee:s.fee,materials:s.materials};
+  });
+  apiPost('saveInvoiceHistoryBatch',{month:inv_selectedMonth,year:inv_targetYear,students:students})
+    .then(function(){inv_historySaving=false;})
+    .catch(function(){inv_historySaving=false;});
 }
 
 function inv_renderSummary(){
