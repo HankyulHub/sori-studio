@@ -102,6 +102,17 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .modal-dim.on{opacity:1;pointer-events:auto}
 .modal-card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:24px 20px 20px;width:calc(100% - 48px);max-width:340px;transform:scale(0.95) translateY(10px);transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);text-align:center}
 .modal-dim.on .modal-card{transform:scale(1) translateY(0)}
+/* 명세서 목록 모달: 화면 높이 안에서만 스크롤 */
+.modal-card.modal-card--list{max-height:min(78vh, 520px);display:flex;flex-direction:column;overflow:hidden;text-align:left;padding:14px 12px 12px;width:calc(100% - 32px);max-width:min(380px, 100vw - 32px)}
+.modal-card--list .modal-icon{text-align:center;font-size:22px;margin-bottom:4px}
+.modal-card--list .modal-title{text-align:center;margin-bottom:2px}
+.modal-card--list .modal-desc{text-align:center;margin-bottom:8px;font-size:11px;line-height:1.45}
+.modal-card--list .inv-list-head{flex-shrink:0;margin:6px 0 8px}
+.inv-list-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 2px 4px 0}
+.inv-list-scroll::-webkit-scrollbar{width:4px}
+.inv-list-scroll::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+.modal-card--list .modal-btns{display:flex;gap:8px}.modal-card--list .modal-btns .btn{flex:1;padding:11px;font-size:13px}
+.modal-card--list .modal-btns{margin-top:10px;flex-shrink:0}
 .modal-icon{font-size:28px;margin-bottom:10px}
 .modal-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px}
 .modal-desc{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:6px}
@@ -241,15 +252,15 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .inv-rev-left b{color:#4ade80}
 .inv-rev-right{font-size:12px;color:#888;font-weight:600;white-space:nowrap}
 .inv-rev-right .add{color:#4ade80}
-.inv-list-head{display:flex;gap:8px;margin:10px 0 12px}
-.inv-list-tab{flex:1;padding:10px 0;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #2a2a2a;background:#111;color:#777}
+.inv-list-head{display:flex;gap:6px;margin:10px 0 12px}
+.inv-list-tab{flex:1;padding:7px 4px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid #2a2a2a;background:#111;color:#777}
 .inv-list-tab.active{border-color:rgba(255,212,59,.35);background:rgba(255,212,59,.10);color:#FFD43B}
-.inv-list-item{display:flex;align-items:center;gap:10px;padding:10px 10px;border:1px solid #252525;border-radius:12px;background:#141414;margin-bottom:8px;cursor:pointer}
+.inv-list-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid #252525;border-radius:8px;background:#141414;margin-bottom:4px;cursor:pointer;min-height:36px}
 .inv-list-item:active{opacity:.85}
-.inv-li-name{font-size:13px;font-weight:700;color:#eee;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.inv-li-fee{font-size:12px;font-weight:800;color:#4ade80;white-space:nowrap}
+.inv-li-name{font-size:12px;font-weight:600;color:#eee;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-li-fee{font-size:11px;font-weight:700;color:#4ade80;white-space:nowrap;max-width:44%}
 .inv-li-fee.dim{color:#666}
-.inv-li-badge{font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px;white-space:nowrap}
+.inv-li-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;white-space:nowrap;flex-shrink:0}
 .inv-li-badge.done{background:#0d1a0d;color:#4ade80;border:1px solid rgba(22,163,74,.35)}
 .inv-li-badge.todo{background:#111;color:#777;border:1px solid #2a2a2a}
 .inv-msg-display{width:100%;padding:14px;background:#111;border:1px solid #222;border-radius:10px;color:#ddd;font-size:13px;line-height:1.8;min-height:200px;margin-bottom:4px;white-space:pre-wrap;word-break:break-word;cursor:pointer;transition:border-color .2s}
@@ -334,8 +345,16 @@ function apiPost(action,body){
 function Q(id,h){document.getElementById(id).innerHTML=h}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2500)}
-function showModal(html){document.getElementById('modalCard').innerHTML=html;document.getElementById('modal').classList.add('on')}
-function closeModal(){document.getElementById('modal').classList.remove('on')}
+function showModal(html,isList){
+  var card=document.getElementById('modalCard');
+  card.innerHTML=html;
+  if(isList){card.classList.add('modal-card--list');}else{card.classList.remove('modal-card--list');}
+  document.getElementById('modal').classList.add('on');
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('on');
+  document.getElementById('modalCard').classList.remove('modal-card--list');
+}
 
 var now=new Date();
 document.getElementById('headerDate').textContent=now.getFullYear()+'년 '+(now.getMonth()+1)+'월';
@@ -1134,10 +1153,11 @@ function inv_renderListModal(){
   h+='<button class="inv-list-tab '+(inv_listFilter==='all'?'active':'')+'" onclick="inv_setListFilter(\'all\')">전체 ('+totalCount+')</button>';
   h+='<button class="inv-list-tab '+(inv_listFilter==='copied'?'active':'')+'" onclick="inv_setListFilter(\'copied\')">복사됨 ('+copiedCount+')</button>';
   h+='</div>';
+  h+='<div class="inv-list-scroll">';
   var list=inv_students.map(function(s,i){return {s:s,i:i,copied:inv_copied.has(i)};});
   if(inv_listFilter==='copied') list=list.filter(function(x){return x.copied});
   if(!list.length){
-    h+='<div style="padding:10px 0;color:#777;font-size:12px">표시할 항목이 없습니다.</div>';
+    h+='<div style="padding:10px 0;color:#777;font-size:12px;text-align:center">표시할 항목이 없습니다.</div>';
   }else{
     list.forEach(function(x){
       var fee=String(x.s.fee||'').trim();
@@ -1150,8 +1170,9 @@ function inv_renderListModal(){
       h+='</div>';
     });
   }
-  h+='<div class="modal-btns" style="margin-top:10px"><button class="btn btn-y" onclick="closeModal()">닫기</button></div>';
-  showModal(h);
+  h+='</div>';
+  h+='<div class="modal-btns"><button class="btn btn-y" onclick="closeModal()">닫기</button></div>';
+  showModal(h,true);
 }
 
 function inv_jumpTo(i){
