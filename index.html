@@ -187,6 +187,9 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .mat-quick-label{font-size:11px;color:#666;flex-shrink:0}
 .mat-quick-btn{padding:5px 10px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #333;background:#222;color:#bbb;font-family:inherit}
 .mat-quick-btn:active{transform:scale(.96)}
+.mat-quick-btn.selected{background:rgba(255,212,59,.12);color:#FFD43B;border-color:rgba(255,212,59,.28)}
+.inv-ready-link{text-align:center;font-size:12px;color:#888;margin-bottom:10px;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.inv-ready-link:active{opacity:.85}
 .fee-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .fee-label{font-size:12px;color:#888;width:50px;flex-shrink:0}
 .fee-input{flex:1;padding:8px 10px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#eee;font-size:12px;font-family:inherit;outline:none}
@@ -778,6 +781,8 @@ var inv_revDisplay=0;
 var inv_revRaf=null;
 var inv_lastAdd=0;
 var inv_listFilter='all'; // 'all' | 'copied'
+var inv_totalHintDisplay=0;
+var inv_hintRaf=null;
 
 var inv_targetMonth=now.getMonth()+2;
 var inv_targetYear=now.getFullYear();
@@ -832,7 +837,10 @@ function inv_render(){
 }
 
 function inv_renderSetting(){
-  var total=inv_calcTotal();
+  inv_cancelHintAnim();
+  var raw=inv_calcTotalRaw();
+  inv_totalHintDisplay=raw;
+  var total=raw.toLocaleString();
   var h='';
   h+=inv_buildSec('greeting','🎶 인삿말',null,inv_openSections.greeting,inv_buildGreeting);
   h+=inv_buildSec('students','📌 수강료 안내',inv_students.length+'명',inv_openSections.students,inv_buildStudents);
@@ -842,10 +850,19 @@ function inv_renderSetting(){
   h+=inv_buildSec('closing','❤️ 마무리 인사',null,inv_openSections.closing,inv_buildClosing);
   h+='<div class="gen-area">';
   h+='<div class="total-hint">이번 달 예상 매출 <b id="inv_total_hint">'+total+'</b>원</div>';
+  h+='<div class="inv-ready-link" onclick="inv_showReadyModal()">작성 마침 · 다음 단계</div>';
   h+='<button class="btn-gen" onclick="inv_goCarousel()">전체 명세서 생성 ('+inv_students.length+'명)</button>';
   h+='</div>';
   Q('app',h);
   inv_attachSwipe();
+}
+function inv_showReadyModal(){
+  var h='<div class="modal-icon">✓</div>';
+  h+='<div class="modal-title">명세서 복사 화면으로 갈까요?</div>';
+  h+='<div class="modal-desc">수강료·교재비를 반영했으면 다음으로 넘어가요. 위·아래 탭은 언제든 옮겨 다닐 수 있어요.</div>';
+  h+='<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">계속 수정</button>';
+  h+='<button class="btn btn-y" onclick="closeModal();inv_goCarousel()">명세서 화면으로</button></div>';
+  showModal(h,false);
 }
 
 function inv_parseMaterialLineSum(t){
@@ -863,14 +880,67 @@ function inv_materialsSumForStudent(s){
 function inv_studentRevenue(s){
   return inv_feeNumber(s)+inv_materialsSumForStudent(s);
 }
-function inv_calcTotal(){
+function inv_calcTotalRaw(){
   var sum=0;
   inv_students.forEach(function(s){sum+=inv_studentRevenue(s)});
-  return sum.toLocaleString();
+  return sum;
+}
+function inv_calcTotal(){
+  return inv_calcTotalRaw().toLocaleString();
+}
+function inv_cancelHintAnim(){if(inv_hintRaf){cancelAnimationFrame(inv_hintRaf);inv_hintRaf=null}}
+function inv_syncTotalHintEl(){
+  var el=document.getElementById('inv_total_hint');
+  if(el)el.textContent=inv_totalHintDisplay.toLocaleString();
+}
+function inv_animateTotalHint(to){
+  inv_cancelHintAnim();
+  var from=inv_totalHintDisplay;
+  if(from===to){inv_syncTotalHintEl();return}
+  var start=performance.now(),dur=360;
+  function ease(t){return 1-Math.pow(1-t,3)}
+  function tick(now){
+    var u=Math.min(1,(now-start)/dur);
+    inv_totalHintDisplay=Math.round(from+(to-from)*ease(u));
+    inv_syncTotalHintEl();
+    if(u<1)inv_hintRaf=requestAnimationFrame(tick);
+    else{inv_totalHintDisplay=to;inv_syncTotalHintEl();inv_hintRaf=null}
+  }
+  inv_hintRaf=requestAnimationFrame(tick);
 }
 function inv_refreshTotalHint(){
-  var el=document.getElementById('inv_total_hint');
-  if(el)el.textContent=inv_calcTotal();
+  inv_animateTotalHint(inv_calcTotalRaw());
+}
+function inv_displayFee(s){
+  var n=inv_feeNumber(s);
+  return n?n.toLocaleString():String((s&&s.fee)||'').trim()||'0';
+}
+function inv_formatMatLineBlur(t){
+  return String(t).replace(/(\d[\d,]*)\s*원/g,function(_,g){
+    var n=parseInt(g.replace(/,/g,''),10);
+    return (isNaN(n)?g:n.toLocaleString())+'원';
+  });
+}
+function inv_blurFee(i,el){
+  var raw=String(el.value).replace(/[^\d]/g,'');
+  var n=parseInt(raw,10);
+  if(isNaN(n)||raw==='')return;
+  inv_students[i].fee=n.toLocaleString();
+  el.value=inv_students[i].fee;
+  inv_autoSave(i);
+  inv_refreshTotalHint();
+}
+function inv_blurMat(i,mi,el){
+  var nt=inv_formatMatLineBlur(el.value);
+  if(nt!==el.value){inv_students[i].materials[mi].text=nt;el.value=nt;inv_autoSave(i)}
+  inv_refreshTotalHint();
+}
+function inv_matHasToken(st,amt){
+  var token=(amt||0).toLocaleString()+'원';
+  if(!st.materials||!st.materials.length)return false;
+  var t=(st.materials[st.materials.length-1].text||'').trim();
+  var re=new RegExp('(^|\\s)'+token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=\\s|$)');
+  return re.test(t);
 }
 
 function inv_buildSec(key,title,badge,isOpen,contentFn){
@@ -945,19 +1015,19 @@ function inv_buildStudents(){
       s+='<div class="fee-chip'+(sel?' selected':'')+'" onclick="inv_selPreset('+i+','+pi+')">'+p.label+'</div>';
     });
     s+='</div>';
-    s+='<div class="fee-row"><span class="fee-label">수강료</span><input class="fee-input" value="'+esc(st.fee||'')+'" placeholder="'+hintFee+'" onchange="inv_updateFee('+i+',this.value)"/></div>';
+    s+='<div class="fee-row"><span class="fee-label">수강료</span><input class="fee-input" value="'+esc(st.fee||'')+'" placeholder="'+hintFee+'" oninput="inv_updateFee('+i+',this.value)" onblur="inv_blurFee('+i+',this)"/></div>';
     if(st.materials&&st.materials.length>0){
       st.materials.forEach(function(mat,mi){
-        s+='<div class="added-item"><div class="added-item-row"><div class="added-item-remove" onclick="inv_removeMat('+i+','+mi+')">✕</div><input value="'+esc(mat.text)+'" placeholder="예: 3/6 반주1 : 7,000원" oninput="inv_students['+i+'].materials['+mi+'].text=this.value;inv_autoSave('+i+');inv_refreshTotalHint()"/></div></div>';
+        s+='<div class="added-item"><div class="added-item-row"><div class="added-item-remove" onclick="inv_removeMat('+i+','+mi+')">✕</div><input value="'+esc(mat.text)+'" placeholder="예: 3/6 반주1 : 7,000원" oninput="inv_students['+i+'].materials['+mi+'].text=this.value;inv_autoSave('+i+');inv_refreshTotalHint()" onblur="inv_blurMat('+i+','+mi+',this)"/></div></div>';
       });
       s+='<div class="material-note">* 교재비는 이체 부탁드립니다🩷</div>';
     }else if(st.prevMaterials&&st.prevMaterials.length>0){
       s+='<div class="material-note">* 전월 교재비 기록이 있어요 (자동 입력 안 함)</div>';
     }
     s+='<div class="add-btn" onclick="inv_addMat('+i+')">+ 교재비 추가</div>';
-    s+='<div class="mat-quick"><span class="mat-quick-label">빠른 입력</span>';
-    ['7,000원','10,000원','15,000원'].forEach(function(a){
-      s+='<button type="button" class="mat-quick-btn" onclick="inv_quickMat('+i+',\''+a+'\')">'+a+'</button>';
+    s+='<div class="mat-quick"><span class="mat-quick-label">빠른 입력(다시 누르면 취소)</span>';
+    [[7000,'7천'],[10000,'1만'],[15000,'1.5만']].forEach(function(x){
+      s+='<button type="button" class="mat-quick-btn'+(inv_matHasToken(st,x[0])?' selected':'')+'" onclick="inv_quickMat('+i+','+x[0]+')">'+x[1]+'</button>';
     });
     s+='</div>';
     s+='</div></div></div>';
@@ -1016,12 +1086,19 @@ function inv_goPage(p,dir){
 }
 function inv_selPreset(si,pi){var p=inv_presets[pi];inv_students[si].freq=p.freq;inv_students[si].fee=p.fee;inv_autoSave(si);inv_renderSetting()}
 function inv_updateFee(i,v){inv_students[i].fee=v;inv_autoSave(i);inv_refreshTotalHint()}
-function inv_quickMat(i,a){
+function inv_quickMat(i,amt){
+  var token=(amt||0).toLocaleString()+'원';
   var st=inv_students[i];
   if(!st.materials.length)st.materials.push({text:''});
   var last=st.materials[st.materials.length-1];
   var t=(last.text||'').trim();
-  last.text=t?(t+' '+a):a;
+  var escTok=token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  var re=new RegExp('(^|\\s)'+escTok+'(?=\\s|$)');
+  if(re.test(t)){
+    last.text=t.replace(re,'').replace(/\s+/g,' ').trim();
+  }else{
+    last.text=t?(t+' '+token):token;
+  }
   inv_autoSave(i);inv_renderSetting();
 }
 function inv_addMat(i){inv_students[i].materials.push({text:''});inv_renderSetting()}
@@ -1059,17 +1136,17 @@ function inv_renderCarousel(){
   h+='<span class="inv-car-name active">'+s.name+'</span>';
   if(next)h+='<span class="inv-car-name near" onclick="inv_carNav(1)">'+next.name+'</span>';
   h+='</div></div>';
-  h+='<div class="inv-car-body fade-in">';
-  h+='<div class="inv-car-stu"><div class="inv-car-av'+(isCopied?' copied':'')+'">'+s.name[0]+'</div><div>';
+  h+='<div class="inv-car-body">';
+  h+='<div class="inv-car-stu"><div id="inv_car_av" class="inv-car-av'+(isCopied?' copied':'')+'">'+s.name[0]+'</div><div>';
   h+='<div class="inv-car-sname">'+s.name+'</div>';
   h+='<div class="inv-car-ssub">'+s.gg+' · '+(s.freq||'')+'</div></div></div>';
-  if(isCopied)h+='<div class="inv-car-status" style="color:#4ade80">✓ 복사 완료</div>';
-  h+=inv_buildRevBar();
+  h+='<div id="inv_car_status" class="inv-car-status" style="color:#4ade80;display:'+(isCopied?'block':'none')+'">✓ 복사 완료</div>';
+  h+='<div id="inv_rev_bar_host">'+inv_buildRevBar()+'</div>';
   var msg=inv_editingMsg[inv_carIdx]||inv_buildMessage(s);
   h+='<div class="inv-msg-display" id="inv_msgDisp" onclick="inv_enterMsgEdit()">'+inv_highlightMsg(msg,s)+'</div>';
   h+='<div class="inv-msg-edit-hint" id="inv_editHint">탭하여 수정</div>';
-  h+='<button class="copy-btn-full '+(isCopied?'done':'ready')+'" onclick="inv_doCopy('+inv_carIdx+')">';
-  h+=isCopied?'✓ '+s.name+' 복사 완료':'📋 '+s.name+' 명세서 복사';
+  h+='<button type="button" id="inv_copy_btn" class="copy-btn-full '+(isCopied?'done':'ready')+'" onclick="inv_doCopy('+inv_carIdx+')">';
+  h+=isCopied?'✓ '+esc(s.name)+' 복사 완료':'📋 '+esc(s.name)+' 명세서 복사';
   h+='</button></div>';
   Q('app',h);
 }
@@ -1100,6 +1177,20 @@ function inv_buildRevBar(){
   var right=(copiedCount>0)?('복사 '+copiedCount+'명 · 누적 <b id="inv_rev_right_num">'+total+'</b>원'+add):'복사하면 누적 매출이 표시돼요';
   return '<div class="inv-rev-bar"><div class="inv-rev-left">💚 누적 <b id="inv_rev_left_num">'+total+'</b>원</div><div class="inv-rev-right">'+right+'</div></div>';
 }
+function inv_syncCarouselCopyUI(){
+  var idx=inv_carIdx,s=inv_students[idx];
+  if(!s)return;
+  var isCopied=inv_copied.has(idx);
+  var btn=document.getElementById('inv_copy_btn');
+  if(btn){
+    btn.className='copy-btn-full '+(isCopied?'done':'ready');
+    btn.innerHTML=isCopied?('✓ '+esc(s.name)+' 복사 완료'):('📋 '+esc(s.name)+' 명세서 복사');
+  }
+  var av=document.getElementById('inv_car_av');
+  if(av)av.className='inv-car-av'+(isCopied?' copied':'');
+  var st=document.getElementById('inv_car_status');
+  if(st)st.style.display=isCopied?'block':'none';
+}
 
 function inv_feeNumber(s){
   var v=String((s&&s.fee)||'').replace(/,/g,'').trim();
@@ -1110,10 +1201,9 @@ function inv_feeNumber(s){
 function inv_highlightMsg(msg,s){
   var h=esc(msg);
   h=h.split(esc(s.name)).join('<span class="hl-name">'+esc(s.name)+'</span>');
-  var fee=String(s.fee||'').trim();
-  // fee가 비어있으면 '원' 전체가 하이라이트되어 "원비/원장/학원"까지 전부 물드는 문제가 생깁니다.
-  if(fee && /^[\d,]+$/.test(fee)){
-    h=h.split(esc(fee)+'원').join('<span class="hl-money">'+esc(fee)+'원</span>');
+  var df=inv_displayFee(s);
+  if(df&&df!=='0'&&/^[\d,]+$/.test(df.replace(/,/g,''))){
+    h=h.split(esc(df)+'원').join('<span class="hl-money">'+esc(df)+'원</span>');
   }
   return h;
 }
@@ -1139,7 +1229,7 @@ function inv_exitMsgEdit(){
 
 function inv_buildMessage(s){
   var m=inv_greeting+'\n━━━━━━━━━━━\n📌 '+inv_selectedMonth+'월 수강료 안내\n';
-  m+='• '+s.name+' ('+s.freq+') - '+s.fee+'원\n';
+  m+='• '+s.name+' ('+s.freq+') - '+inv_displayFee(s)+'원\n';
   if(s.materials&&s.materials.length>0){
     var mats=s.materials.filter(function(x){return x.text.trim()});
     if(mats.length>0){
@@ -1181,7 +1271,9 @@ function inv_doCopy(idx){
     inv_lastAdd=0;
   }
   toast(inv_students[idx].name+' 명세서 복사 완료!');
-  inv_renderCarousel();
+  inv_syncCarouselCopyUI();
+  var host=document.getElementById('inv_rev_bar_host');
+  if(host)host.innerHTML=inv_buildRevBar();
   if(added)inv_revAnimate(inv_revSum);
   setTimeout(function(){
     for(var i=idx+1;i<inv_students.length;i++){
