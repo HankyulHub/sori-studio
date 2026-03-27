@@ -246,10 +246,10 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .inv-car-name.active{font-size:15px;color:#FFD43B;font-weight:600}
 .inv-car-name.near{font-size:12px;color:#555}
 .inv-car-body{padding:16px 20px;overflow-x:hidden}
-@keyframes invCarInNext{from{opacity:.4;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-@keyframes invCarInPrev{from{opacity:.4;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
-.inv-car-body--in-next{animation:invCarInNext .42s cubic-bezier(.2,.8,.2,1) both}
-.inv-car-body--in-prev{animation:invCarInPrev .42s cubic-bezier(.2,.8,.2,1) both}
+@keyframes invCarInNext{from{opacity:.35;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes invCarInPrev{from{opacity:.35;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
+.inv-car-body--in-next{animation:invCarInNext .52s cubic-bezier(.2,.85,.2,1) both}
+.inv-car-body--in-prev{animation:invCarInPrev .52s cubic-bezier(.2,.85,.2,1) both}
 .inv-share-row{margin-top:10px}
 .inv-share-btn{width:100%;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #333;background:#1a1a1a;color:#aaa;font-family:inherit}
 .inv-share-btn:active{background:#222;transform:scale(.99)}
@@ -263,8 +263,9 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .inv-rev-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0d1a0d;border:1px solid rgba(22,163,74,.35);border-radius:10px;padding:10px 12px;margin:10px 0 10px}
 .inv-rev-left{font-size:12px;color:#86efac;font-weight:700}
 .inv-rev-left b{color:#4ade80}
-.inv-rev-right{font-size:12px;color:#888;font-weight:600;white-space:nowrap}
+.inv-rev-right{font-size:11px;color:#888;font-weight:600;white-space:nowrap;max-width:52%;text-align:right;line-height:1.35}
 .inv-rev-right .add{color:#4ade80}
+.inv-rev-muted{color:#555;font-weight:500;font-size:11px}
 .inv-list-head{display:flex;gap:6px;margin:10px 0 12px}
 .inv-list-tab{flex:1;padding:7px 4px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid #2a2a2a;background:#111;color:#777}
 .inv-list-tab.active{border-color:rgba(255,212,59,.35);background:rgba(255,212,59,.10);color:#FFD43B}
@@ -822,14 +823,28 @@ function inv_init(){
   inv_loadStudents();
 }
 
+function inv_cacheKey(){
+  return 'invstu_'+inv_targetYear+'_'+inv_selectedMonth+(IS_TEST?'_t':'');
+}
 function inv_loadStudents(){
-  Q('app','<div class="loading"><div class="spin"></div>데이터 불러오는 중...</div>');
+  var ck=inv_cacheKey();
+  try{
+    var raw=sessionStorage.getItem(ck);
+    if(raw){
+      inv_students=JSON.parse(raw)||[];
+      inv_loaded=true;
+      inv_render();
+    }
+  }catch(e){}
+  if(!inv_loaded)Q('app','<div class="loading"><div class="spin"></div>데이터 불러오는 중...</div>');
   apiGet('loadInvoiceStudents',{month:inv_selectedMonth,year:inv_targetYear}).then(function(data){
     inv_students=data||[];
+    try{sessionStorage.setItem(ck,JSON.stringify(inv_students));}catch(e){}
     inv_loaded=true;
     inv_render();
   }).catch(function(e){
-    Q('app','<div style="padding:20px;color:#f87171">연결 실패: '+e.message+'</div>');
+    if(!inv_loaded)Q('app','<div style="padding:20px;color:#f87171">연결 실패: '+e.message+'</div>');
+    else toast('목록 새로고침 실패 — 이전 목록 유지');
   });
 }
 
@@ -963,6 +978,8 @@ function inv_setMonth(m){
   inv_selectedMonth=m;
   document.getElementById('headerDate').textContent=inv_targetYear+'년 '+m+'월';
   inv_scheduleItems.forEach(function(si){si.placeholder=si.placeholder.replace(/\d+\//g,m+'/')});
+  inv_loaded=false;
+  inv_students=[];
   inv_loadStudents();
 }
 
@@ -1100,7 +1117,6 @@ function inv_goCarousel(){
 function inv_renderCarousel(){
   var slide=inv_carSlide;
   inv_carSlide='';
-  var slideCls=slide==='next'?' inv-car-body--in-next':(slide==='prev'?' inv-car-body--in-prev':'');
   var s=inv_students[inv_carIdx];
   var prev=inv_carIdx>0?inv_students[inv_carIdx-1]:null;
   var next=inv_carIdx<inv_students.length-1?inv_students[inv_carIdx+1]:null;
@@ -1114,22 +1130,44 @@ function inv_renderCarousel(){
   h+='<span class="inv-car-name active">'+s.name+'</span>';
   if(next)h+='<span class="inv-car-name near" onclick="inv_carNav(1)">'+next.name+'</span>';
   h+='</div></div>';
-  h+='<div class="inv-car-body'+slideCls+'" id="inv_car_body">';
+  h+='<div class="inv-car-body" id="inv_car_body">';
   h+='<div class="inv-car-stu"><div id="inv_car_av" class="inv-car-av'+(isCopied?' copied':'')+'">'+s.name[0]+'</div><div>';
-  h+='<div class="inv-car-sname">'+s.name+'</div>';
+  h+='<div class="inv-car-sname">'+s.name+(isCopied?' <span style="color:#4ade80;font-size:12px;font-weight:600">✓</span>':'')+'</div>';
   h+='<div class="inv-car-ssub">'+s.gg+' · '+(s.freq||'')+'</div></div></div>';
-  h+='<div id="inv_car_status" class="inv-car-status" style="color:#4ade80;display:'+(isCopied?'block':'none')+'">✓ 복사 완료</div>';
   h+='<div id="inv_rev_bar_host">'+inv_buildRevBar()+'</div>';
   var msg=inv_editingMsg[inv_carIdx]||inv_buildMessage(s);
   h+='<div class="inv-msg-display" id="inv_msgDisp" onclick="inv_enterMsgEdit()">'+inv_highlightMsg(msg,s)+'</div>';
   h+='<div class="inv-msg-edit-hint" id="inv_editHint">탭하여 수정</div>';
   h+='<button type="button" id="inv_copy_btn" class="copy-btn-full '+(isCopied?'done':'ready')+'" onclick="inv_doCopy('+inv_carIdx+')">';
-  h+=isCopied?'✓ '+esc(s.name)+' 복사 완료':'📋 '+esc(s.name)+' 명세서 복사';
+  h+=isCopied?'복사됨':'명세서 복사';
   h+='</button>';
-  h+='<div class="inv-share-row"><button type="button" class="inv-share-btn" id="inv_share_btn" onclick="inv_shareInvoice('+inv_carIdx+')">📤 카톡으로 공유</button></div>';
-  h+='<div class="inv-share-hint">공유 시트에서 카톡을 고르면 붙여넣기 단계를 줄일 수 있어요. 안 되면 위 복사 버튼을 쓰면 됩니다.</div>';
+  h+='<div class="inv-share-row"><button type="button" class="inv-share-btn" id="inv_share_btn" onclick="inv_shareInvoice('+inv_carIdx+')">카톡으로 공유</button></div>';
+  h+='<div class="inv-share-hint">공유가 안 되면 복사 후 카톡에 붙여넣기</div>';
   h+='</div>';
   Q('app',h);
+  if(slide){
+    var bd=document.getElementById('inv_car_body');
+    if(bd)requestAnimationFrame(function(){
+      bd.classList.add(slide==='next'?'inv-car-body--in-next':'inv-car-body--in-prev');
+    });
+  }
+  inv_attachCarouselSwipe();
+}
+function inv_attachCarouselSwipe(){
+  var el=document.getElementById('inv_car_body');
+  if(!el)return;
+  var sx=0,sy=0;
+  el.addEventListener('touchstart',function(e){
+    if(!e.touches||e.touches.length!==1)return;
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+  },{passive:true});
+  el.addEventListener('touchend',function(e){
+    var t=e.changedTouches&&e.changedTouches[0];
+    if(!t)return;
+    var dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Math.abs(dx)<56||Math.abs(dy)>Math.abs(dx)*0.75)return;
+    if(dx<0)inv_carNav(1);else inv_carNav(-1);
+  },{passive:true});
 }
 function inv_shareInvoice(idx){
   var ta=document.getElementById('inv_msgTA');
@@ -1138,7 +1176,7 @@ function inv_shareInvoice(idx){
   if(navigator.share){
     navigator.share({text:text}).catch(function(){});
   }else{
-    try{navigator.clipboard.writeText(text);toast('복사했어요. 카톡에서 붙여넣기 해주세요');}catch(e){toast('복사 후 카톡에 붙여넣어 주세요');}
+    try{navigator.clipboard.writeText(text);}catch(e){}
   }
 }
 
@@ -1165,8 +1203,10 @@ function inv_buildRevBar(){
   var copiedCount=inv_copied.size;
   var total=inv_revDisplay.toLocaleString();
   var add=inv_lastAdd?(' <span class="add">+'+inv_lastAdd.toLocaleString()+'원</span>'):'';
-  var right=(copiedCount>0)?('복사 '+copiedCount+'명 · 누적 <b id="inv_rev_right_num">'+total+'</b>원'+add):'복사하면 누적 매출이 표시돼요';
-  return '<div class="inv-rev-bar"><div class="inv-rev-left">💚 누적 <b id="inv_rev_left_num">'+total+'</b>원</div><div class="inv-rev-right">'+right+'</div></div>';
+  var right=(copiedCount>0)
+    ?('복사 '+copiedCount+'명 · 합계 <b id="inv_rev_right_num">'+total+'</b>원'+add)
+    :'<span class="inv-rev-muted">복사 시 합산</span>';
+  return '<div class="inv-rev-bar"><div class="inv-rev-left">누적 <b id="inv_rev_left_num">'+total+'</b>원</div><div class="inv-rev-right">'+right+'</div></div>';
 }
 function inv_syncCarouselCopyUI(){
   var idx=inv_carIdx,s=inv_students[idx];
@@ -1175,12 +1215,15 @@ function inv_syncCarouselCopyUI(){
   var btn=document.getElementById('inv_copy_btn');
   if(btn){
     btn.className='copy-btn-full '+(isCopied?'done':'ready');
-    btn.innerHTML=isCopied?('✓ '+esc(s.name)+' 복사 완료'):('📋 '+esc(s.name)+' 명세서 복사');
+    btn.innerHTML=isCopied?'복사됨':'명세서 복사';
   }
   var av=document.getElementById('inv_car_av');
   if(av)av.className='inv-car-av'+(isCopied?' copied':'');
-  var st=document.getElementById('inv_car_status');
-  if(st)st.style.display=isCopied?'block':'none';
+  var nm=document.querySelector('.inv-car-sname');
+  if(nm){
+    var base=s.name;
+    nm.innerHTML=esc(base)+(isCopied?' <span style="color:#4ade80;font-size:12px;font-weight:600">✓</span>':'');
+  }
 }
 
 function inv_feeNumber(s){
@@ -1265,7 +1308,6 @@ function inv_doCopy(idx){
   }else{
     inv_lastAdd=0;
   }
-  toast(inv_students[idx].name+' 명세서 복사 완료!');
   inv_syncCarouselCopyUI();
   var host=document.getElementById('inv_rev_bar_host');
   if(host)host.innerHTML=inv_buildRevBar();
