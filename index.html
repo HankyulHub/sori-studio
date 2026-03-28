@@ -191,8 +191,10 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .notice-input{width:100%;padding:8px;background:transparent;border:none;color:#eee;font-size:12.5px;font-family:inherit;outline:none;line-height:1.6;resize:none;min-height:36px}
 .notice-input::placeholder{color:#555}
 .notice-label{font-size:10px;color:#FFD43B;font-weight:600;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
-.preview-dim{position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0a;z-index:105;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(0.34,1.56,0.64,1)}
-.preview-dim.on{transform:translateY(0)}
+.preview-dim{position:fixed;top:0;left:0;right:0;bottom:0;z-index:105;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .25s}
+.preview-dim.on{opacity:1;pointer-events:auto}
+.preview-sheet{width:100%;max-width:500px;height:94vh;background:#0e0e0e;border-radius:16px 16px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .32s cubic-bezier(.22,1,.36,1)}
+.preview-dim.on .preview-sheet{transform:translateY(0)}
 .preview-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e1e1e;flex-shrink:0}
 .preview-back{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#ccc;font-family:inherit}
 .preview-back:active{background:#222}
@@ -232,17 +234,19 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 <div class="tut-dim" id="tut" onclick="if(event.target===this)closeTutorial()">
   <div class="tut-box" id="tutBox"></div>
 </div>
-<div class="preview-dim" id="previewDim">
-  <div class="preview-header">
-    <button type="button" class="preview-back" onclick="inv_closePreview()">← 돌아가기</button>
-    <span class="preview-title">📋 미리보기</span>
-    <span style="width:70px"></span>
-  </div>
-  <div class="preview-body">
-    <div class="preview-text" id="previewText"></div>
-  </div>
-  <div class="preview-footer">
-    <button type="button" class="preview-copy-btn" id="previewCopyBtn" onclick="inv_copyTemplate()">템플릿 복사하기</button>
+<div class="preview-dim" id="previewDim" onclick="if(event.target===this)inv_closePreview()">
+  <div class="preview-sheet">
+    <div class="preview-header">
+      <button type="button" class="preview-back" onclick="inv_closePreview()">← 돌아가기</button>
+      <span class="preview-title">📋 미리보기</span>
+      <span style="width:70px"></span>
+    </div>
+    <div class="preview-body">
+      <div class="preview-text" id="previewText"></div>
+    </div>
+    <div class="preview-footer">
+      <button type="button" class="preview-copy-btn" id="previewCopyBtn" onclick="inv_copyTemplate()">템플릿 복사하기</button>
+    </div>
   </div>
 </div>
 
