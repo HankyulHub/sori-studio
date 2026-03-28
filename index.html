@@ -201,7 +201,7 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .preview-title{font-size:14px;font-weight:700;color:#fff}
 .preview-body{flex:1;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch}
 .preview-text{font-size:13px;line-height:1.8;color:#ddd;white-space:pre-wrap;word-break:break-word}
-.preview-text .blank{color:#555;text-decoration:underline;text-decoration-color:#333}
+.preview-text .ph{color:#FFD43B;background:rgba(255,212,59,0.08);border-radius:3px;padding:0 2px}
 .preview-footer{padding:16px 20px;border-top:1px solid #1a1a1a;flex-shrink:0}
 .preview-copy-btn{width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.15s;background:#FFD43B;color:#111}
 .preview-copy-btn:active{transform:scale(0.97)}
@@ -718,7 +718,6 @@ function inv_defaultGreeting(m){
   return '안녕하세요, 소리마을음악교습소입니다 🎵\n'+(seasons[m]||'')+' '+m+'월, 우리 아이들이 음악과 함께 한 걸음 더 성장하길 응원합니다 ☘️';
 }
 var inv_greeting=inv_defaultGreeting(inv_selectedMonth);
-var inv_greetLoading=false;
 var inv_greetEditing=false;
 var inv_payInfo='• 납부 기간: 매월 25일 ~ 말일\n• 납부 방법: 비대면 카드 / 방문 카드 / 계좌이체\n• 계좌번호: 국민은행 528702-04-052815 김수지';
 var inv_scheduleNote='* 학기 중 수업시간, 요일 변동사항이 있으시면 연락 부탁드립니다♡';
@@ -759,7 +758,8 @@ function inv_buildTemplate(){
   var m=inv_greeting+'\n';
   m+='━━━━━━━━━━━\n';
   m+='📌 '+inv_selectedMonth+'월 수강료 안내\n\n';
-  m+='• _______ (___회) ___원\n\n';
+  m+='• {홍길동} 피아노 ({4}회) {120,000}원\n';
+  m+='  교재비: {바이엘 2권 15,000}원\n\n';
   m+='━━━━━━━━━━━\n';
   m+='💳 납부 안내\n'+inv_payInfo+'\n';
   m+='━━━━━━━━━━━\n';
@@ -780,7 +780,7 @@ function inv_buildTemplate(){
 
 function inv_openPreview(){
   var text=inv_buildTemplate();
-  var html=esc(text).replace(/_+/g,'<span class="blank">$&</span>');
+  var html=esc(text).replace(/\{(.+?)\}/g,'<span class="ph">$1</span>');
   document.getElementById('previewText').innerHTML=html;
   document.getElementById('previewDim').classList.add('on');
   var btn=document.getElementById('previewCopyBtn');
@@ -797,7 +797,7 @@ function inv_closePreview(){
 }
 
 function inv_copyTemplate(){
-  var text=inv_buildTemplate();
+  var text=inv_buildTemplate().replace(/[{}]/g,'');
   try{navigator.clipboard.writeText(text);}catch(e){}
   var btn=document.getElementById('previewCopyBtn');
   btn.className='preview-copy-btn done';
@@ -823,29 +823,16 @@ function inv_buildGreeting(){
     s+='<div class="month-chip'+(mm===inv_selectedMonth?' active':'')+'" onclick="inv_setMonth('+mm+')">'+mm+'월</div>';
   }
   s+='</div>';
-  if(inv_greetLoading){
-    s+='<div class="loading" style="padding:20px 0"><div class="spin"></div><span>AI 생성 중...</span></div>';
-  }else if(inv_greetEditing){
+  if(inv_greetEditing){
     s+='<textarea class="inv-greet-ta" id="inv_greetTA" oninput="inv_greeting=this.value" style="min-height:100px">'+esc(inv_greeting)+'</textarea>';
     s+='<div class="greeting-actions"><div class="chip-btn chip-btn-g" onclick="inv_saveGreetEdit()">✓ 수정 완료</div></div>';
   }else{
     s+='<div class="greeting-box">'+esc(inv_greeting)+'</div>';
     s+='<div class="greeting-actions">';
-    s+='<div class="chip-btn chip-btn-o" onclick="inv_regenGreeting()">↻ 재생성</div>';
     s+='<div class="chip-btn chip-btn-d" onclick="inv_greetEditing=true;inv_renderSetting()">✏️ 직접 수정</div>';
     s+='</div>';
   }
   return s;
-}
-
-function inv_regenGreeting(){
-  inv_greetLoading=true;inv_openSections.greeting=true;inv_renderSetting();
-  apiPost('generateGreeting',{month:inv_selectedMonth}).then(function(text){
-    if(text && text.length>50){inv_greeting=text}else{toast('생성 결과가 너무 짧아요, 다시 시도해주세요')}
-    inv_greetLoading=false;inv_renderSetting();
-  }).catch(function(){
-    inv_greetLoading=false;toast('생성 실패, 다시 시도해주세요');inv_renderSetting();
-  });
 }
 
 function inv_saveGreetEdit(){
