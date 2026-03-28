@@ -841,7 +841,7 @@ function inv_buildGreeting(){
 function inv_regenGreeting(){
   inv_greetLoading=true;inv_openSections.greeting=true;inv_renderSetting();
   apiPost('generateGreeting',{month:inv_selectedMonth}).then(function(text){
-    if(text && text.length>20){inv_greeting=text}else{toast('생성 결과가 너무 짧아요, 다시 시도해주세요')}
+    if(text && text.length>50){inv_greeting=text}else{toast('생성 결과가 너무 짧아요, 다시 시도해주세요')}
     inv_greetLoading=false;inv_renderSetting();
   }).catch(function(){
     inv_greetLoading=false;toast('생성 실패, 다시 시도해주세요');inv_renderSetting();
