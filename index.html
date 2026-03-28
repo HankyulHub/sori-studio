@@ -329,9 +329,11 @@ function kk_init(){
     kk_S=data||[];
     kk_S.forEach(function(s){if(s.kw)kk_KW[s.row]=s.kw;kk_PrevKW[s.row]=s.prevKw||'';if(s.msg)kk_MSG[s.row]=s.msg;if(s.done)kk_DONE.add(s.row)});
     kk_loaded=true;
+    if(MODE!=='kakao')return;
     kk_rInput();
     kk_checkFirstRun();
   }).catch(function(e){
+    if(MODE!=='kakao')return;
     Q('app','<div style="padding:20px;color:#f87171;font-size:13px;">연결 실패: '+e.message+'</div>');
   });
 }
