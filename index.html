@@ -224,7 +224,7 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 </div>
 <div class="mode-tabs">
   <div class="mode-tab" id="tabKakao" onclick="switchMode('kakao')">💬 카톡 대본</div>
-  <div class="mode-tab" id="tabInvoice" onclick="switchMode('invoice')">💌 월비 안내문</div>
+  <div class="mode-tab" id="tabInvoice" onclick="switchMode('invoice')">💳 월비 안내문</div>
 </div>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
@@ -306,6 +306,7 @@ function switchMode(m){
   document.getElementById('tabInvoice').classList.toggle('active',m==='invoice');
   document.getElementById('helpBtn').style.display=(m==='kakao'?'flex':'none');
   document.getElementById('bannerTitle').textContent=(m==='kakao'?'카톡 메시지 관리':'월비 안내문');
+  Q('app','');
   if(m==='kakao'){
     if(!kk_loaded)kk_init();
     else kk_rInput();
