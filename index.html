@@ -234,13 +234,11 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .total-hint{font-size:12px;color:#888;text-align:center;margin-bottom:8px}
 .total-hint b{color:#4ade80}
 .inv-car-header{padding:12px 16px;background:#111;border-bottom:1px solid #1e1e1e}
-.inv-car-row1{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.inv-car-row1-spacer{flex:1;min-width:8px}
-.inv-car-back{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#ccc;font-family:inherit}
+.inv-car-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;min-height:38px}
+.inv-car-back{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a2a;background:#1a1a1a;color:#ccc;font-family:inherit;flex-shrink:0;z-index:1}
 .inv-car-back:active{background:#222}
-.inv-car-row2{display:flex;justify-content:center;align-items:center;padding:2px 0 6px}
-.inv-car-counter{font-size:13px;font-weight:600;color:#888;text-align:center}
-.inv-car-nav{display:flex;gap:5px}
+.inv-car-counter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:13px;font-weight:600;color:#888;white-space:nowrap;pointer-events:none;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+.inv-car-nav{display:flex;gap:5px;flex-shrink:0;z-index:1}
 .inv-car-nav-btn{width:32px;height:32px;border-radius:50%;background:#1a1a1a;border:1px solid #252525;color:#aaa;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
 .inv-car-nav-btn:active{background:#222}
 .inv-car-names{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0 4px;overflow:hidden}
@@ -1369,9 +1367,8 @@ function inv_renderCarousel(){
   var isSent=inv_sent.has(inv_carIdx);
   var h='<div class="inv-car-header"><div class="inv-car-row1">';
   h+='<button class="inv-car-back" onclick="inv_VIEW=\'setting\';inv_render()">← 설정</button>';
-  h+='<div class="inv-car-row1-spacer"></div>';
+  h+='<span class="inv-car-counter">'+(inv_carIdx+1)+' / '+inv_students.length+'</span>';
   h+='<div class="inv-car-nav"><div class="inv-car-nav-btn" onclick="inv_showList()">☰</div><div class="inv-car-nav-btn" onclick="inv_carNav(-1)">‹</div><div class="inv-car-nav-btn" onclick="inv_carNav(1)">›</div></div></div>';
-  h+='<div class="inv-car-row2"><span class="inv-car-counter">'+(inv_carIdx+1)+' / '+inv_students.length+'</span></div>';
   h+='<div class="inv-car-names">';
   if(prev)h+='<span class="inv-car-name near" onclick="inv_carNav(-1)">'+prev.name+'</span>';
   h+='<span class="inv-car-name active">'+s.name+'</span>';
@@ -1592,11 +1589,11 @@ function inv_renderListModal(){
 }
 
 function inv_jumpTo(i){
-  closeModal();
   var o=inv_carIdx;
   inv_carSlide=(i>o?'next':(i<o?'prev':'next'));
   inv_carIdx=i;
-  requestAnimationFrame(function(){inv_renderCarousel();});
+  inv_renderCarousel();
+  closeModal();
 }
 
 function inv_saveHistoryBatch(){
