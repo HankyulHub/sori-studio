@@ -266,6 +266,7 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .inv-list-tab{flex:1;padding:7px 4px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid #2a2a2a;background:#111;color:#777}
 .inv-list-tab.active{border-color:rgba(255,212,59,.35);background:rgba(255,212,59,.10);color:#FFD43B}
 .inv-list-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid #252525;border-radius:8px;background:#141414;margin-bottom:4px;cursor:pointer;min-height:36px}
+.inv-list-item.current{border-color:#FFD43B;background:rgba(255,212,59,.1)}
 .inv-list-item:active{opacity:.85}
 .inv-li-name{font-size:12px;font-weight:600;color:#eee;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .inv-li-fee{font-size:11px;font-weight:700;color:#4ade80;white-space:nowrap;max-width:44%}
@@ -953,6 +954,7 @@ var inv_revRaf=null;
 var inv_lastAdd=0;
 var inv_listFilter='all'; // 'all' | 'sent'
 var inv_carSlide=''; // '' | 'next' | 'prev'
+var inv_bulkFromList=false;
 
 function inv_phoneOk(s){
   var p=String((s&&s.phone)||'').replace(/\D/g,'');
@@ -1558,7 +1560,7 @@ function inv_renderListModal(){
   var h='';
   h+='<div class="modal-icon">📋</div>';
   h+='<div class="modal-title">전체 목록</div>';
-  h+='<div class="modal-desc">원하는 학생을 눌러 바로 이동할 수 있어요.</div>';
+  h+='<div class="modal-desc">이름을 누르면 뒤쪽 명세만 바뀌고 이 창은 유지돼요. 보려면 <b>닫기</b>를 누르세요.<br><span style="color:#777;font-size:10px;line-height:1.4">일괄 친구톡은 이름을 고르는 게 아니라, 전화번호가 들어간 학생 전원에게 한 번에 보내요.</span></div>';
   h+='<div class="inv-list-head">';
   h+='<button class="inv-list-tab '+(inv_listFilter==='all'?'active':'')+'" onclick="inv_setListFilter(\'all\')">전체 ('+totalCount+')</button>';
   h+='<button class="inv-list-tab '+(inv_listFilter==='sent'?'active':'')+'" onclick="inv_setListFilter(\'sent\')">발송됨 ('+sentCount+')</button>';
@@ -1573,7 +1575,7 @@ function inv_renderListModal(){
       var fee=String(x.s.fee||'').trim();
       var badge=x.sent?'<span class="inv-li-badge done">발송됨</span>':'<span class="inv-li-badge todo">미발송</span>';
       var feeCls=fee? 'inv-li-fee':'inv-li-fee dim';
-      h+='<div class="inv-list-item" onclick="inv_jumpTo('+x.i+')">';
+      h+='<div class="inv-list-item'+(x.i===inv_carIdx?' current':'')+'" onclick="inv_jumpTo('+x.i+')">';
       h+='<div class="inv-li-name">'+esc(x.s.name)+'</div>';
       h+='<div class="'+feeCls+'">'+esc(fee?fee+'원':'-')+'</div>';
       h+=badge;
@@ -1583,17 +1585,16 @@ function inv_renderListModal(){
   h+='</div>';
   var bulkN=inv_students.filter(function(st){return inv_phoneOk(st);}).length;
   h+='<div class="modal-btns" style="flex-direction:column;gap:8px">';
-  h+='<button type="button" class="btn btn-d" onclick="closeModal();inv_openBulkFriendModal()">일괄 친구톡 ('+bulkN+'명 가능)</button>';
+  h+='<button type="button" class="btn btn-d" '+(bulkN<1?'disabled title="학생관리에서 전화번호를 넣어 주세요" ':'')+'onclick="inv_bulkFromList=true;inv_openBulkFriendModal()">일괄 친구톡 (전화 '+bulkN+'명)</button>';
   h+='<button class="btn btn-y" onclick="closeModal()">닫기</button></div>';
   showModal(h,true);
 }
 
 function inv_jumpTo(i){
-  var o=inv_carIdx;
-  inv_carSlide=(i>o?'next':(i<o?'prev':'next'));
+  inv_carSlide='';
   inv_carIdx=i;
   inv_renderCarousel();
-  closeModal();
+  inv_renderListModal();
 }
 
 function inv_saveHistoryBatch(){
@@ -1626,7 +1627,7 @@ function inv_renderSummary(){
     h+='<div class="summary-total" style="margin-top:8px"><span class="summary-total-label">교재비 합계</span><span class="summary-total-val" style="color:#f59e0b">'+totalMat.toLocaleString()+'원</span></div>';
   }
   var bulkN=inv_students.filter(function(s,i){return inv_phoneOk(s)&&inv_getMsgFor(i);}).length;
-  h+='<div class="summary-bulk"><button type="button" class="inv-ft-primary" onclick="inv_openBulkFriendModal()">일괄 친구톡 발송 ('+bulkN+'명)</button></div>';
+  h+='<div class="summary-bulk"><button type="button" class="inv-ft-primary" onclick="inv_bulkFromList=false;inv_openBulkFriendModal()">일괄 친구톡 발송 ('+bulkN+'명)</button></div>';
   h+='<button class="summary-back" onclick="inv_VIEW=\'setting\';inv_render()">← 설정으로 돌아가기</button></div>';
   Q('app',h);
 }
@@ -1636,7 +1637,8 @@ function inv_openBulkFriendModal(){
     if(inv_phoneOk(inv_students[i]))list.push(i);
   }
   if(!list.length){toast('발송 가능한 번호가 없습니다');return;}
-  showModal('<div class="modal-title">'+list.length+'명에게 수강료 안내를 발송할까요?</div><div class="modal-desc">전화번호가 등록된 학생만 발송됩니다.</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="closeModal();inv_runBulkFriend(list)">발송</button></div>');
+  var cancelAct=inv_bulkFromList?'inv_renderListModal()':'closeModal()';
+  showModal('<div class="modal-title">'+list.length+'명에게 수강료 안내를 발송할까요?</div><div class="modal-desc">목록에서 골라 보내는 게 아니라, 번호가 있는 학생 전원에게 순서대로 보냅니다.</div><div class="modal-btns"><button class="btn btn-d" onclick="'+cancelAct+'">취소</button><button class="btn btn-y" onclick="closeModal();inv_runBulkFriend(list)">발송</button></div>');
 }
 function inv_runBulkFriend(idxs){
   var queue=[];
