@@ -250,10 +250,6 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 @keyframes invCarInPrev{from{opacity:.35;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
 .inv-car-body--in-next{animation:invCarInNext .52s cubic-bezier(.2,.85,.2,1) both}
 .inv-car-body--in-prev{animation:invCarInPrev .52s cubic-bezier(.2,.85,.2,1) both}
-.inv-share-row{margin-top:10px}
-.inv-share-btn{width:100%;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #333;background:#1a1a1a;color:#aaa;font-family:inherit}
-.inv-share-btn:active{background:#222;transform:scale(.99)}
-.inv-share-hint{font-size:10px;color:#555;text-align:center;margin-top:6px;line-height:1.4}
 .inv-car-stu{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .inv-car-av{width:38px;height:38px;border-radius:50%;background:#FFD43B;color:#111;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
 .inv-car-av.copied{background:#0a0a0a;color:#4ade80;border:2px solid #16a34a}
@@ -307,9 +303,15 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 .tabbar-item span{display:block;font-size:17px;margin-bottom:1px}
 .tabbar-item.active{color:#FFD43B;font-weight:700}
 .inv-phone-warn{font-size:11px;color:#f87171;margin:0 0 8px;padding:8px 10px;background:rgba(248,113,113,.08);border-radius:8px;border:1px solid rgba(248,113,113,.2)}
-.inv-ft-row{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.inv-ft-primary{width:100%;padding:12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;background:#FFD43B;color:#111}
-.inv-ft-secondary{width:100%;padding:10px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #333;background:#1a1a1a;color:#bbb;font-family:inherit}
+.inv-ft-row{display:flex;flex-direction:column;gap:0;margin-top:8px}
+.inv-ft-primary{width:100%;padding:12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;background:#FFD43B;color:#111;margin-top:8px}
+.edit-page{padding:16px 20px 100px}
+.edit-field{margin-bottom:16px}
+.edit-label{font-size:12px;color:#888;margin-bottom:6px;font-weight:600}
+.edit-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.edit-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #1e1e1e}
+.edit-topbar .btn{padding:8px 14px;font-size:12px}
+.stu-chip-g.fee-chip.selected,.stu-chip-f.fee-chip.selected{background:rgba(255,212,59,.12);color:#FFD43B;border-color:rgba(255,212,59,.3)}
 .summary-bulk{margin-top:14px}
 .summary-result{font-size:12px;color:#aaa;line-height:1.55;margin-top:12px;max-height:160px;overflow-y:auto;text-align:left}
 .summary-result .ok{color:#4ade80}
@@ -843,41 +845,106 @@ function inv_phoneOk(s){
 function inv_getMsgFor(idx){
   return inv_editingMsg[idx]||inv_buildMessage(inv_students[idx]);
 }
+function inv_parseTuitionLine(msg,name){
+  var escN=String(name||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  var re=new RegExp('•\\s*'+escN+'\\s*\\(([^)]*)\\)\\s*-\\s*([\\d,]+)원');
+  var m=String(msg||'').match(re);
+  if(!m)return null;
+  return {freq:m[1].trim(),feeRaw:m[2].replace(/,/g,'')};
+}
+function inv_tuitionDiffersFromMaster(idx){
+  var s=inv_students[idx];
+  var p=inv_parseTuitionLine(inv_getMsgFor(idx),s.name);
+  if(!p)return false;
+  var mf=inv_feeNumber(s);
+  var pf=parseInt(p.feeRaw,10);
+  if(isNaN(pf))pf=mf;
+  var freqOk=(p.freq===(s.freq||'').trim());
+  var feeOk=(pf===mf);
+  return !freqOk||!feeOk;
+}
+function inv_applyCopiedState(idx){
+  if(inv_copied.has(idx))return;
+  var n=inv_studentRevenue(inv_students[idx]);
+  inv_lastAdd=n;
+  inv_revSum+=n;
+  inv_copied.add(idx);
+  inv_syncCarouselCopyUI();
+  var host=document.getElementById('inv_rev_bar_host');
+  if(host)host.innerHTML=inv_buildRevBar();
+  inv_revAnimate(inv_revSum);
+}
+function inv_applyMasterFromMsg(idx, cb){
+  var s=inv_students[idx];
+  var p=inv_parseTuitionLine(inv_getMsgFor(idx),s.name);
+  if(!p||!s.row){cb();return;}
+  var feeStr=parseInt(p.feeRaw,10);
+  if(isNaN(feeStr)){cb();return;}
+  feeStr=feeStr.toLocaleString();
+  apiPost('updateStudent',{
+    row:s.row,
+    name:s.name,
+    grade:s.grade||'',
+    gender:s.gender||'',
+    freq:p.freq,
+    fee:feeStr,
+    phone:s.phone||'',
+    parentName:s.parentName||'',
+    level:s.level||''
+  }).then(function(){
+    s.freq=p.freq;
+    s.fee=feeStr;
+    if(typeof inv_editingMsg[idx]!=='undefined')inv_editingMsg[idx]=inv_buildMessage(s);
+    try{sessionStorage.setItem(inv_cacheKey(),JSON.stringify(inv_students));}catch(e){}
+    stu_markDirty();
+    cb();
+  }).catch(function(e){toast(e.message);});
+}
+function inv_doCopyExec(idx){
+  try{navigator.clipboard.writeText(inv_editingMsg[idx])}catch(e){}
+  if(inv_copied.has(idx)){inv_lastAdd=0;return;}
+  inv_applyCopiedState(idx);
+}
+function inv_confirmFriendSend(idx){
+  var s=inv_students[idx];
+  showModal('<div class="modal-title">'+esc(s.name)+'님에게 친구톡을 발송할까요?</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="closeModal();inv_runFriendApiOne('+idx+')">발송</button></div>');
+}
+function inv_tuitionSyncPick(idx, mode, which){
+  if(which==='master'){
+    inv_applyMasterFromMsg(idx,function(){
+      if(mode==='copy')inv_doCopyExec(idx);
+      else{inv_renderCarousel();inv_confirmFriendSend(idx);}
+    });
+  }else{
+    if(mode==='copy')inv_doCopyExec(idx);
+    else inv_confirmFriendSend(idx);
+  }
+}
 function inv_sendFriendTalkOne(idx){
   var ta=document.getElementById('inv_msgTA');
   if(ta)inv_editingMsg[idx]=ta.value;
   var s=inv_students[idx];
   if(!inv_phoneOk(s)){toast('전화번호 미등록');return;}
-  showModal('<div class="modal-title">'+esc(s.name)+'님에게 친구톡을 발송할까요?</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="closeModal();inv_runFriendApiOne('+idx+')">발송</button></div>');
+  if(inv_tuitionDiffersFromMaster(idx)){
+    showModal('<div class="modal-title">금액·횟수가 학생 기본 정보와 달라요</div><div class="modal-desc">이번 달 메시지에만 반영할까요, 학생 기본 정보도 함께 바꿀까요?</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-d" onclick="closeModal();inv_tuitionSyncPick('+idx+',\'friend\',\'month\')">이번 달만</button><button class="btn btn-y" onclick="closeModal();inv_tuitionSyncPick('+idx+',\'friend\',\'master\')">기본 정보도 변경</button></div>');
+  }else inv_confirmFriendSend(idx);
 }
 function inv_runFriendApiOne(idx){
   var s=inv_students[idx];
   toast('발송 중...');
   apiPost('sendInvoiceFriendTalk',{students:[{name:s.name,phone:s.phone,message:inv_getMsgFor(idx)}]}).then(function(res){
     var r=(res&&res.results)||[];
+    var ok=r[0]&&r[0].ok;
+    if(ok)inv_applyCopiedState(idx);
     var lines=r.map(function(x){return '<div class="'+(x.ok?'ok':'fail')+'">'+esc(x.name)+' '+(x.ok?'성공':'실패')+(x.error?(' '+esc(x.error)):'')+'</div>';}).join('');
     showModal('<div class="modal-title">결과</div><div class="summary-result">'+lines+'</div><div class="modal-btns"><button class="btn btn-y" onclick="closeModal()">닫기</button></div>',true);
   }).catch(function(e){toast('실패: '+e.message);});
-}
-function inv_testFriendTalk(idx){
-  var ta=document.getElementById('inv_msgTA');
-  if(ta)inv_editingMsg[idx]=ta.value;
-  if(!inv_phoneOk(inv_students[idx])){toast('전화번호 미등록');return;}
-  toast('테스트 발송...');
-  inv_runFriendApiOne(idx);
 }
 
 var inv_targetMonth=now.getMonth()+2;
 var inv_targetYear=now.getFullYear();
 if(inv_targetMonth>12){inv_targetMonth=1;inv_targetYear++}
 var inv_selectedMonth=inv_targetMonth;
-
-var inv_presets=[
-  {label:'주 2회 / 90,000원',freq:'주 2회',fee:'90,000'},
-  {label:'주 2회 / 110,000원',freq:'주 2회',fee:'110,000'},
-  {label:'주 3회 / 130,000원',freq:'주 3회',fee:'130,000'},
-  {label:'주 3회 / 150,000원',freq:'주 3회',fee:'150,000'}
-];
 
 var inv_scheduleItems=[
   {title:'휴강',value:'',placeholder:'예: '+inv_selectedMonth+'/2(월) 대체공휴일'},
@@ -987,15 +1054,6 @@ function inv_formatMatLineBlur(t){
     return (isNaN(n)?g:n.toLocaleString())+'원';
   });
 }
-function inv_blurFee(i,el){
-  var raw=String(el.value).replace(/[^\d]/g,'');
-  var n=parseInt(raw,10);
-  if(isNaN(n)||raw==='')return;
-  inv_students[i].fee=n.toLocaleString();
-  el.value=inv_students[i].fee;
-  inv_autoSave(i);
-  inv_refreshTotalHint();
-}
 function inv_blurMat(i,mi,el){
   var nt=inv_formatMatLineBlur(el.value);
   if(nt!==el.value){inv_students[i].materials[mi].text=nt;el.value=nt;inv_autoSave(i)}
@@ -1069,21 +1127,14 @@ function inv_buildStudents(){
   s+='<span>'+(hasPrev?'◀ 이전':'')+'</span><span>'+(hasNext?'다음 ▶':'')+'</span></div>';
   for(var i=start;i<end;i++){
     var st=inv_students[i],isOpen=inv_openStudents.has(i);
-    var hintFreq=(!st.freq&&st.prevFreq)?(' (전월: '+esc(st.prevFreq)+')'):'';
-    var hintFee=(!st.fee&&st.prevFee)?('전월: '+esc(st.prevFee)+'원'):'직접 입력';
+    var matAny=st.materials&&st.materials.some(function(x){return(x.text||'').trim()});
+    var feeDisp=inv_displayFee(st);
     s+='<div class="stu-item"><div class="stu-row" onclick="inv_toggleStu('+i+')">';
     s+='<div class="stu-av">'+st.name[0]+'</div>';
     s+='<span class="stu-name">'+st.name+'</span>';
-    s+='<span class="stu-summary">'+(st.freq||'미입력')+hintFreq+' · '+(st.fee||'0')+'원</span>';
+    s+='<span class="stu-summary">'+(st.freq||'미입력')+' · '+feeDisp+'원'+(matAny?' · 교재비':'')+'</span>';
     s+='<span class="stu-arrow'+(isOpen?' open':'')+'">›</span></div>';
     s+='<div class="stu-detail'+(isOpen?' open':'')+'"><div class="stu-detail-inner">';
-    s+='<div class="fee-chips">';
-    inv_presets.forEach(function(p,pi){
-      var sel=(st.freq===p.freq&&st.fee===p.fee);
-      s+='<div class="fee-chip'+(sel?' selected':'')+'" onclick="inv_selPreset('+i+','+pi+')">'+p.label+'</div>';
-    });
-    s+='</div>';
-    s+='<div class="fee-row"><span class="fee-label">수강료</span><input class="fee-input" value="'+esc(st.fee||'')+'" placeholder="'+hintFee+'" oninput="inv_updateFee('+i+',this.value)" onblur="inv_blurFee('+i+',this)"/></div>';
     if(st.materials&&st.materials.length>0){
       st.materials.forEach(function(mat,mi){
         s+='<div class="added-item"><div class="added-item-row"><div class="added-item-remove" onclick="inv_removeMat('+i+','+mi+')">✕</div><input value="'+esc(mat.text)+'" placeholder="예: 3/6 반주1 : 7,000원" oninput="inv_students['+i+'].materials['+mi+'].text=this.value;inv_autoSave('+i+');inv_refreshTotalHint()" onblur="inv_blurMat('+i+','+mi+',this)"/></div></div>';
@@ -1153,8 +1204,6 @@ function inv_goPage(p,dir){
   var el=document.getElementById('inv_stuListWrap');
   if(el){el.classList.add('stu-slide-'+d);setTimeout(function(){if(el)el.classList.remove('stu-slide-left','stu-slide-right')},300)}
 }
-function inv_selPreset(si,pi){var p=inv_presets[pi];inv_students[si].freq=p.freq;inv_students[si].fee=p.fee;inv_autoSave(si);inv_renderSetting()}
-function inv_updateFee(i,v){inv_students[i].fee=v;inv_autoSave(i);inv_refreshTotalHint()}
 function inv_quickMat(i,amt){
   var token=(amt||0).toLocaleString()+'원';
   var st=inv_students[i];
@@ -1181,7 +1230,7 @@ function inv_makeEditable(el){
 }
 function inv_autoSave(i){
   var s=inv_students[i];
-  apiPost('saveInvoiceStudent',{name:s.name,freq:s.freq,fee:s.fee,materials:s.materials}).catch(function(){});
+  apiPost('saveInvoiceStudent',{name:s.name,materials:s.materials}).catch(function(){});
 }
 
 function inv_goCarousel(){
@@ -1219,12 +1268,7 @@ function inv_renderCarousel(){
   h+=isCopied?'복사됨':'명세서 복사';
   h+='</button>';
   if(!inv_phoneOk(s))h+='<div class="inv-phone-warn">⚠ 전화번호 미등록 — 학생관리 탭에서 학부모 연락처를 입력해 주세요.</div>';
-  h+='<div class="inv-ft-row">';
-  h+='<button type="button" class="inv-ft-primary" onclick="inv_sendFriendTalkOne('+inv_carIdx+')">친구톡 발송</button>';
-  h+='<button type="button" class="inv-ft-secondary" onclick="inv_testFriendTalk('+inv_carIdx+')">테스트 발송</button>';
-  h+='<button type="button" class="inv-ft-secondary" onclick="inv_shareInvoice('+inv_carIdx+')">Web 공유 / 클립보드</button>';
-  h+='</div>';
-  h+='<div class="inv-share-hint">발송이 안 되면 명세서 복사 후 카톡에 붙여넣기</div>';
+  h+='<div class="inv-ft-row"><button type="button" class="inv-ft-primary" onclick="inv_sendFriendTalkOne('+inv_carIdx+')">친구톡 발송</button></div>';
   h+='</div>';
   Q('app',h);
   if(slide){
@@ -1251,17 +1295,6 @@ function inv_attachCarouselSwipe(){
     if(dx<0)inv_carNav(1);else inv_carNav(-1);
   },{passive:true});
 }
-function inv_shareInvoice(idx){
-  var ta=document.getElementById('inv_msgTA');
-  if(ta)inv_editingMsg[idx]=ta.value;
-  var text=inv_editingMsg[idx]||'';
-  if(navigator.share){
-    navigator.share({text:text}).catch(function(){});
-  }else{
-    try{navigator.clipboard.writeText(text);}catch(e){}
-  }
-}
-
 function inv_cancelRevAnim(){if(inv_revRaf){cancelAnimationFrame(inv_revRaf);inv_revRaf=null}}
 function inv_syncRevBarNums(){
   var ts=inv_revDisplay.toLocaleString();
@@ -1286,8 +1319,8 @@ function inv_buildRevBar(){
   var total=inv_revDisplay.toLocaleString();
   var add=inv_lastAdd?(' <span class="add">+'+inv_lastAdd.toLocaleString()+'원</span>'):'';
   var right=(copiedCount>0)
-    ?('복사 '+copiedCount+'명 · 합계 <b id="inv_rev_right_num">'+total+'</b>원'+add)
-    :'<span class="inv-rev-muted">복사 시 합산</span>';
+    ?('완료 '+copiedCount+'명 · 합계 <b id="inv_rev_right_num">'+total+'</b>원'+add)
+    :'<span class="inv-rev-muted">복사·발송 시 합산</span>';
   return '<div class="inv-rev-bar"><div class="inv-rev-left">누적 <b id="inv_rev_left_num">'+total+'</b>원</div><div class="inv-rev-right">'+right+'</div></div>';
 }
 function inv_syncCarouselCopyUI(){
@@ -1379,28 +1412,9 @@ function inv_carNav(dir){
 function inv_doCopy(idx){
   var ta=document.getElementById('inv_msgTA');
   if(ta)inv_editingMsg[idx]=ta.value;
-  try{navigator.clipboard.writeText(inv_editingMsg[idx])}catch(e){}
-  var added=false;
-  if(!inv_copied.has(idx)){
-    var n=inv_studentRevenue(inv_students[idx]);
-    inv_lastAdd=n;
-    inv_revSum+=n;
-    inv_copied.add(idx);
-    added=true;
-  }else{
-    inv_lastAdd=0;
-  }
-  inv_syncCarouselCopyUI();
-  var host=document.getElementById('inv_rev_bar_host');
-  if(host)host.innerHTML=inv_buildRevBar();
-  if(added)inv_revAnimate(inv_revSum);
-  setTimeout(function(){
-    for(var i=idx+1;i<inv_students.length;i++){
-      if(!inv_copied.has(i)){inv_carSlide='next';inv_carIdx=i;inv_renderCarousel();return}
-    }
-    inv_saveHistoryBatch();
-    inv_VIEW='summary';inv_render();
-  },800);
+  if(inv_tuitionDiffersFromMaster(idx)){
+    showModal('<div class="modal-title">금액·횟수가 학생 기본 정보와 달라요</div><div class="modal-desc">이번 달 메시지에만 반영할까요, 학생 기본 정보도 함께 바꿀까요?</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-d" onclick="closeModal();inv_tuitionSyncPick('+idx+',\'copy\',\'month\')">이번 달만</button><button class="btn btn-y" onclick="closeModal();inv_tuitionSyncPick('+idx+',\'copy\',\'master\')">기본 정보도 변경</button></div>');
+  }else inv_doCopyExec(idx);
 }
 
 function inv_showList(){
@@ -1560,35 +1574,77 @@ function stu_render(){
   if(!rows.length)h+='<div style="padding:24px;text-align:center;color:#555;font-size:13px">검색 결과가 없습니다</div>';
   Q('app',h);
 }
+function stu_pickGenderChip(v){
+  document.getElementById('stu_e_gender').value=v;
+  document.querySelectorAll('.stu-chip-gen').forEach(function(c){
+    c.classList.toggle('selected',c.getAttribute('data-v')===v);
+  });
+}
+function stu_pickFreqChip(v){
+  document.getElementById('stu_e_freq').value=v;
+  document.querySelectorAll('.stu-chip-fr').forEach(function(c){
+    c.classList.toggle('selected',c.getAttribute('data-v')===v);
+  });
+}
+function stu_pickFeeChip(amt){
+  document.getElementById('stu_e_fee').value=amt.toLocaleString();
+  document.querySelectorAll('.stu-chip-fee').forEach(function(c){
+    c.classList.toggle('selected',c.getAttribute('data-a')===String(amt));
+  });
+}
+function stu_onFeeInput(){
+  document.querySelectorAll('.stu-chip-fee').forEach(function(c){c.classList.remove('selected');});
+}
 function stu_openEdit(row){
   var o=row?stu_list.find(function(x){return x.row===row}):null;
   if(!o)o={name:'',grade:'',gender:'',freq:'',fee:'',phone:'',parentName:'',level:''};
   stu_editing=o;
   var isNew=!row;
-  showModal('<div class="modal-title">'+(isNew?'학생 추가':'학생 수정')+'</div><div style="text-align:left;font-size:12px;color:#aaa;margin-bottom:8px">이름·학년·성별·학부모·연락처·수강료·주횟수·레벨</div>'+
-    '<input class="fee-input" style="margin-bottom:6px" placeholder="이름" id="stu_f_name" value="'+esc(o.name)+'"/>'+
-    '<input class="fee-input" style="margin-bottom:6px" placeholder="학년" id="stu_f_grade" value="'+esc(o.grade)+'"/>'+
-    '<input class="fee-input" style="margin-bottom:6px" placeholder="성별" id="stu_f_gender" value="'+esc(o.gender)+'"/>'+
-    '<input class="fee-input" style="margin-bottom:6px" placeholder="학부모명" id="stu_f_parent" value="'+esc(o.parentName||'')+'"/>'+
-    '<input class="fee-input" style="margin-bottom:6px" placeholder="학부모 연락처" id="stu_f_phone" value="'+esc(o.phone||'')+'"/>'+
-    '<input class="fee-input" style="margin-bottom:6px" placeholder="수강료" id="stu_f_fee" value="'+esc(o.fee||'')+'"/>'+
-    '<input class="fee-input" style="margin-bottom:6px" placeholder="주 횟수" id="stu_f_freq" value="'+esc(o.freq||'')+'"/>'+
-    '<input class="fee-input" style="margin-bottom:10px" placeholder="레벨" id="stu_f_level" value="'+esc(o.level||'')+'"/>'+
-    '<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="stu_save('+(isNew?'null':row)+')">저장</button></div>');
+  var g=o.gender||'';
+  var fq=o.freq||'';
+  var feeRaw=String(o.fee||'').replace(/,/g,'');
+  var feeNum=parseInt(feeRaw,10);
+  var feePres=[90000,110000,130000,150000];
+  var feeSel=feePres.indexOf(feeNum)>=0;
+  var h='<div class="edit-page">';
+  h+='<div class="edit-topbar"><button type="button" class="btn btn-d" onclick="stu_render()">← 돌아가기</button><span style="font-size:15px;font-weight:700">'+(isNew?'학생 추가':'학생 수정')+'</span><button type="button" class="btn btn-y" onclick="stu_save('+(isNew?'null':row)+')">저장</button></div>';
+  h+='<div class="edit-field"><div class="edit-label">이름</div><input class="fee-input" id="stu_e_name" value="'+esc(o.name)+'" style="width:100%"/></div>';
+  h+='<div class="edit-field"><div class="edit-label">학년</div><input class="fee-input" id="stu_e_grade" value="'+esc(o.grade)+'" style="width:100%"/></div>';
+  h+='<div class="edit-field"><div class="edit-label">성별</div><div class="edit-chips">';
+  h+='<button type="button" class="fee-chip stu-chip-gen" data-v="남" onclick="stu_pickGenderChip(\'남\')">남</button>';
+  h+='<button type="button" class="fee-chip stu-chip-gen" data-v="여" onclick="stu_pickGenderChip(\'여\')">여</button>';
+  h+='</div><input type="hidden" id="stu_e_gender" value="'+esc(g)+'"/></div>';
+  h+='<div class="edit-field"><div class="edit-label">주 횟수</div><div class="edit-chips">';
+  h+='<button type="button" class="fee-chip stu-chip-fr" data-v="주 1회" onclick="stu_pickFreqChip(\'주 1회\')">주1</button>';
+  h+='<button type="button" class="fee-chip stu-chip-fr" data-v="주 2회" onclick="stu_pickFreqChip(\'주 2회\')">주2</button>';
+  h+='<button type="button" class="fee-chip stu-chip-fr" data-v="주 3회" onclick="stu_pickFreqChip(\'주 3회\')">주3</button>';
+  h+='</div><input type="hidden" id="stu_e_freq" value="'+esc(fq)+'"/></div>';
+  h+='<div class="edit-field"><div class="edit-label">수강료</div><div class="edit-chips">';
+  feePres.forEach(function(a){
+    var sel=feeSel&&feeNum===a;
+    h+='<button type="button" class="fee-chip stu-chip-fee'+(sel?' selected':'')+'" data-a="'+a+'" onclick="stu_pickFeeChip('+a+')">'+a.toLocaleString()+'원</button>';
+  });
+  h+='</div><input class="fee-input" id="stu_e_fee" value="'+esc(o.fee||'')+'" placeholder="직접 입력" oninput="stu_onFeeInput()" style="width:100%;margin-top:4px"/></div>';
+  h+='<div class="edit-field"><div class="edit-label">학부모명</div><input class="fee-input" id="stu_e_parent" value="'+esc(o.parentName||'')+'" style="width:100%"/></div>';
+  h+='<div class="edit-field"><div class="edit-label">연락처</div><input class="fee-input" type="tel" id="stu_e_phone" value="'+esc(o.phone||'')+'" style="width:100%"/></div>';
+  h+='<div class="edit-field"><div class="edit-label">레벨</div><input class="fee-input" id="stu_e_level" value="'+esc(o.level||'')+'" style="width:100%"/></div>';
+  h+='</div>';
+  Q('app',h);
+  if(g)stu_pickGenderChip(g);
+  if(fq)stu_pickFreqChip(fq);
 }
 function stu_save(row){
   var body={
-    name:document.getElementById('stu_f_name').value.trim(),
-    grade:document.getElementById('stu_f_grade').value.trim(),
-    gender:document.getElementById('stu_f_gender').value.trim(),
-    parentName:document.getElementById('stu_f_parent').value.trim(),
-    phone:document.getElementById('stu_f_phone').value.trim(),
-    fee:document.getElementById('stu_f_fee').value.trim(),
-    freq:document.getElementById('stu_f_freq').value.trim(),
-    level:document.getElementById('stu_f_level').value.trim()
+    name:document.getElementById('stu_e_name').value.trim(),
+    grade:document.getElementById('stu_e_grade').value.trim(),
+    gender:document.getElementById('stu_e_gender').value.trim(),
+    parentName:document.getElementById('stu_e_parent').value.trim(),
+    phone:document.getElementById('stu_e_phone').value.trim(),
+    fee:document.getElementById('stu_e_fee').value.trim(),
+    freq:document.getElementById('stu_e_freq').value.trim(),
+    level:document.getElementById('stu_e_level').value.trim()
   };
   if(!body.name){toast('이름을 입력하세요');return;}
-  closeModal();
   if(row){
     body.row=row;
     apiPost('updateStudent',body).then(function(){stu_markDirty();stu_loaded=false;stu_init();toast('저장됨');}).catch(function(e){toast(e.message);});
