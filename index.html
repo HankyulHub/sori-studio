@@ -441,9 +441,8 @@ function appLoadInitFallback(){
     };
   });
 }
-function appApplyInitData(data){
+function appMergeCacheFromData(data){
   APP_DATA=data;
-  APP_LOADING=false;
   kk_KW={};
   kk_PrevKW={};
   kk_MSG={};
@@ -463,11 +462,18 @@ function appApplyInitData(data){
   pay_status=data.paymentStatus||null;
   pay_stats=data.revenueStats||null;
   pay_loaded=true;
+}
+function appApplyInitData(data){
+  APP_LOADING=false;
+  appMergeCacheFromData(data);
   if(MODE==='kakao'){kk_rInput();kk_checkFirstRun();}
   else if(MODE==='invoice')inv_render();
   else if(MODE==='stu')stu_render();
   else if(MODE==='pay')pay_render();
   else if(MODE==='att')att_render();
+}
+function stu_softReloadFromServer(){
+  return appLoadInitFallback().then(appMergeCacheFromData);
 }
 function appInit(){
   APP_LOADING=true;
@@ -1800,8 +1806,12 @@ function stu_save(row){
     }).catch(function(e){toast(e.message);});
   }else{
     apiPost('addStudent',body).then(function(newRow){
-      var r=parseInt(newRow,10);
-      if(!r||isNaN(r)){toast('추가 오류');appInit();return;}
+      var r=typeof newRow==='number'?newRow:parseInt(newRow,10);
+      if((!r||isNaN(r))&&newRow&&typeof newRow==='object'&&newRow.row!=null)r=parseInt(newRow.row,10);
+      if(!r||isNaN(r)||r<2){
+        stu_softReloadFromServer().then(function(){toast('추가됨');stu_render();}).catch(function(e){toast(e.message);});
+        return;
+      }
       var rec=stu_recNew(r,body);
       stu_list.push(rec);
       inv_students.push({
@@ -1820,7 +1830,12 @@ function stu_save(row){
 function stu_delete(row){
   var rec=stu_list.find(function(x){return x.row===row});
   if(!rec||!confirm(rec.name+' 학생을 삭제할까요?'))return;
-  apiPost('deleteStudent',{row:row}).then(function(){appInit();toast('삭제됨');}).catch(function(e){toast(e.message);});
+  apiPost('deleteStudent',{row:row}).then(function(){
+    return stu_softReloadFromServer();
+  }).then(function(){
+    toast('삭제됨');
+    stu_render();
+  }).catch(function(e){toast(e.message);});
 }
 
 // ═══════════════════════════════════════
