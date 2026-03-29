@@ -1678,6 +1678,19 @@ function stu_syncAppDataStudents(){
 function stu_invalidateInvSession(){
   try{sessionStorage.removeItem(inv_cacheKey());}catch(e){}
 }
+function stu_rebuildKkMapsFromList(){
+  kk_S=stu_list;
+  kk_KW={};
+  kk_PrevKW={};
+  kk_MSG={};
+  kk_DONE=new Set();
+  stu_list.forEach(function(s){
+    if(s.kw)kk_KW[s.row]=s.kw;
+    kk_PrevKW[s.row]=s.prevKw||'';
+    if(s.msg)kk_MSG[s.row]=s.msg;
+    if(s.done)kk_DONE.add(s.row);
+  });
+}
 function stu_init(){
   if(APP_DATA&&APP_DATA.students){
     stu_list=APP_DATA.students||[];
@@ -1791,51 +1804,86 @@ function stu_save(row){
   if(!body.name){toast('이름을 입력하세요');return;}
   if(row){
     body.row=row;
-    apiPost('updateStudent',body).then(function(){
-      var prev=stu_list.find(function(s){return s.row===row})||{};
-      var oldName=prev.name;
-      var rec=stu_recFromBody(row,body,prev);
-      var ix=stu_list.findIndex(function(s){return s.row===row});
-      if(ix>=0)stu_list[ix]=rec;
-      stu_patchInvFromRec(rec);
-      stu_patchPayFromRec(rec,oldName);
-      stu_syncAppDataStudents();
-      stu_invalidateInvSession();
-      toast('저장됨');
-      stu_render();
-    }).catch(function(e){toast(e.message);});
+    var prev=stu_list.find(function(s){return s.row===row})||{};
+    var oldName=prev.name;
+    var rec=stu_recFromBody(row,body,prev);
+    var ix=stu_list.findIndex(function(s){return s.row===row});
+    if(ix>=0)stu_list[ix]=rec;
+    kk_S=stu_list;
+    stu_patchInvFromRec(rec);
+    stu_patchPayFromRec(rec,oldName);
+    stu_syncAppDataStudents();
+    stu_invalidateInvSession();
+    stu_rebuildKkMapsFromList();
+    toast('반영됨');
+    stu_render();
+    apiPost('updateStudent',body).catch(function(e){
+      toast('저장 실패 — 서버와 맞추는 중');
+      stu_softReloadFromServer().then(function(){stu_render();}).catch(function(){});
+    });
   }else{
+    var maxR=1;
+    stu_list.forEach(function(s){if(s.row>maxR)maxR=s.row;});
+    var guessRow=maxR+1;
+    var rec=stu_recNew(guessRow,body);
+    stu_list.push(rec);
+    kk_S=stu_list;
+    inv_students.push({
+      row:guessRow,name:rec.name,grade:rec.grade,gender:rec.gender,gg:rec.gg,
+      freq:rec.freq,fee:rec.fee,materials:[],phone:rec.phone,parentName:rec.parentName,level:rec.level,
+      prevFreq:'',prevFee:'',prevMaterials:[]
+    });
+    stu_patchPayFromRec(rec);
+    stu_syncAppDataStudents();
+    stu_invalidateInvSession();
+    stu_rebuildKkMapsFromList();
+    toast('반영됨');
+    stu_render();
     apiPost('addStudent',body).then(function(newRow){
       var r=typeof newRow==='number'?newRow:parseInt(newRow,10);
       if((!r||isNaN(r))&&newRow&&typeof newRow==='object'&&newRow.row!=null)r=parseInt(newRow.row,10);
       if(!r||isNaN(r)||r<2){
-        stu_softReloadFromServer().then(function(){toast('추가됨');stu_render();}).catch(function(e){toast(e.message);});
+        stu_softReloadFromServer().then(function(){stu_render();}).catch(function(e){toast(e.message);});
         return;
       }
-      var rec=stu_recNew(r,body);
-      stu_list.push(rec);
-      inv_students.push({
-        row:r,name:rec.name,grade:rec.grade,gender:rec.gender,gg:rec.gg,
-        freq:rec.freq,fee:rec.fee,materials:[],phone:rec.phone,parentName:rec.parentName,level:rec.level,
-        prevFreq:'',prevFee:'',prevMaterials:[]
-      });
-      stu_patchPayFromRec(rec);
+      if(r!==guessRow){
+        stu_softReloadFromServer().then(function(){stu_render();});
+        return;
+      }
       stu_syncAppDataStudents();
       stu_invalidateInvSession();
-      toast('추가됨');
-      stu_render();
-    }).catch(function(e){toast(e.message);});
+    }).catch(function(e){
+      toast('저장 실패 — 서버와 맞추는 중');
+      stu_list=stu_list.filter(function(s){return s.row!==guessRow});
+      kk_S=stu_list;
+      inv_students=inv_students.filter(function(x){return x.row!==guessRow});
+      stu_rebuildKkMapsFromList();
+      stu_softReloadFromServer().then(function(){stu_render();}).catch(function(){});
+    });
   }
 }
 function stu_delete(row){
   var rec=stu_list.find(function(x){return x.row===row});
   if(!rec||!confirm(rec.name+' 학생을 삭제할까요?'))return;
-  apiPost('deleteStudent',{row:row}).then(function(){
-    return stu_softReloadFromServer();
-  }).then(function(){
-    toast('삭제됨');
-    stu_render();
-  }).catch(function(e){toast(e.message);});
+  var delRow=row;
+  var nm=rec.name;
+  stu_list=stu_list.filter(function(s){return s.row!==delRow});
+  stu_list.forEach(function(s){ if(s.row>delRow) s.row--; });
+  kk_S=stu_list;
+  inv_students=inv_students.filter(function(x){return x.row!==delRow});
+  inv_students.forEach(function(x){ if(x.row>delRow) x.row--; });
+  if(pay_status&&pay_status.students){
+    pay_status.students=pay_status.students.filter(function(p){return p.name!==nm});
+  }
+  stu_rebuildKkMapsFromList();
+  stu_syncAppDataStudents();
+  stu_invalidateInvSession();
+  toast('삭제됨');
+  stu_render();
+  apiPost('deleteStudent',{row:delRow}).catch(function(e){
+    toast('삭제 실패 — 서버와 맞추는 중');
+    stu_softReloadFromServer().then(function(){stu_render();}).catch(function(){});
+  });
 }
 
 // ═══════════════════════════════════════
