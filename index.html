@@ -426,6 +426,49 @@ function goHomeBanner(){
   else if(MODE==='pay')pay_render();
 }
 
+function appLoadInitFallback(){
+  return Promise.all([
+    apiGet('loadStudents'),
+    apiGet('loadInvoiceStudents',{year:inv_targetYear,month:inv_selectedMonth}),
+    apiGet('loadPaymentStatus',{year:pay_year,month:pay_month}),
+    apiGet('getRevenueStats')
+  ]).then(function(arr){
+    return{
+      students:arr[0]||[],
+      invoiceStudents:arr[1]||[],
+      paymentStatus:arr[2]||null,
+      revenueStats:arr[3]||null
+    };
+  });
+}
+function appApplyInitData(data){
+  APP_DATA=data;
+  APP_LOADING=false;
+  kk_KW={};
+  kk_PrevKW={};
+  kk_MSG={};
+  kk_DONE=new Set();
+  kk_S=data.students||[];
+  kk_S.forEach(function(s){
+    if(s.kw)kk_KW[s.row]=s.kw;
+    kk_PrevKW[s.row]=s.prevKw||'';
+    if(s.msg)kk_MSG[s.row]=s.msg;
+    if(s.done)kk_DONE.add(s.row);
+  });
+  kk_loaded=true;
+  inv_students=data.invoiceStudents||[];
+  inv_loaded=true;
+  stu_list=data.students||[];
+  stu_loaded=true;
+  pay_status=data.paymentStatus||null;
+  pay_stats=data.revenueStats||null;
+  pay_loaded=true;
+  if(MODE==='kakao'){kk_rInput();kk_checkFirstRun();}
+  else if(MODE==='invoice')inv_render();
+  else if(MODE==='stu')stu_render();
+  else if(MODE==='pay')pay_render();
+  else if(MODE==='att')att_render();
+}
 function appInit(){
   APP_LOADING=true;
   Q('app','<div class="loading"><div class="spin"></div>불러오는 중...</div>');
@@ -434,34 +477,11 @@ function appInit(){
     month:inv_selectedMonth,
     payYear:pay_year,
     payMonth:pay_month
-  }).then(function(data){
-    APP_DATA=data;
-    APP_LOADING=false;
-    kk_KW={};
-    kk_PrevKW={};
-    kk_MSG={};
-    kk_DONE=new Set();
-    kk_S=data.students||[];
-    kk_S.forEach(function(s){
-      if(s.kw)kk_KW[s.row]=s.kw;
-      kk_PrevKW[s.row]=s.prevKw||'';
-      if(s.msg)kk_MSG[s.row]=s.msg;
-      if(s.done)kk_DONE.add(s.row);
-    });
-    kk_loaded=true;
-    inv_students=data.invoiceStudents||[];
-    inv_loaded=true;
-    stu_list=data.students||[];
-    stu_loaded=true;
-    pay_status=data.paymentStatus||null;
-    pay_stats=data.revenueStats||null;
-    pay_loaded=true;
-    if(MODE==='kakao'){kk_rInput();kk_checkFirstRun();}
-    else if(MODE==='invoice')inv_render();
-    else if(MODE==='stu')stu_render();
-    else if(MODE==='pay')pay_render();
-    else if(MODE==='att')att_render();
   }).catch(function(e){
+    var m=String(e&&e.message||'');
+    if(m.indexOf('Unknown action')>=0)return appLoadInitFallback();
+    throw e;
+  }).then(appApplyInitData).catch(function(e){
     APP_LOADING=false;
     Q('app','<div style="padding:20px;color:#f87171;font-size:13px">연결 실패: '+esc(e.message)+'</div>');
   });
