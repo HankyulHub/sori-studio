@@ -472,18 +472,17 @@ function appApplyInitData(data){
 function appInit(){
   APP_LOADING=true;
   Q('app','<div class="loading"><div class="spin"></div>불러오는 중...</div>');
-  apiGet('loadAll',{
+  var params={
     year:inv_targetYear,
     month:inv_selectedMonth,
     payYear:pay_year,
     payMonth:pay_month
-  }).catch(function(e){
-    var m=String(e&&e.message||'');
-    if(m.indexOf('Unknown action')>=0)return appLoadInitFallback();
-    throw e;
+  };
+  apiGet('loadAll',params).catch(function(){
+    return appLoadInitFallback();
   }).then(appApplyInitData).catch(function(e){
     APP_LOADING=false;
-    Q('app','<div style="padding:20px;color:#f87171;font-size:13px">연결 실패: '+esc(e.message)+'</div>');
+    Q('app','<div style="padding:20px;color:#f87171;font-size:13px">연결 실패: '+esc(e&&e.message?e.message:String(e))+'</div>');
   });
 }
 
