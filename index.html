@@ -1590,7 +1590,7 @@ function inv_renderListModal(){
   var h='';
   h+='<div class="modal-icon">📋</div>';
   h+='<div class="modal-title">전체 목록</div>';
-  h+='<div class="modal-desc">이름을 눌러 이동 · 체크해서 일괄 발송</div>';
+  h+='<div class="modal-desc">이름을 눌러 이동</div>';
   var eligible=0;
   for(var ei=0;ei<inv_students.length;ei++){if(inv_bulkEligible(ei))eligible++}
   var selN=inv_bulkSelCount();
@@ -1631,11 +1631,10 @@ function inv_renderListModal(){
 
 function inv_jumpTo(i){
   closeModal();
-  setTimeout(function(){
-    inv_carSlide=(i>inv_carIdx?'next':'prev');
-    inv_carIdx=i;
-    inv_renderCarousel();
-  },250);
+  inv_carSlide=(i>inv_carIdx?'next':'prev');
+  inv_carIdx=i;
+  // 모달 닫힌 후 캐러셀 렌더 — 모달 떠있는 동안 뒤를 그리지 않음
+  setTimeout(function(){inv_renderCarousel();},280);
 }
 
 function inv_saveHistoryBatch(){
