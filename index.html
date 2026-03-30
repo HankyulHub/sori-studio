@@ -1613,7 +1613,7 @@ function inv_renderListModal(){
       var feeCls=fee? 'inv-li-fee':'inv-li-fee dim';
       var can=inv_bulkEligible(x.i);
       var checked=inv_bulkSel.has(x.i);
-      h+='<div class="inv-list-item'+(x.i===inv_carIdx?' current':'')+(can?'':' disabled')+'" onclick="event.stopPropagation();inv_jumpTo('+x.i+')">';
+      h+='<div class="inv-list-item'+(can?'':' disabled')+'" onclick="inv_jumpTo('+x.i+')">';
       h+='<div class="inv-li-check"><input type="checkbox" '+(can?'':'disabled ') +(checked?'checked ':'')+'onclick="event.stopPropagation();inv_bulkToggle('+x.i+')"></div>';
       h+='<div class="inv-li-name">'+esc(x.s.name)+'</div>';
       h+='<div class="'+feeCls+'">'+esc(fee?fee+'원':'-')+'</div>';
@@ -1630,17 +1630,12 @@ function inv_renderListModal(){
 }
 
 function inv_jumpTo(i){
-  inv_carSlide='';
-  inv_carIdx=i;
-  inv_renderCarousel();
-  // 모달 innerHTML 교체하지 않고 current 표시만 업데이트
-  var items=document.querySelectorAll('.inv-list-item');
-  items.forEach(function(el){
-    var m=(el.getAttribute('onclick')||'').match(/inv_jumpTo\((\d+)\)/);
-    if(m){
-      el.classList.toggle('current',parseInt(m[1],10)===i);
-    }
-  });
+  closeModal();
+  setTimeout(function(){
+    inv_carSlide=(i>inv_carIdx?'next':'prev');
+    inv_carIdx=i;
+    inv_renderCarousel();
+  },250);
 }
 
 function inv_saveHistoryBatch(){
