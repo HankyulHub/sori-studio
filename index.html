@@ -1575,7 +1575,7 @@ function inv_renderListModal(){
       var fee=String(x.s.fee||'').trim();
       var badge=x.sent?'<span class="inv-li-badge done">발송됨</span>':'<span class="inv-li-badge todo">미발송</span>';
       var feeCls=fee? 'inv-li-fee':'inv-li-fee dim';
-      h+='<div class="inv-list-item'+(x.i===inv_carIdx?' current':'')+'" onclick="inv_jumpTo('+x.i+')">';
+      h+='<div class="inv-list-item'+(x.i===inv_carIdx?' current':'')+'" onclick="event.stopPropagation();inv_jumpTo('+x.i+')">';
       h+='<div class="inv-li-name">'+esc(x.s.name)+'</div>';
       h+='<div class="'+feeCls+'">'+esc(fee?fee+'원':'-')+'</div>';
       h+=badge;
