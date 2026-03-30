@@ -1004,6 +1004,7 @@ function inv_bulkUiRefresh(){
   if(allCb){
     allCb.disabled=(eligible<1);
     allCb.checked=allOn;
+    allCb.indeterminate=(!allOn && selN>0 && selN<eligible);
   }
   var btn=document.getElementById('inv_bulk_send_btn');
   if(btn){
@@ -1042,13 +1043,14 @@ function inv_bulkToggle(i){
   else inv_bulkSel.add(i);
   inv_bulkUiRefresh();
 }
-function inv_bulkAllToggle(){
+function inv_bulkAllToggle(cb){
   var eligible=0;
   for(var ei=0;ei<inv_students.length;ei++){if(inv_bulkEligible(ei))eligible++}
   var selN=inv_bulkSelCount();
   var allOn=(eligible>0&&selN===eligible);
+  var nextOn=(cb&&typeof cb.checked==='boolean') ? cb.checked : !allOn;
   inv_bulkSel.clear();
-  if(!allOn){
+  if(nextOn){
     for(var i=0;i<inv_students.length;i++){
       if(inv_bulkEligible(i))inv_bulkSel.add(i);
     }
@@ -1661,7 +1663,7 @@ function inv_renderListModal(){
   var selN=inv_bulkSelCount();
   var allOn=(eligible>0 && selN===eligible);
   h+='<div class="inv-list-top">';
-  h+='<label onclick="event.stopPropagation()"><input id="inv_bulk_all_cb" type="checkbox" '+(eligible<1?'disabled ':'')+(allOn?'checked ':'')+'onclick="event.stopPropagation();event.preventDefault();inv_bulkAllToggle()"> 전체 선택</label>';
+  h+='<label onclick="event.stopPropagation()"><input id="inv_bulk_all_cb" type="checkbox" '+(eligible<1?'disabled ':'')+(allOn?'checked ':'')+'onclick="event.stopPropagation();inv_bulkAllToggle(this)"> 전체 선택</label>';
   h+='<div class="inv-list-head" style="margin:0;flex:1">';
   h+='<button class="inv-list-tab '+(inv_listFilter==='all'?'active':'')+'" onclick="inv_setListFilter(\'all\')">전체 ('+totalCount+')</button>';
   h+='<button class="inv-list-tab '+(inv_listFilter==='sent'?'active':'')+'" onclick="inv_setListFilter(\'sent\')">발송됨 ('+sentCount+')</button>';
@@ -1679,7 +1681,7 @@ function inv_renderListModal(){
       var can=inv_bulkEligible(x.i);
       var checked=inv_bulkSel.has(x.i);
       h+='<div class="inv-list-item'+(can?'':' disabled')+'" data-idx="'+x.i+'" onclick="inv_jumpTo('+x.i+')">';
-      h+='<div class="inv-li-check"><input type="checkbox" data-role="inv-bulk-item" '+(can?'':'disabled ') +(checked?'checked ':'')+'onclick="event.stopPropagation();event.preventDefault();inv_bulkToggle('+x.i+')"></div>';
+      h+='<div class="inv-li-check"><input type="checkbox" data-role="inv-bulk-item" '+(can?'':'disabled ') +(checked?'checked ':'')+'onclick="event.stopPropagation();inv_bulkToggle('+x.i+')"></div>';
       h+='<div class="inv-li-name">'+esc(x.s.name)+'</div>';
       h+='<div class="'+feeCls+'">'+esc(fee?fee+'원':'-')+'</div>';
       h+=badge;
