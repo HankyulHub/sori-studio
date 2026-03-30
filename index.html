@@ -1594,7 +1594,16 @@ function inv_jumpTo(i){
   inv_carSlide='';
   inv_carIdx=i;
   inv_renderCarousel();
-  inv_renderListModal();
+  var items=document.querySelectorAll('.inv-list-item');
+  items.forEach(function(el){
+    var onclick=el.getAttribute('onclick')||'';
+    var match=onclick.match(/inv_jumpTo\((\d+)\)/);
+    if(match){
+      var itemIdx=parseInt(match[1],10);
+      if(itemIdx===i)el.classList.add('current');
+      else el.classList.remove('current');
+    }
+  });
 }
 
 function inv_saveHistoryBatch(){
