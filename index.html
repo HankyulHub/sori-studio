@@ -434,9 +434,9 @@ function closeModal(done){
   var wasOpen=m.classList.contains('on');
   m.classList.add('modal-dim--closing');
   m.classList.remove('on');
-  card.classList.remove('modal-card--list');
   if(!wasOpen){
     m.classList.remove('modal-dim--closing');
+    card.classList.remove('modal-card--list');
     if(typeof done==='function')done();
     return;
   }
@@ -445,6 +445,7 @@ function closeModal(done){
     m.removeEventListener('transitionend',end);
     m._modalCloseEnd=null;
     m.classList.remove('modal-dim--closing');
+    card.classList.remove('modal-card--list');
     if(typeof done==='function')done();
   }
   m._modalCloseEnd=end;
