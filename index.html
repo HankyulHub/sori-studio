@@ -416,10 +416,24 @@ function showModal(html,isList){
   if(isList){card.classList.add('modal-card--list');}else{card.classList.remove('modal-card--list');}
   document.getElementById('modal').classList.add('on');
 }
+var MODAL_CLICK_LOCK_UNTIL=0;
 function closeModal(){
+  MODAL_CLICK_LOCK_UNTIL=Date.now()+380;
   document.getElementById('modal').classList.remove('on');
   document.getElementById('modalCard').classList.remove('modal-card--list');
 }
+document.addEventListener('click',function(e){
+  if(Date.now()<MODAL_CLICK_LOCK_UNTIL){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+},true);
+document.addEventListener('touchend',function(e){
+  if(Date.now()<MODAL_CLICK_LOCK_UNTIL){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+},{capture:true,passive:false});
 
 var now=new Date();
 document.getElementById('headerDate').textContent=now.getFullYear()+'년 '+(now.getMonth()+1)+'월';
@@ -963,6 +977,36 @@ var inv_carSlide=''; // '' | 'next' | 'prev'
 var inv_bulkFromList=false;
 var inv_bulkSel=new Set();
 
+function inv_bulkUiRefresh(){
+  var eligible=0;
+  for(var ei=0;ei<inv_students.length;ei++){if(inv_bulkEligible(ei))eligible++}
+  var selN=inv_bulkSelCount();
+  var allOn=(eligible>0 && selN===eligible);
+
+  var allCb=document.getElementById('inv_bulk_all_cb');
+  if(allCb){
+    allCb.disabled=(eligible<1);
+    allCb.checked=allOn;
+  }
+  var btn=document.getElementById('inv_bulk_send_btn');
+  if(btn){
+    btn.disabled=(selN<1);
+    btn.textContent='일괄 친구톡 ('+selN+'명 선택)';
+  }
+  var items=document.querySelectorAll('.inv-list-item[data-idx]');
+  items.forEach(function(el){
+    var i=parseInt(el.getAttribute('data-idx'),10);
+    if(isNaN(i))return;
+    var can=inv_bulkEligible(i);
+    el.classList.toggle('disabled',!can);
+    var cb=el.querySelector('input[type="checkbox"][data-role="inv-bulk-item"]');
+    if(cb){
+      cb.disabled=!can;
+      cb.checked=!!inv_bulkSel.has(i);
+    }
+  });
+}
+
 function inv_phoneOk(s){
   var p=String((s&&s.phone)||'').replace(/\D/g,'');
   return p.length>=10;
@@ -979,7 +1023,7 @@ function inv_bulkToggle(i){
   if(!inv_bulkEligible(i))return;
   if(inv_bulkSel.has(i))inv_bulkSel.delete(i);
   else inv_bulkSel.add(i);
-  inv_renderListModal();
+  inv_bulkUiRefresh();
 }
 function inv_bulkAllToggle(on){
   inv_bulkSel.clear();
@@ -988,7 +1032,7 @@ function inv_bulkAllToggle(on){
       if(inv_bulkEligible(i))inv_bulkSel.add(i);
     }
   }
-  inv_renderListModal();
+  inv_bulkUiRefresh();
 }
 function inv_getMsgFor(idx){
   return inv_editingMsg[idx]||inv_buildMessage(inv_students[idx]);
@@ -1596,7 +1640,7 @@ function inv_renderListModal(){
   var selN=inv_bulkSelCount();
   var allOn=(eligible>0 && selN===eligible);
   h+='<div class="inv-list-top">';
-  h+='<label onclick="event.stopPropagation()"><input type="checkbox" '+(eligible<1?'disabled ':'')+(allOn?'checked ':'')+'onclick="event.stopPropagation();inv_bulkAllToggle(!this.checked)"> 전체 선택</label>';
+  h+='<label onclick="event.stopPropagation()"><input id="inv_bulk_all_cb" type="checkbox" '+(eligible<1?'disabled ':'')+(allOn?'checked ':'')+'onclick="event.stopPropagation();inv_bulkAllToggle(!this.checked)"> 전체 선택</label>';
   h+='<div class="inv-list-head" style="margin:0;flex:1">';
   h+='<button class="inv-list-tab '+(inv_listFilter==='all'?'active':'')+'" onclick="inv_setListFilter(\'all\')">전체 ('+totalCount+')</button>';
   h+='<button class="inv-list-tab '+(inv_listFilter==='sent'?'active':'')+'" onclick="inv_setListFilter(\'sent\')">발송됨 ('+sentCount+')</button>';
@@ -1613,8 +1657,8 @@ function inv_renderListModal(){
       var feeCls=fee? 'inv-li-fee':'inv-li-fee dim';
       var can=inv_bulkEligible(x.i);
       var checked=inv_bulkSel.has(x.i);
-      h+='<div class="inv-list-item'+(can?'':' disabled')+'" onclick="inv_jumpTo('+x.i+')">';
-      h+='<div class="inv-li-check"><input type="checkbox" '+(can?'':'disabled ') +(checked?'checked ':'')+'onclick="event.stopPropagation();inv_bulkToggle('+x.i+')"></div>';
+      h+='<div class="inv-list-item'+(can?'':' disabled')+'" data-idx="'+x.i+'" onclick="inv_jumpTo('+x.i+')">';
+      h+='<div class="inv-li-check"><input type="checkbox" data-role="inv-bulk-item" '+(can?'':'disabled ') +(checked?'checked ':'')+'onclick="event.stopPropagation();inv_bulkToggle('+x.i+')"></div>';
       h+='<div class="inv-li-name">'+esc(x.s.name)+'</div>';
       h+='<div class="'+feeCls+'">'+esc(fee?fee+'원':'-')+'</div>';
       h+=badge;
@@ -1624,17 +1668,23 @@ function inv_renderListModal(){
   h+='</div>';
   var bulkN=selN;
   h+='<div class="modal-btns" style="flex-direction:column;gap:8px">';
-  h+='<button type="button" class="btn btn-d" '+(bulkN<1?'disabled ':'')+'onclick="event.stopPropagation();inv_bulkFromList=true;inv_openBulkFriendModal(inv_bulkSel)">일괄 친구톡 ('+bulkN+'명 선택)</button>';
+  h+='<button id="inv_bulk_send_btn" type="button" class="btn btn-d" '+(bulkN<1?'disabled ':'')+'onclick="event.stopPropagation();inv_bulkFromList=true;inv_openBulkFriendModal(inv_bulkSel)">일괄 친구톡 ('+bulkN+'명 선택)</button>';
   h+='<button class="btn btn-y" onclick="closeModal()">닫기</button></div>';
   showModal(h,true);
+  inv_bulkUiRefresh();
 }
 
 function inv_jumpTo(i){
-  closeModal();
+  var modal=document.getElementById('modal');
+  function afterClose(e){
+    if(e && e.target!==modal)return;
+    modal.removeEventListener('transitionend',afterClose);
+    inv_renderCarousel();
+  }
+  modal.addEventListener('transitionend',afterClose);
   inv_carSlide=(i>inv_carIdx?'next':'prev');
   inv_carIdx=i;
-  // 모달 닫힌 후 캐러셀 렌더 — 모달 떠있는 동안 뒤를 그리지 않음
-  setTimeout(function(){inv_renderCarousel();},280);
+  closeModal();
 }
 
 function inv_saveHistoryBatch(){
