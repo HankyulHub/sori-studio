@@ -14,6 +14,13 @@
   font-display:swap;
 }
 @font-face{
+  font-family:'Manrope';
+  src:url('./assets/fonts/Manrope-VariableFont_wght.ttf') format('truetype');
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+}
+@font-face{
   font-family:'StitchHeadline';
   src:url('./assets/fonts/NotoSerifKR-VariableFont_wght.ttf') format('truetype');
   font-weight:100 900;
@@ -21,11 +28,11 @@
   font-display:swap;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{font-family:'StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
+html,body{font-family:'Manrope','StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
 body{background:#faf9f6;color:#1a1c1a;max-width:500px;margin:0 auto;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;padding-bottom:92px}
 *{font-family:inherit}
 
-h1,h2,h3,h4,h5,h6,.title{font-family:'StitchHeadline',serif!important}
+h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
 
 :root{
   --pri:#002046;
@@ -220,7 +227,7 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'StitchHeadline',serif!important}
 .stu-arrow.open{transform:rotate(90deg)}
 .stu-detail{max-height:0;overflow:hidden;transition:max-height .25s ease;padding:0 0 0 40px}
 .stu-detail.open{max-height:600px}
-.stu-detail-inner{padding:4px 0 12px}
+.stu-detail-inner{background:#ffffff;border-radius:12px;padding:12px 16px;margin:4px 0 8px 0}
 .fee-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .fee-chip{padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;cursor:pointer;border:1px solid rgba(196,198,207,.38);background:rgba(255,255,255,.7);color:var(--on-v);transition:.15s;font-family:inherit;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .fee-chip:active{transform:scale(.95)}
@@ -349,8 +356,8 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'StitchHeadline',serif!important}
 .stu-slide-left{animation:stuSlideLeft .2s ease}
 .stu-slide-right{animation:stuSlideRight .2s ease}
 .tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;display:flex;background:rgba(250,249,246,0.82);border-top:1px solid rgba(196,198,207,.22);z-index:60;padding:8px 0 max(10px,env(safe-area-inset-bottom));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 -18px 40px rgba(26,28,26,.08)}
-.tabbar-item{flex:1;padding:7px 2px 6px;text-align:center;font-size:10px;color:#74777f;cursor:pointer;border:none;background:transparent;font-family:inherit;line-height:1.15;font-weight:800;letter-spacing:.08em;text-transform:uppercase;position:relative;transition: background 0.15s}
-.tabbar-item:active{background:rgba(0,32,70,0.08);border-radius:12px}
+.tabbar-item{flex:1;padding:7px 2px 6px;text-align:center;font-size:10px;color:#74777f;cursor:pointer;border:none;background:transparent;font-family:inherit;line-height:1.15;font-weight:800;letter-spacing:.08em;text-transform:uppercase;position:relative;-webkit-tap-highlight-color:transparent;transition: background 0.15s ease;border-radius:12px}
+.tabbar-item:active{background:rgba(0,32,70,0.07)}
 .tabbar-item .ms{display:block;font-size:22px;line-height:1;margin-bottom:4px;color:inherit;font-variation-settings:'FILL' 0,'wght' 600,'opsz' 24,'GRAD' 0}
 .tabbar-item.active{color:var(--pri);font-weight:900}
 .tabbar-item.active .ms{font-variation-settings:'FILL' 1,'wght' 650,'opsz' 24,'GRAD' 0}
@@ -360,7 +367,7 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'StitchHeadline',serif!important}
 .tabbar-item--home .tab-ic .ms{margin:0;font-size:24px}
 
 /* 폰트(타이틀/숫자 강조) */
-.home3-w1,.home3-cta-title,.home3-sec-title,.home3-alert-title,.home3-stat-num,.home3-money,.title{font-family:'StitchHeadline',serif!important}
+.home3-w1,.home3-cta-title,.home3-sec-title,.home3-alert-title,.home3-stat-num,.home3-money,.title{font-family:'Manrope','StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
 
 /* 홈(대시보드 v3) */
 .home3-wrap{padding:18px 20px 10px}
@@ -530,6 +537,32 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'StitchHeadline',serif!important}
 </style>
 </head>
 <body>
+<div id="app-loader" style="
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #FBF8F4;
+">
+  <div style="font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 20px; color: #002046; letter-spacing: -0.5px;">
+    SORI MANAGER
+  </div>
+  <div style="margin-top: 16px;">
+    <svg width="48" height="16" viewBox="0 0 48 16">
+      <circle cx="8" cy="8" r="4" fill="#002046" opacity="0.3">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0s"/>
+      </circle>
+      <circle cx="24" cy="8" r="4" fill="#002046" opacity="0.3">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.2s"/>
+      </circle>
+      <circle cx="40" cy="8" r="4" fill="#002046" opacity="0.3">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.4s"/>
+      </circle>
+    </svg>
+  </div>
+  <div style="margin-top: 12px; font-family: 'Manrope', sans-serif; font-size: 13px; color: #8a8a8a;">
+    데이터를 불러오고 있어요
+  </div>
+</div>
 <div class="banner" onclick="goHomeBanner()">
   <div class="banner-row">
     <div><div class="logo">SORI MANAGER</div><div class="title" id="bannerTitle">소리마을 매니저</div></div>
@@ -680,6 +713,7 @@ function appMergeCacheFromData(data){
 function appApplyInitData(data){
   APP_LOADING=false;
   appMergeCacheFromData(data);
+  appRemoveLoader();
   if(MODE==='home'){home_render();}
   else if(MODE==='kakao'){kk_rInput();kk_checkFirstRun();}
   else if(MODE==='invoice')inv_render();
@@ -722,6 +756,7 @@ function appInit(){
     else if(MODE==='pay')pay_render();
     else if(MODE==='att')att_render();
     else if(MODE==='more')more_render();
+    appRemoveLoader();
   }else{
     APP_LOADING=true;
     Q('app','<div class="loading"><div class="spin"></div>불러오는 중...</div>');
@@ -732,6 +767,7 @@ function appInit(){
     payYear:pay_year,
     payMonth:pay_month
   };
+  fetch(API_URL+'?action=ping'+(IS_TEST?'&test=1':''),{method:'GET'}).catch(function(){});
   apiGet('loadAll',params).catch(function(){
     return appLoadInitFallback();
   }).then(function(data){
@@ -741,11 +777,17 @@ function appInit(){
   }).catch(function(e){
     APP_LOADING=false;
     if(!hadCache){
+      appRemoveLoader();
       Q('app','<div style="padding:20px;color:#f87171;font-size:13px">연결 실패: '+esc(e&&e.message?e.message:String(e))+'</div>');
     }else{
       toast('최신 정보를 불러오지 못했어요');
     }
   });
+}
+
+function appRemoveLoader(){
+  var el=document.getElementById('app-loader');
+  if(el)el.remove();
 }
 
 function switchTab(m){
@@ -782,7 +824,7 @@ function home_openUnpaidList(){
   if(!list.length){toast('미납 항목이 없습니다');return;}
   var names=list.slice(0,12).map(function(s){return esc(s.name)}).join('<br>');
   var more=list.length>12?('<br>외 '+(list.length-12)+'명'):''; 
-  showModal('<div class="modal-title">미납 안내 ('+list.length+'건)</div><div class="modal-desc">아래 학생의 수업료 결제일이 지났습니다.</div><div class="modal-names">'+names+more+'</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">닫기</button><button class="btn btn-y" onclick="closeModal();switchTab(\'kakao\')">독촉 안내문 쓰기</button></div>');
+  showModal('<div class="modal-title">미납 안내 ('+list.length+'건)</div><div class="modal-desc">아래 학생의 수업료 결제일이 지났습니다.</div><div class="modal-names">'+names+more+'</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">닫기</button><button class="btn btn-y" onclick="closeModal();switchTab(\'kakao\')">수납 안내 보내기</button></div>');
 }
 function home_render(){
   var ps=(APP_DATA&&APP_DATA.paymentStatus)?APP_DATA.paymentStatus:null;
@@ -828,7 +870,7 @@ function home_render(){
     h+='<div class="home3-alert-desc">'+esc(unpaidList[0].name)+' 학생 외 '+(unpaidN-1)+'명 수업료 결제일이 지났습니다.</div>';
     h+='<div class="home3-alert-actions">';
     h+='<button type="button" class="home3-btn" onclick="home_openUnpaidList()">보기</button>';
-    h+='<button type="button" class="home3-btn home3-btn--pri" onclick="switchTab(\'kakao\')"><span class="material-symbols-outlined ms">edit_note</span>독촉 안내문 쓰기</button>';
+    h+='<button type="button" class="home3-btn home3-btn--pri" onclick="switchTab(\'kakao\')"><span class="material-symbols-outlined ms">edit_note</span>수납 안내 보내기</button>';
     h+='</div>';
     h+='</div></div></div></div>';
   }
@@ -1541,8 +1583,7 @@ function inv_sendFriendTalkOne(idx){
 }
 
 function more_render(){
-  var h='<div class="menu-head">더보기</div>';
-  h+='<div class="menu-sub">자주 쓰는 메뉴로 바로 이동</div>';
+  var h='';
 
   function item(icon,title,desc,mode){
     return '<div class="menu-card" onclick="switchTab(&quot;'+mode+'&quot;)">'
