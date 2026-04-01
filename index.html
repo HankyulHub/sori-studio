@@ -227,9 +227,9 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .stu-summary{font-size:12px;color:#666;margin-left:auto;flex-shrink:0}
 .stu-arrow{font-size:12px;color:#444;flex-shrink:0;transition:transform .2s}
 .stu-arrow.open{transform:rotate(90deg)}
-.stu-detail{max-height:0;overflow:hidden;transition:max-height .25s ease;padding:0 0 0 40px}
+.stu-detail{max-height:0;overflow:hidden;transition:max-height .25s ease;padding:0}
 .stu-detail.open{max-height:600px}
-.stu-detail-inner{background:#ffffff;border-radius:12px;padding:12px 16px;margin:4px 0 8px 0}
+.stu-detail-inner{background:#ffffff;border-radius:12px;padding:12px 16px;margin:4px 0 8px 0;box-shadow:0 1px 3px rgba(26,28,26,0.04)}
 .fee-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .fee-chip{padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;cursor:pointer;border:1px solid rgba(196,198,207,.38);background:rgba(255,255,255,.7);color:var(--on-v);transition:.15s;font-family:inherit;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .fee-chip:active{transform:scale(.95)}
@@ -495,6 +495,9 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .summary-result .ok{color:#4ade80}
 .summary-result .fail{color:#f87171}
 .pay-head{padding:14px 20px;border-bottom:1px solid rgba(196,198,207,.22)}
+.pay-head .month-sel{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;margin-bottom:12px}
+.pay-head .month-sel::-webkit-scrollbar{display:none}
+.pay-head .pay-month-chip{flex-shrink:0}
 .pay-sum{font-size:13px;color:#888;margin-bottom:10px}
 .pay-sum b{color:#FFD43B}
 .pay-list{padding:0 20px 12px}
@@ -812,8 +815,10 @@ function switchTab(m){
   var elInv=document.getElementById('tabInv');if(elInv)elInv.classList.toggle('active',activeTab==='invoice');
   var elMore=document.getElementById('tabMore');if(elMore)elMore.classList.toggle('active',activeTab==='more');
   document.getElementById('helpBtn').style.display='none';
-  var titles={home:'홈',kakao:'메시지',stu:'학생',invoice:'명세서',more:'더보기',att:'출결 · 시간표',pay:'매출 장부'};
-  document.getElementById('bannerTitle').textContent=titles[m]||'소리마을 매니저';
+  var titles={home:'홈',kakao:'메시지',stu:'학생 관리',invoice:'명세서',more:'더보기',att:'출결 · 시간표',pay:'매출 장부'};
+  var bt=titles[m]||'소리마을 매니저';
+  if(m==='stu'||m==='pay'||m==='att')bt='더보기 · '+bt;
+  document.getElementById('bannerTitle').textContent=bt;
   if(!APP_DATA){appInit();return;}
   if(m==='home')home_render();
   else if(m==='stu')stu_render();
@@ -856,12 +861,37 @@ function home_render(){
   var unpaidList=(ps&&ps.students)?ps.students.filter(function(s){return !s.paid}):[];
   var unpaidN=unpaidList.length;
 
-  var totalInv=(typeof inv_students!=='undefined'&&Array.isArray(inv_students)&&inv_students.length)?inv_students.length:50;
-  var sentN=Math.min(45,totalInv);
+  var totalInv=(typeof inv_students!=='undefined'&&Array.isArray(inv_students))?inv_students.length:0;
+  var sentN=(typeof inv_sent!=='undefined'&&inv_sent&&typeof inv_sent.size==='number')?inv_sent.size:0;
   var unsentN=Math.max(0,totalInv-sentN);
 
   var cur=(pay_stats&&pay_stats.current)?pay_stats.current:null;
-  var money=(cur&&typeof cur.total==='number')?cur.total:12450000;
+  var money=(cur&&typeof cur.total==='number')?cur.total:null;
+
+  var curMonth=now.getMonth()+1;
+  var bars=(pay_stats&&Array.isArray(pay_stats.bars))?pay_stats.bars.slice(-3):[];
+  var maxBar=1;
+  bars.forEach(function(b){if(b&&b.total>maxBar)maxBar=b.total;});
+  if(maxBar<1)maxBar=1;
+  var prevBar=bars.length>=2?bars[bars.length-2]:null;
+  var curBar=bars.length>=1?bars[bars.length-1]:null;
+  var deltaHtml='';
+  if(prevBar&&prevBar.total>0&&curBar){
+    var diff=Math.round(((curBar.total-prevBar.total)/prevBar.total)*100);
+    deltaHtml='<div class="home3-delta">전월 동기 대비 '+(diff>=0?'+':'')+diff+'%</div>';
+  }else{
+    deltaHtml='<div class="home3-delta">전월 동기 대비 —</div>';
+  }
+  var barsHtml='';
+  bars.forEach(function(b){
+    var w=Math.max((b.total/maxBar)*100,2);
+    var isCur=b.month===curMonth;
+    var label=b.total>=1000000?'₩'+(b.total/10000).toFixed(0)+'만':'₩'+b.total.toLocaleString();
+    barsHtml+='<div class="home3-barrow"><div class="home3-bar-l">'+b.month+'월</div><div class="home3-bar"><div class="'+(isCur?'home3-bar--cur':'home3-bar--prev')+'" style="width:'+w+'%"></div></div><div class="home3-bar-v">'+label+'</div></div>';
+  });
+  if(!barsHtml){
+    barsHtml='<div class="home3-barrow"><div class="home3-bar-l">—</div><div class="home3-bar"><div class="home3-bar--prev" style="width:2%"></div></div><div class="home3-bar-v">—</div></div>';
+  }
 
   var h='';
   h+='<div class="home3-wrap'+(HOME_RENDERED?'':' fade-in')+'">';
@@ -913,13 +943,9 @@ function home_render(){
 
   h+='<div class="home3-card">';
   h+='<div class="home3-stat-label" style="color:rgba(0,32,70,.45)">누적 수업료</div>';
-  h+='<div class="home3-money">₩'+(typeof money==='number'?money.toLocaleString():money)+'</div>';
-  h+='<div class="home3-delta">전월 동기 대비 +12%</div>';
-  h+='<div class="home3-bars">';
-  h+='<div class="home3-barrow"><div class="home3-bar-l">8월</div><div class="home3-bar"><div class="home3-bar--prev" style="width:74%"></div></div><div class="home3-bar-v">₩10.2M</div></div>';
-  h+='<div class="home3-barrow"><div class="home3-bar-l">9월</div><div class="home3-bar"><div class="home3-bar--prev" style="width:81%"></div></div><div class="home3-bar-v">₩11.1M</div></div>';
-  h+='<div class="home3-barrow"><div class="home3-bar-l">10월</div><div class="home3-bar"><div class="home3-bar--cur" style="width:90%"></div></div><div class="home3-bar-v">₩12.4M</div></div>';
-  h+='</div>';
+  h+='<div class="home3-money">₩'+(money!==null?money.toLocaleString():'—')+'</div>';
+  h+=deltaHtml;
+  h+='<div class="home3-bars">'+barsHtml+'</div>';
   h+='</div>';
 
   h+='</div></div>';
@@ -2634,7 +2660,8 @@ function stu_render(){
     cardList.innerHTML=cards;
     return;
   }
-  var h='<div class="stu-search"><input type="search" id="stu_searchInput" placeholder="이름 · 학년 · 연락처 검색" value="'+esc(stu_filter)+'" oninput="stu_filter=this.value;stu_render()"/></div>';
+  var h='<div style="padding:12px 20px 0"><button type="button" class="btn btn-d" onclick="switchTab(\'more\')" style="padding:7px 14px;font-size:12px">← 더보기</button></div>';
+  h+='<div class="stu-search"><input type="search" id="stu_searchInput" placeholder="이름 · 학년 · 연락처 검색" value="'+esc(stu_filter)+'" oninput="stu_filter=this.value;stu_render()"/></div>';
   h+='<div id="stu_cardList">'+cards+'</div>';
   Q('app',h);
 }
@@ -2795,7 +2822,7 @@ function stu_delete(row){
 // 출결 att_
 // ═══════════════════════════════════════
 function att_render(){
-  Q('app','<div class="att-placeholder">📅 출결 · 시간표<br><br>준비 중입니다.</div>');
+  Q('app','<div style="padding:12px 20px 0"><button type="button" class="btn btn-d" onclick="switchTab(\'more\')" style="padding:7px 14px;font-size:12px">← 더보기</button></div><div class="att-placeholder">📅 출결 · 시간표<br><br>준비 중입니다.</div>');
 }
 
 // ═══════════════════════════════════════
@@ -2876,9 +2903,25 @@ function pay_selectMonth(m){
     el.style.background=on?'#002046':'#f0f0f0';
     el.style.color=on?'#fff':'#333';
   });
+  var listEl=document.getElementById('pay_list');
+  if(listEl)listEl.innerHTML='<div class="loading" style="padding:20px 0;display:flex;flex-direction:column;align-items:center"><div class="spin"></div></div>';
   pay_loaded=false;
-  if(APP_DATA)APP_DATA.paymentStatus=null;
-  pay_init();
+  Promise.all([
+    apiGet('loadPaymentStatus',{year:pay_year,month:m}),
+    apiGet('getRevenueStats')
+  ]).then(function(arr){
+    pay_status=arr[0];
+    pay_stats=arr[1];
+    pay_loaded=true;
+    if(APP_DATA){
+      APP_DATA.paymentStatus=pay_status;
+      APP_DATA.revenueStats=pay_stats;
+    }
+    pay_renderList();
+    pay_renderChart();
+  }).catch(function(e){
+    toast('데이터를 불러오지 못했어요');
+  });
 }
 function pay_togglePayment(studentId, month){
   if(!pay_status||!pay_status.students)return;
@@ -2891,7 +2934,7 @@ function pay_togglePayment(studentId, month){
   s.paidDate=newDate;
   pay_renderRowByName(studentId);
   try{if(APP_DATA)APP_DATA.paymentStatus=pay_status;}catch(e){}
-  apiPost('updatePayment',{studentId:studentId,month:month,value:(newDate||null)}).catch(function(){
+  apiPost('togglePayment',{year:pay_year,month:month,name:studentId,paid:s.paid}).catch(function(){
     s.paid=curPaid;
     s.paidDate=prevDate;
     pay_renderRowByName(studentId);
@@ -2968,7 +3011,8 @@ function pay_init(){
 }
 function pay_render(){
   if(!pay_status||!pay_stats){pay_init();return;}
-  var h='<div class="pay-head"><div class="pay-sum" id="pay_sum"></div>';
+  var h='<div style="padding:12px 20px 0"><button type="button" class="btn btn-d" onclick="switchTab(\'more\')" style="padding:7px 14px;font-size:12px">← 더보기</button></div>';
+  h+='<div class="pay-head"><div class="pay-sum" id="pay_sum"></div>';
   h+='<div class="month-sel">';
   for(var mm=1;mm<=12;mm++){
     var on=mm===pay_month;
