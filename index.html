@@ -2531,7 +2531,7 @@ function inv_runBulkFriend(idxs){
 // 학생관리 stu_
 // ═══════════════════════════════════════
 var stu_list=[],stu_loaded=false,stu_filter='',stu_editing=null;
-function stu_markDirty(){kk_loaded=false;inv_loaded=false;pay_loaded=false;stu_loaded=false;APP_DATA=null;}
+function stu_markDirty(){kk_loaded=false;inv_loaded=false;pay_loaded=false;stu_loaded=false;}
 function stu_recFromBody(row,body,prev){
   var grade=body.grade||'';
   var gender=body.gender||'';
@@ -2802,6 +2802,143 @@ function att_render(){
 // 매출장부 pay_
 // ═══════════════════════════════════════
 var pay_loaded=false,pay_status=null,pay_stats=null,pay_year=now.getFullYear(),pay_month=now.getMonth()+1;
+function pay_findStudentByName(nm){
+  var st=(pay_status&&pay_status.students)?pay_status.students:[];
+  for(var i=0;i<st.length;i++){if(st[i]&&st[i].name===nm)return st[i];}
+  return null;
+}
+function pay_fmtDate(){
+  try{return new Date().toLocaleDateString('ko-KR')}catch(e){return '';}
+}
+function pay_getButtonStyle(isPaid){
+  if(isPaid){
+    return 'background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:800;font-family:Manrope, sans-serif;cursor:pointer';
+  }
+  return 'background:#fff3e0;color:#e65100;border:1px solid #ffe0b2;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:800;font-family:Manrope, sans-serif;cursor:pointer';
+}
+function pay_studentMetaLine(nm){
+  try{
+    if(typeof stu_list==='undefined'||!Array.isArray(stu_list))return '';
+    var rec=stu_list.find(function(x){return x&&x.name===nm});
+    if(!rec)return '';
+    var parts=[];
+    if(rec.freq)parts.push(rec.freq);
+    if(rec.level)parts.push(rec.level);
+    var fee=String(rec.fee||'').trim();
+    if(fee)parts.push(fee+'원');
+    return parts.filter(Boolean).join(' · ');
+  }catch(e){return '';}
+}
+function pay_renderRowByName(nm){
+  var row=document.querySelector('.pay-row[data-student-id="'+CSS.escape(nm)+'"]');
+  if(!row)return;
+  var s=pay_findStudentByName(nm);
+  if(!s)return;
+  var paid=!!s.paid;
+  var btn=row.querySelector('button[data-role="pay-toggle"]');
+  if(btn){
+    btn.setAttribute('style',pay_getButtonStyle(paid));
+    btn.textContent=paid?((s.paidDate?String(s.paidDate).replace(/\s+/g,' '):'')+' 완납').trim():'미납';
+  }
+  row.classList.toggle('unpaid',!paid);
+  var sub=row.querySelector('[data-role="pay-meta"]');
+  if(sub){
+    var meta=pay_studentMetaLine(s.name);
+    sub.textContent=meta||sub.textContent;
+  }
+}
+function pay_renderList(){
+  if(!pay_status||!pay_status.students)return;
+  var st=pay_status.students||[];
+  var paid=st.filter(function(x){return x&&x.paid}).length;
+  var tot=st.length;
+  var unpaid=tot-paid;
+  var sumEl=document.getElementById('pay_sum');
+  if(sumEl)sumEl.innerHTML='납부 <b style="color:#4ade80">'+paid+'</b>/'+tot+'명 · 미납 <b style="color:#f87171">'+unpaid+'</b>명';
+  var host=document.getElementById('pay_list');
+  if(!host)return;
+  host.innerHTML=st.map(function(s){
+    var feeDisp=(s.feeDisplay||(typeof s.fee==='number'?s.fee.toLocaleString():s.fee));
+    var meta=pay_studentMetaLine(s.name);
+    var paidDate=(s.paidDate?String(s.paidDate).replace(/\s+/g,' '):'');
+    var btnText=s.paid?((paidDate?paidDate+' ':'')+'완납'):'미납';
+    return '<div class="pay-row'+(s.paid?'':' unpaid')+'" data-student-id="'+esc(s.name)+'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(196,198,207,.22);gap:10px">'
+      +'<div style="flex:1;min-width:0"><div class="pay-name">'+esc(s.name)+'</div>'
+      +'<div data-role="pay-meta" style="font-size:11px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(meta||((feeDisp||'-')+(feeDisp?('원'+(paidDate?' · '+paidDate:'')):'') ))+'</div></div>'
+      +'<button type="button" data-role="pay-toggle" onclick="pay_togglePayment(&quot;'+esc(s.name)+'&quot;,'+pay_month+')" style="'+pay_getButtonStyle(!!s.paid)+'">'+esc(btnText)+'</button>'
+      +'</div>';
+  }).join('');
+}
+function pay_selectMonth(m){
+  pay_month=m;
+  document.querySelectorAll('.pay-month-chip').forEach(function(el){
+    var on=String(el.getAttribute('data-month'))===String(m);
+    el.style.background=on?'#002046':'#f0f0f0';
+    el.style.color=on?'#fff':'#333';
+  });
+  pay_loaded=false;
+  if(APP_DATA)APP_DATA.paymentStatus=null;
+  pay_init();
+}
+function pay_togglePayment(studentId, month){
+  if(!pay_status||!pay_status.students)return;
+  var s=pay_findStudentByName(studentId);
+  if(!s)return;
+  var curPaid=!!s.paid;
+  var prevDate=s.paidDate||'';
+  var newDate=curPaid?'':pay_fmtDate();
+  s.paid=!curPaid;
+  s.paidDate=newDate;
+  pay_renderRowByName(studentId);
+  try{if(APP_DATA)APP_DATA.paymentStatus=pay_status;}catch(e){}
+  apiPost('updatePayment',{studentId:studentId,month:month,value:(newDate||null)}).catch(function(){
+    s.paid=curPaid;
+    s.paidDate=prevDate;
+    pay_renderRowByName(studentId);
+    try{if(APP_DATA)APP_DATA.paymentStatus=pay_status;}catch(e){}
+    alert('저장에 실패했습니다. 다시 시도해주세요.');
+  });
+}
+function pay_renderChart(){
+  var sec=document.getElementById('pay-chart-section');
+  if(!sec)return;
+  var bars=(pay_stats&&Array.isArray(pay_stats.bars))?pay_stats.bars:[];
+  var list=bars.slice(-4);
+  if(!list.length)list=[];
+  var maxTotal=1;
+  list.forEach(function(d){if(d&&d.total>maxTotal)maxTotal=d.total;});
+  var cur=list.length?list[list.length-1]:null;
+  var prev=list.length>=2?list[list.length-2]:null;
+  var curTotal=cur&&typeof cur.total==='number'?cur.total:0;
+  var prevTotal=prev&&typeof prev.total==='number'?prev.total:0;
+  var totalEl=document.getElementById('pay-total');
+  if(totalEl)totalEl.textContent='₩'+(curTotal||0).toLocaleString();
+  var comp=document.getElementById('pay-comparison');
+  if(comp){
+    if(prevTotal>0){
+      var diff=Math.round(((curTotal-prevTotal)/prevTotal)*100);
+      var sign=diff>=0?'+':'';
+      comp.textContent='전월 대비 '+sign+diff+'%';
+      comp.style.color=(diff>=0?'#2e7d32':'#e65100');
+    }else{
+      comp.textContent='';
+      comp.style.color='#888';
+    }
+  }
+  var chart=document.getElementById('pay-chart');
+  if(chart){
+    chart.innerHTML=list.map(function(d){
+      var m=d&&d.month?d.month:pay_month;
+      var t=d&&typeof d.total==='number'?d.total:0;
+      var w=Math.max((t/maxTotal)*100,2);
+      return '<div style="display:flex;align-items:center;gap:12px">'
+        +'<div style="width:36px;font-size:13px;color:#888;text-align:right">'+m+'월</div>'
+        +'<div style="flex:1;height:24px;background:#f0f0f0;border-radius:6px;overflow:hidden"><div style="height:100%;border-radius:6px;background:'+(m===pay_month?'#002046':'#b0bec5')+';width:'+w+'%;transition:width .3s ease"></div></div>'
+        +'<div style="width:72px;font-size:13px;font-weight:800;text-align:right">₩'+(t>=1000000?((t/10000).toFixed(0)+'만'):t.toLocaleString())+'</div>'
+        +'</div>';
+    }).join('');
+  }
+}
 function pay_init(){
   if(APP_DATA&&APP_DATA.paymentStatus&&APP_DATA.revenueStats){
     var ps=APP_DATA.paymentStatus;
@@ -2831,50 +2968,22 @@ function pay_init(){
 }
 function pay_render(){
   if(!pay_status||!pay_stats){pay_init();return;}
-  var st=pay_status.students||[];
-  var paid=st.filter(function(x){return x.paid}).length;
-  var tot=st.length;
-  var unpaid=tot-paid;
-  var h='<div class="pay-head"><div class="pay-sum">납부 <b style="color:#4ade80">'+paid+'</b>/'+tot+'명 · 미납 <b style="color:#f87171">'+unpaid+'</b>명</div>';
+  var h='<div class="pay-head"><div class="pay-sum" id="pay_sum"></div>';
   h+='<div class="month-sel">';
-  for(var pm=pay_month-1;pm<=pay_month+1;pm++){
-    var mm=pm<1?pm+12:pm>12?pm-12:pm;
-    h+='<div class="month-chip'+(mm===pay_month?' active':'')+'" onclick="pay_setMonth('+mm+')">'+mm+'월</div>';
+  for(var mm=1;mm<=12;mm++){
+    var on=mm===pay_month;
+    h+='<div class="month-chip pay-month-chip" data-month="'+mm+'" onclick="pay_selectMonth('+mm+')" style="background:'+(on?'#002046':'#f0f0f0')+';color:'+(on?'#fff':'#333')+'">'+mm+'월</div>';
   }
-  h+='</div></div><div class="pay-list">';
-  st.forEach(function(s,pi){
-    h+='<div class="pay-row'+(s.paid?'':' unpaid')+'"><div><div class="pay-name">'+esc(s.name)+'</div><div style="font-size:11px;color:#888">'+(s.feeDisplay||(typeof s.fee==='number'?s.fee.toLocaleString():s.fee))+'원'+(s.paidDate?' · '+esc(s.paidDate):'')+'</div></div>';
-    h+='<button type="button" class="pay-toggle'+(s.paid?' on':'')+'" onclick="pay_toggle('+pi+')">'+(s.paid?'납부완료':'미납')+'</button></div>';
-  });
-  h+='</div><div class="pay-dash"><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:8px">이번 달 매출</div>';
-  var cur=pay_stats.current||{};
-  h+='<div class="pay-stat">총 '+cur.total.toLocaleString()+'원 · 수납 '+cur.paid.toLocaleString()+'원 · 수납률 '+cur.rate+'%</div>';
-  h+='<div class="pay-ai">'+(pay_stats.aiLine||'')+'</div>';
-  h+='<div class="pay-bar-wrap">';
-  var bars=pay_stats.bars||[];
-  var maxB=1;bars.forEach(function(b){if(b.total>maxB)maxB=b.total;});
-  if(maxB<1)maxB=1;
-  bars.forEach(function(b){
-    var pct=maxB?Math.round(b.total/maxB*100):0;
-    h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center"><div class="pay-bar" style="height:100px"><div class="pay-bar-fill" style="height:'+pct+'%"></div></div><div class="pay-bar-lab">'+b.month+'월</div></div>';
-  });
-  h+='</div></div>';
+  h+='</div></div><div class="pay-list" id="pay_list"></div>';
+  h+='<div id="pay-chart-section" style="padding:20px 16px;margin-top:16px">';
+  h+='<div style="font-size:16px;font-weight:900;margin-bottom:4px;">매출 현황</div>';
+  h+='<div id="pay-total" style="font-size:28px;font-weight:900;color:#002046;margin-bottom:4px;">₩0</div>';
+  h+='<div id="pay-comparison" style="font-size:13px;color:#888;margin-bottom:20px;"></div>';
+  h+='<div id="pay-chart" style="display:flex;flex-direction:column;gap:10px;"></div>';
+  h+='</div>';
   Q('app',h);
-}
-function pay_setMonth(m){
-  pay_month=m;
-  pay_loaded=false;
-  if(APP_DATA)APP_DATA.paymentStatus=null;
-  pay_init();
-}
-function pay_toggle(pi){
-  var s=pay_status.students[pi];
-  if(!s)return;
-  apiPost('togglePayment',{year:pay_year,month:pay_month,name:s.name,paid:!s.paid}).then(function(){
-    pay_loaded=false;
-    if(APP_DATA)APP_DATA.paymentStatus=null;
-    pay_init();
-  }).catch(function(e){toast(e.message);});
+  pay_renderList();
+  pay_renderChart();
 }
 
 // ═══════════════════════════════════════
@@ -2882,9 +2991,7 @@ function pay_toggle(pi){
 // ═══════════════════════════════════════
 MODE='home';
 document.getElementById('tabHome').classList.add('active');
-document.getElementById('tabKakao').classList.toggle('active',false);
 document.getElementById('tabInv').classList.toggle('active',false);
-document.getElementById('tabStu').classList.toggle('active',false);
 document.getElementById('tabMore').classList.toggle('active',false);
 document.getElementById('helpBtn').style.display='none';
 document.getElementById('bannerTitle').textContent='홈';
