@@ -70,6 +70,8 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .help-btn{width:30px;height:30px;border-radius:999px;background:rgba(255,255,255,.65);border:1px solid rgba(196,198,207,.4);color:var(--pri);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:800;flex-shrink:0;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .help-btn:active{transform:scale(.98)}
 
+@keyframes ntc-slide-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
 /* ═══ 카톡 대본 스타일 ═══ */
 .bar{padding:12px 20px;background:transparent;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .bar-info{font-size:12px;color:var(--on-v);font-weight:700}.bar-info b{color:var(--pri)}.bar-info .b-g{color:#1f7a3d}.bar-info .b-o{color:var(--sec)}
@@ -361,10 +363,6 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .tabbar-item .ms{display:block;font-size:22px;line-height:1;margin-bottom:4px;color:inherit;font-variation-settings:'FILL' 0,'wght' 600,'opsz' 24,'GRAD' 0}
 .tabbar-item.active{color:var(--pri);font-weight:900}
 .tabbar-item.active .ms{font-variation-settings:'FILL' 1,'wght' 650,'opsz' 24,'GRAD' 0}
-.tabbar-item--home{transform:translateY(-8px)}
-.tabbar-item--home .tab-ic{width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;background:rgba(255,255,255,.95);border:1px solid rgba(196,198,207,.35);box-shadow:0 12px 24px rgba(26,28,26,.10)}
-.tabbar-item--home:active .tab-ic{background:rgba(0,32,70,0.06)}
-.tabbar-item--home .tab-ic .ms{margin:0;font-size:24px}
 
 /* 폰트(타이틀/숫자 강조) */
 .home3-w1,.home3-cta-title,.home3-sec-title,.home3-alert-title,.home3-stat-num,.home3-money,.title{font-family:'Manrope','StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
@@ -580,12 +578,29 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 <div class="tut-dim" id="tut" onclick="if(event.target===this)closeTutorial()">
   <div class="tut-box" id="tutBox"></div>
 </div>
+<div id="ntc-modal" style="
+  display:none;position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,0.4);
+  align-items:flex-end;justify-content:center;
+" onclick="ntc_close(event)">
+  <div id="ntc-modal-content" style="
+    width:100%;max-width:480px;max-height:85vh;
+    background:#fff;border-radius:20px 20px 0 0;
+    padding:24px 20px;overflow-y:auto;
+    animation:ntc-slide-up .25s ease;
+  " onclick="event.stopPropagation()"></div>
+</div>
 <nav class="tabbar" id="tabbar">
+  <!-- 기존 5탭(롤백용)
   <button type="button" class="tabbar-item" id="tabStu" onclick="switchTab('stu')"><span class="material-symbols-outlined ms">group</span>학생</button>
   <button type="button" class="tabbar-item" id="tabKakao" onclick="switchTab('kakao')"><span class="material-symbols-outlined ms">mail</span>메시지</button>
   <button type="button" class="tabbar-item tabbar-item--home" id="tabHome" onclick="switchTab('home')"><span class="tab-ic"><span class="material-symbols-outlined ms">home</span></span>홈</button>
   <button type="button" class="tabbar-item" id="tabInv" onclick="switchTab('invoice')"><span class="material-symbols-outlined ms">receipt_long</span>명세서</button>
   <button type="button" class="tabbar-item" id="tabMore" onclick="switchTab('more')"><span class="material-symbols-outlined ms">more_horiz</span>더보기</button>
+  -->
+  <button type="button" class="tabbar-item" id="tabHome" onclick="switchTab('home')"><span class="material-symbols-outlined ms">home</span>홈</button>
+  <button type="button" class="tabbar-item" id="tabInv" onclick="switchTab('invoice')"><span class="material-symbols-outlined ms">receipt_long</span>명세서</button>
+  <button type="button" class="tabbar-item" id="tabMore" onclick="switchTab('more')"><span class="material-symbols-outlined ms">menu</span>더보기</button>
 </nav>
 
 <script>
@@ -792,12 +807,11 @@ function appRemoveLoader(){
 
 function switchTab(m){
   MODE=m;
-  document.getElementById('tabHome').classList.toggle('active',m==='home');
-  document.getElementById('tabKakao').classList.toggle('active',m==='kakao');
-  document.getElementById('tabStu').classList.toggle('active',m==='stu');
-  document.getElementById('tabInv').classList.toggle('active',m==='invoice');
-  document.getElementById('tabMore').classList.toggle('active',m==='more');
-  document.getElementById('helpBtn').style.display=(m==='kakao'?'flex':'none');
+  var activeTab=(m==='invoice')?'invoice':(m==='home'||m==='kakao')?'home':'more';
+  var elHome=document.getElementById('tabHome');if(elHome)elHome.classList.toggle('active',activeTab==='home');
+  var elInv=document.getElementById('tabInv');if(elInv)elInv.classList.toggle('active',activeTab==='invoice');
+  var elMore=document.getElementById('tabMore');if(elMore)elMore.classList.toggle('active',activeTab==='more');
+  document.getElementById('helpBtn').style.display='none';
   var titles={home:'홈',kakao:'메시지',stu:'학생',invoice:'명세서',more:'더보기',att:'출결 · 시간표',pay:'매출 장부'};
   document.getElementById('bannerTitle').textContent=titles[m]||'소리마을 매니저';
   if(!APP_DATA){appInit();return;}
@@ -811,12 +825,23 @@ function switchTab(m){
 }
 
 function home_goFeedback(){
-  switchTab('kakao');
-  setTimeout(function(){try{window.scrollTo(0,0)}catch(e){}},0);
+  kk_messageType='feedback';
+  switchTab('home');
+  setTimeout(function(){
+    try{kk_setType('feedback')}catch(e){}
+    try{home_scrollToMessages()}catch(e){}
+  },100);
+}
+function home_goOverdue(){
+  kk_messageType='overdue';
+  switchTab('home');
+  setTimeout(function(){
+    try{kk_setType('overdue')}catch(e){}
+    try{home_scrollToMessages()}catch(e){}
+  },100);
 }
 function home_goNotice(){
-  switchTab('kakao');
-  setTimeout(function(){try{window.scrollTo(0,0)}catch(e){}},0);
+  ntc_open();
 }
 function home_openUnpaidList(){
   var ps=(APP_DATA&&APP_DATA.paymentStatus)?APP_DATA.paymentStatus:null;
@@ -824,7 +849,7 @@ function home_openUnpaidList(){
   if(!list.length){toast('미납 항목이 없습니다');return;}
   var names=list.slice(0,12).map(function(s){return esc(s.name)}).join('<br>');
   var more=list.length>12?('<br>외 '+(list.length-12)+'명'):''; 
-  showModal('<div class="modal-title">미납 안내 ('+list.length+'건)</div><div class="modal-desc">아래 학생의 수업료 결제일이 지났습니다.</div><div class="modal-names">'+names+more+'</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">닫기</button><button class="btn btn-y" onclick="closeModal();switchTab(\'kakao\')">수납 안내 보내기</button></div>');
+  showModal('<div class="modal-title">미납 안내 ('+list.length+'건)</div><div class="modal-desc">아래 학생의 수업료 결제일이 지났습니다.</div><div class="modal-names">'+names+more+'</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">닫기</button><button class="btn btn-y" onclick="closeModal();home_goOverdue()">수납 안내 보내기</button></div>');
 }
 function home_render(){
   var ps=(APP_DATA&&APP_DATA.paymentStatus)?APP_DATA.paymentStatus:null;
@@ -870,7 +895,7 @@ function home_render(){
     h+='<div class="home3-alert-desc">'+esc(unpaidList[0].name)+' 학생 외 '+(unpaidN-1)+'명 수업료 결제일이 지났습니다.</div>';
     h+='<div class="home3-alert-actions">';
     h+='<button type="button" class="home3-btn" onclick="home_openUnpaidList()">보기</button>';
-    h+='<button type="button" class="home3-btn home3-btn--pri" onclick="switchTab(\'kakao\')"><span class="material-symbols-outlined ms">edit_note</span>수납 안내 보내기</button>';
+    h+='<button type="button" class="home3-btn home3-btn--pri" onclick="home_goOverdue()"><span class="material-symbols-outlined ms">edit_note</span>수납 안내 보내기</button>';
     h+='</div>';
     h+='</div></div></div></div>';
   }
@@ -899,8 +924,19 @@ function home_render(){
 
   h+='</div></div>';
   h+='</div>';
+  h+='<div id="home-message-section" style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(196,198,207,.22)">';
+  h+='<div style="font-size:16px;font-weight:900;margin-bottom:16px;padding:0 20px;color:var(--pri)">메시지 작성</div>';
+  h+='<div id="home-message-body"></div>';
+  h+='</div>';
   Q('app',h);
+  kk_mountHome();
   HOME_RENDERED=true;
+}
+
+function home_scrollToMessages(){
+  var el=document.getElementById('home-message-section');
+  if(!el)return;
+  try{el.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){try{window.scrollTo(0,el.getBoundingClientRect().top+window.scrollY-8)}catch(_){}} 
 }
 
 // ═══════════════════════════════════════
@@ -910,6 +946,198 @@ var kk_S=[],kk_KW={},kk_PrevKW={},kk_MSG={},kk_SHORT={},kk_DONE=new Set(),kk_REG
 var kk_CI=0,kk_CANCEL=false,kk_EDITMODE=false,kk_VIEW='input',kk_GEN=false,kk_GC=0,kk_GT=0,kk_GEN_TG=[];
 var kk_loaded=false;
 var kk_doneFolded=true;
+var kk_messageType='feedback'; // 'feedback' | 'overdue'
+
+function kk_target(){
+  if(MODE==='home' && document.getElementById('home-message-body'))return 'home-message-body';
+  return 'app';
+}
+function kk_Q(h){Q(kk_target(),h)}
+function kk_mountHome(){
+  if(MODE!=='home')return;
+  var host=document.getElementById('home-message-body');
+  if(!host)return;
+  kk_rInput();
+}
+
+// ── 안내문 모듈 (ntc_) ──
+var ntc_type=''; // 'closure' | 'schedule' | 'tuition' | 'custom'
+var ntc_dateStr='';
+var ntc_memo='';
+var ntc_generatedText='';
+var ntc_isGenerating=false;
+
+function ntc_open(){
+  ntc_type='';
+  ntc_dateStr='';
+  ntc_memo='';
+  ntc_generatedText='';
+  ntc_isGenerating=false;
+  var modal=document.getElementById('ntc-modal');
+  if(modal)modal.style.display='flex';
+  ntc_renderStep1();
+}
+function ntc_close(e){
+  if(e&&e.target!==document.getElementById('ntc-modal'))return;
+  var modal=document.getElementById('ntc-modal');
+  if(modal)modal.style.display='none';
+}
+
+function ntc_renderStep1(){
+  var types=[
+    {key:'closure',icon:'🏠',label:'휴원 안내',desc:'휴원 기간 및 사유 안내'},
+    {key:'schedule',icon:'📅',label:'일정 변경',desc:'수업 일정/시간 변경 안내'},
+    {key:'tuition',icon:'💰',label:'수강료 변경',desc:'수강료 인상/변경 안내'},
+    {key:'custom',icon:'📝',label:'기타 공지',desc:'자유 주제 안내문'}
+  ];
+  var html='';
+  html+='<div style="font-size:18px;font-weight:800;margin-bottom:4px;">안내문 만들기</div>';
+  html+='<div style="font-size:13px;color:#888;margin-bottom:20px;">어떤 안내문을 보내시겠어요?</div>';
+  types.forEach(function(t){
+    html+='<div onclick="ntc_selectType(&quot;'+t.key+'&quot;)" style="display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:8px;background:#f8f8f8;border-radius:12px;cursor:pointer;transition:background .15s" onpointerdown="this.style.background=\'#eee\'" onpointerup="this.style.background=\'#f8f8f8\'">';
+    html+='<div style="font-size:24px;">'+t.icon+'</div>';
+    html+='<div><div style="font-size:15px;font-weight:700;">'+t.label+'</div><div style="font-size:12px;color:#888;">'+t.desc+'</div></div>';
+    html+='</div>';
+  });
+  document.getElementById('ntc-modal-content').innerHTML=html;
+}
+function ntc_selectType(type){
+  ntc_type=type;
+  ntc_renderStep2();
+}
+function ntc_renderStep2(){
+  var typeLabels={closure:'휴원 안내',schedule:'일정 변경',tuition:'수강료 변경',custom:'기타 공지'};
+  var datePlaceholder=(ntc_type==='closure')?'예: 4/7 ~ 4/11'
+    :(ntc_type==='schedule')?'예: 4/10부터'
+    :(ntc_type==='tuition')?'예: 5월부터 적용'
+    :'예: 해당 날짜';
+  var memoPlaceholder=(ntc_type==='closure')?'예: 원장 개인 사유'
+    :(ntc_type==='schedule')?'예: 월수금 → 화목 변경'
+    :(ntc_type==='tuition')?'예: 10만원 → 12만원'
+    :'안내할 내용을 간단히 입력해주세요';
+  document.getElementById('ntc-modal-content').innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">'
+    +'<div onclick="ntc_renderStep1()" style="cursor:pointer;font-size:20px;">←</div>'
+    +'<div style="font-size:18px;font-weight:800;">'+(typeLabels[ntc_type]||'안내문')+'</div>'
+    +'</div>'
+    +'<label style="font-size:13px;font-weight:600;color:#555;">날짜 / 기간</label>'
+    +'<input id="ntc-date-input" type="text" placeholder="'+datePlaceholder+'" value="'+esc(ntc_dateStr)+'" oninput="ntc_dateStr=this.value" style="width:100%;padding:12px 14px;margin:6px 0 16px 0;border:1.5px solid #ddd;border-radius:10px;font-size:15px;font-family:Manrope, sans-serif;box-sizing:border-box"/>'
+    +'<label style="font-size:13px;font-weight:600;color:#555;">간단 메모</label>'
+    +'<textarea id="ntc-memo-input" placeholder="'+memoPlaceholder+'" oninput="ntc_memo=this.value" style="width:100%;padding:12px 14px;margin:6px 0 20px 0;border:1.5px solid #ddd;border-radius:10px;font-size:15px;font-family:Manrope, sans-serif;min-height:80px;resize:none;box-sizing:border-box">'+esc(ntc_memo)+'</textarea>'
+    +'<button onclick="ntc_generate()" style="width:100%;padding:14px;border:none;border-radius:12px;background:#002046;color:#fff;font-size:15px;font-weight:700;font-family:Manrope, sans-serif;cursor:pointer">안내문 생성하기</button>';
+}
+function ntc_generate(){
+  if(!ntc_dateStr.trim()||!ntc_memo.trim()){
+    alert('날짜와 메모를 모두 입력해주세요.');
+    return;
+  }
+  if(ntc_isGenerating)return;
+  ntc_isGenerating=true;
+  document.getElementById('ntc-modal-content').innerHTML=
+    '<div style="text-align:center;padding:60px 0;">'
+    +'<div style="font-size:15px;font-weight:600;color:#002046;">안내문을 작성하고 있어요...</div>'
+    +'<div style="margin-top:12px;font-size:13px;color:#999;">AI가 정중한 안내문을 생성 중입니다</div>'
+    +'</div>';
+  apiPost('generateNotice',{type:ntc_type,date:ntc_dateStr,memo:ntc_memo}).then(function(res){
+    ntc_generatedText=(res&&res.message)?res.message:(res||'');
+    ntc_renderStep3();
+  }).catch(function(){
+    alert('생성에 실패했습니다. 다시 시도해주세요.');
+    ntc_renderStep2();
+  }).finally(function(){
+    ntc_isGenerating=false;
+  });
+}
+function ntc_renderStep3(){
+  document.getElementById('ntc-modal-content').innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">'
+    +'<div onclick="ntc_renderStep2()" style="cursor:pointer;font-size:20px;">←</div>'
+    +'<div style="font-size:18px;font-weight:800;">안내문 미리보기</div>'
+    +'</div>'
+    +'<div id="ntc-result-box" style="background:#f8f8f4;border-radius:12px;padding:16px;font-size:14px;line-height:1.7;white-space:pre-wrap;min-height:120px;margin-bottom:16px;">'+esc(ntc_generatedText)+'</div>'
+    +'<div style="display:flex;gap:8px;">'
+    +'<button onclick="ntc_generate()" style="flex:1;padding:14px;border:1.5px solid #ddd;border-radius:12px;background:#fff;font-size:14px;font-weight:600;font-family:Manrope, sans-serif;cursor:pointer">다시 생성</button>'
+    +'<button onclick="ntc_copy(event)" style="flex:2;padding:14px;border:none;border-radius:12px;background:#002046;color:#fff;font-size:14px;font-weight:700;font-family:Manrope, sans-serif;cursor:pointer">복사하기</button>'
+    +'</div>';
+}
+function ntc_copy(e){
+  var btn=e&&e.target?e.target:null;
+  try{
+    navigator.clipboard.writeText(ntc_generatedText).then(function(){
+      if(!btn)return;
+      var old=btn.textContent;
+      btn.textContent='복사 완료 ✓';
+      btn.style.background='#28a745';
+      setTimeout(function(){
+        btn.textContent=old||'복사하기';
+        btn.style.background='#002046';
+      },1500);
+    }).catch(function(){throw new Error('clipboard');});
+  }catch(_){
+    try{
+      var ta=document.createElement('textarea');
+      ta.value=ntc_generatedText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert('복사되었습니다.');
+    }catch(__){
+      alert('복사에 실패했습니다.');
+    }
+  }
+}
+
+function kk_isOverdueMode(){return kk_messageType==='overdue'}
+function kk_getOverdueMonth(){return (now.getMonth()+1)+'월'}
+function kk_getOverdueAmount(s){
+  var v=(s&&(s.fee!==undefined?s.fee:(s.tuition!==undefined?s.tuition:(s.amount!==undefined?s.amount:''))));
+  if(typeof v==='number')return v;
+  var n=parseInt(String(v||'').replace(/[^\d]/g,''),10);
+  return isNaN(n)?0:n;
+}
+function kk_isOverdueStudent(s){
+  var ps=(APP_DATA&&APP_DATA.paymentStatus)?APP_DATA.paymentStatus:null;
+  if(!ps&&typeof pay_status!=='undefined')ps=pay_status;
+  var list=(ps&&ps.students)?ps.students:[];
+  var hit=list.find(function(x){return (x&&x.name)===s.name});
+  if(!hit)return false;
+  return !hit.paid;
+}
+function kk_getBaseList(){
+  if(!kk_isOverdueMode())return kk_S;
+  return kk_S.filter(function(s){return kk_isOverdueStudent(s)});
+}
+function kk_typeToggleHtml(){
+  return '<div class="kk-type-toggle" style="display:flex;gap:8px;padding:0 16px;margin:16px 0 16px">'
+    +'<button id="kk-type-feedback" onclick="kk_setType(&quot;feedback&quot;)" style="flex:1;padding:10px 0;border-radius:10px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:Manrope, sans-serif;">레슨 피드백</button>'
+    +'<button id="kk-type-overdue" onclick="kk_setType(&quot;overdue&quot;)" style="flex:1;padding:10px 0;border-radius:10px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:Manrope, sans-serif;">수납 안내</button>'
+    +'</div>';
+}
+function kk_applyTypeBtnStyles(){
+  var btnFeedback=document.getElementById('kk-type-feedback');
+  var btnOverdue=document.getElementById('kk-type-overdue');
+  if(!btnFeedback||!btnOverdue)return;
+  if(kk_messageType==='feedback'){
+    btnFeedback.style.background='#002046';
+    btnFeedback.style.color='#fff';
+    btnOverdue.style.background='#f0f0f0';
+    btnOverdue.style.color='#666';
+  }else{
+    btnOverdue.style.background='#002046';
+    btnOverdue.style.color='#fff';
+    btnFeedback.style.background='#f0f0f0';
+    btnFeedback.style.color='#666';
+  }
+}
+function kk_setType(type){
+  kk_messageType=type;
+  kk_applyTypeBtnStyles();
+  if(MODE!=='kakao')return;
+  if(kk_VIEW==='detail')kk_rDet(false);
+  else if(kk_VIEW==='list')kk_rList();
+  else kk_rInput();
+}
 
 function kk_init(){
   if(APP_DATA&&APP_DATA.students){
@@ -1070,13 +1298,22 @@ function kk_buildMonthlySummarySection(){
 
 function kk_rInput(){
   kk_VIEW='input';
-  var pending=kk_S.filter(function(s){return!kk_DONE.has(s.row)});
-  var done=kk_S.filter(function(s){return kk_DONE.has(s.row)});
-  var genableCount=pending.filter(function(s){return(kk_KW[s.row]||'').trim()}).length;
+  var base=kk_getBaseList();
+  var pending=base.filter(function(s){return!kk_DONE.has(s.row)});
+  var done=base.filter(function(s){return kk_DONE.has(s.row)});
+  var genableCount=kk_isOverdueMode()?pending.length:pending.filter(function(s){return(kk_KW[s.row]||'').trim()}).length;
 
   var h='';
   h+='<div class="home-wrap">';
   h+='<div class="dash">';
+  h+=kk_typeToggleHtml();
+  if(kk_isOverdueMode() && base.length<1){
+    h+='<div class="dash-card" style="color:rgba(68,71,78,.7);font-size:13px">이번 달 미납 학생이 없습니다</div>';
+    h+='</div></div>';
+    kk_Q(h);
+    kk_applyTypeBtnStyles();
+    return;
+  }
   h+=kk_buildLessonSection();
 
   h+=kk_buildMessagePreviewSection(pending,done,genableCount);
@@ -1086,7 +1323,8 @@ function kk_rInput(){
 
   h+='</div>'; // end dash
   h+='</div>'; // end home-wrap
-  Q('app',h);
+  kk_Q(h);
+  kk_applyTypeBtnStyles();
 }
 
 function kk_kwCh(row,v){
@@ -1097,7 +1335,8 @@ function kk_kwCh(row,v){
 }
 
 function kk_tryGenAll(){
-  var targets=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)});
+  var base=kk_getBaseList();
+  var targets=kk_isOverdueMode()?base.filter(function(s){return!kk_DONE.has(s.row)}):base.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)});
   var existing=targets.filter(function(s){return kk_MSG[s.row]&&kk_MSG[s.row].trim()});
   if(existing.length>0){
     var names=existing.map(function(s){return s.name}).join(', ');
@@ -1108,7 +1347,8 @@ function kk_tryGenAll(){
 
 function kk_genAllOverwrite(){
   kk_CANCEL=false;kk_GEN=true;kk_REGEN.clear();
-  kk_GEN_TG=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)});
+  var base=kk_getBaseList();
+  kk_GEN_TG=kk_isOverdueMode()?base.filter(function(s){return!kk_DONE.has(s.row)}):base.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)});
   if(!kk_GEN_TG.length){kk_GEN=false;kk_rList();return}
   kk_GEN_TG.forEach(function(s){delete kk_MSG[s.row];delete kk_SHORT[s.row]});
   kk_GT=kk_GEN_TG.length;kk_GC=0;
@@ -1118,7 +1358,8 @@ function kk_genAllOverwrite(){
 
 function kk_genAllSkip(){
   kk_CANCEL=false;kk_GEN=true;kk_REGEN.clear();
-  kk_GEN_TG=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)&&!(kk_MSG[s.row]&&kk_MSG[s.row].trim())});
+  var base=kk_getBaseList();
+  kk_GEN_TG=kk_isOverdueMode()?base.filter(function(s){return!kk_DONE.has(s.row)&&!(kk_MSG[s.row]&&kk_MSG[s.row].trim())}):base.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)&&!(kk_MSG[s.row]&&kk_MSG[s.row].trim())});
   if(!kk_GEN_TG.length){kk_GEN=false;toast('새로 생성할 학생이 없습니다');kk_rList();return}
   kk_GEN_TG.forEach(function(s){delete kk_MSG[s.row];delete kk_SHORT[s.row]});
   kk_GT=kk_GEN_TG.length;kk_GC=0;
@@ -1127,7 +1368,8 @@ function kk_genAllSkip(){
 }
 
 function kk_resumeGen(){
-  kk_GEN_TG=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)&&!kk_MSG[s.row]});
+  var base=kk_getBaseList();
+  kk_GEN_TG=kk_isOverdueMode()?base.filter(function(s){return!kk_DONE.has(s.row)&&!kk_MSG[s.row]}):base.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)&&!kk_MSG[s.row]});
   if(!kk_GEN_TG.length){toast('생성할 학생이 없습니다');return}
   kk_CANCEL=false;kk_GEN=true;kk_GT=kk_GEN_TG.length;kk_GC=0;
   kk_rList();kk_runGen(0);
@@ -1139,7 +1381,10 @@ function kk_runGen(idx){
   var s=kk_GEN_TG[idx];
   if(kk_REGEN.has(s.row)||kk_MSG[s.row]){kk_runGen(idx+1);return}
   kk_GC=idx+1;kk_updGB();
-  apiPost('generateKakao',{name:s.name,gg:s.gg,kw:kk_KW[s.row],hist:s.hist}).then(function(m){
+  var payload=kk_isOverdueMode()
+    ? {name:s.name,gg:s.gg,type:'overdue',overdueAmount:kk_getOverdueAmount(s),overdueMonth:kk_getOverdueMonth(),hist:s.hist}
+    : {name:s.name,gg:s.gg,type:'feedback',kw:kk_KW[s.row],hist:s.hist};
+  apiPost('generateKakao',payload).then(function(m){
     if(kk_CANCEL){kk_GEN=false;if(!kk_hasMsg())kk_rInput();return}
     if(m.indexOf('[SHORT]')===0){kk_SHORT[s.row]=true;m=m.substring(7)}
     kk_MSG[s.row]=m;
@@ -1163,7 +1408,7 @@ function kk_updGB(){
 }
 
 function kk_updDetCounter(){
-  var gl=kk_S.filter(function(x){return kk_MSG[x.row]});
+  var gl=kk_getBaseList().filter(function(x){return kk_MSG[x.row]});
   var s=kk_S[kk_CI],el=document.getElementById('kk_detCount');
   if(el){var pos=gl.findIndex(function(x){return x.row===s.row})+1;el.textContent=pos+' / '+gl.length}
   var car=document.getElementById('kk_carousel');
@@ -1172,9 +1417,10 @@ function kk_updDetCounter(){
 
 function kk_refreshCards(){
   var cl=document.getElementById('kk_cardList');if(cl)cl.innerHTML=kk_buildSectionedCards(kk_EDITMODE);
-  var reviewList=kk_S.filter(function(s){return kk_isReview(s)});
-  var ungenList=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&kk_isUngen(s)});
-  var doneList=kk_S.filter(function(s){return kk_DONE.has(s.row)});
+  var base=kk_getBaseList();
+  var reviewList=base.filter(function(s){return kk_isReview(s)});
+  var ungenList=kk_isOverdueMode()?base.filter(function(s){return kk_isUngen(s)}):base.filter(function(s){return(kk_KW[s.row]||'').trim()&&kk_isUngen(s)});
+  var doneList=base.filter(function(s){return kk_DONE.has(s.row)});
   var total=reviewList.length+ungenList.length+doneList.length;
   var pct=total?Math.round(doneList.length/total*100):0;
   var info=document.querySelector('.bar-info');
@@ -1187,35 +1433,44 @@ function kk_refreshCards(){
   }
   var prog=document.querySelector('.progress-fill');if(prog)prog.style.width=pct+'%';
   var rb=document.getElementById('kk_resumeBar');
-  var remaining=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)&&!kk_MSG[s.row]}).length;
+  var remaining=kk_isOverdueMode()
+    ? base.filter(function(s){return!kk_DONE.has(s.row)&&!kk_MSG[s.row]}).length
+    : base.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)&&!kk_MSG[s.row]}).length;
   if(rb){if(!kk_GEN&&remaining>0){rb.style.display='flex';rb.querySelector('span').textContent=remaining+'명 미생성'}else{rb.style.display='none'}}
 }
 
 function kk_rList(){
   kk_VIEW='list';kk_EDITMODE=false;kk_EDITED.clear();
-  var reviewList=kk_S.filter(function(s){return kk_isReview(s)});
-  var ungenList=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&kk_isUngen(s)});
-  var doneList=kk_S.filter(function(s){return kk_DONE.has(s.row)});
+  var base=kk_getBaseList();
+  var reviewList=base.filter(function(s){return kk_isReview(s)});
+  var ungenList=kk_isOverdueMode()?base.filter(function(s){return kk_isUngen(s)}):base.filter(function(s){return(kk_KW[s.row]||'').trim()&&kk_isUngen(s)});
+  var doneList=base.filter(function(s){return kk_DONE.has(s.row)});
   var total=reviewList.length+ungenList.length+doneList.length;
   var pct=total?Math.round(doneList.length/total*100):0;
-  var remaining=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)&&!kk_MSG[s.row]}).length;
+  var remaining=kk_isOverdueMode()
+    ? base.filter(function(s){return!kk_DONE.has(s.row)&&!kk_MSG[s.row]}).length
+    : base.filter(function(s){return(kk_KW[s.row]||'').trim()&&!kk_DONE.has(s.row)&&!kk_MSG[s.row]}).length;
   var infoParts=[];
   if(ungenList.length>0)infoParts.push('미생성 <b>'+ungenList.length+'</b>명');
   if(reviewList.length>0)infoParts.push('검수대기 <b class="b-o">'+reviewList.length+'</b>명');
   if(doneList.length>0)infoParts.push('복사완료 <b class="b-g">'+doneList.length+'</b>명');
-  var h='<div class="bar"><span class="bar-info">'+infoParts.join(' · ')+'</span>';
-  if(reviewList.length>0)h+='<button class="btn btn-d" id="kk_editBtn" onclick="kk_toggleEdit()">키워드 수정</button>';
+  var h=kk_typeToggleHtml()+'<div class="bar"><span class="bar-info">'+infoParts.join(' · ')+'</span>';
+  if(reviewList.length>0 && !kk_isOverdueMode())h+='<button class="btn btn-d" id="kk_editBtn" onclick="kk_toggleEdit()">키워드 수정</button>';
   h+='</div><div class="progress"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
     '<div class="gen-bar" id="kk_genBar" style="display:none"></div>'+
     '<div class="resume-bar" id="kk_resumeBar" style="'+((!kk_GEN&&remaining>0)?'display:flex':'display:none')+'"><span>'+remaining+'명 미생성</span><button class="btn btn-y" onclick="kk_resumeGen()" style="padding:8px 16px;font-size:12px">이어서 생성</button></div>'+
     '<div id="kk_cardList">'+kk_buildSectionedCards(false)+'</div>';
-  Q('app',h);kk_updGB();
+  kk_Q(h);kk_updGB();
+  kk_applyTypeBtnStyles();
 }
 
 function kk_buildSectionedCards(edit){
-  var gen=kk_S.filter(function(s){return kk_MSG[s.row]||kk_DONE.has(s.row)});
+  var base=kk_getBaseList();
+  var gen=base.filter(function(s){return kk_MSG[s.row]||kk_DONE.has(s.row)});
   var reviewList=gen.filter(function(s){return kk_isReview(s)});
-  var ungenList=kk_S.filter(function(s){return(kk_KW[s.row]||'').trim()&&kk_isUngen(s)&&!kk_MSG[s.row]});
+  var ungenList=kk_isOverdueMode()
+    ? base.filter(function(s){return kk_isUngen(s)&&!kk_MSG[s.row]})
+    : base.filter(function(s){return(kk_KW[s.row]||'').trim()&&kk_isUngen(s)&&!kk_MSG[s.row]});
   var doneList=gen.filter(function(s){return kk_DONE.has(s.row)});
   var h='';
   if(!gen.length&&!ungenList.length&&!kk_GEN)return '<div style="padding:40px 20px;text-align:center"><p style="color:#555;font-size:13px;margin-bottom:16px">생성된 메시지가 없습니다</p><button class="btn btn-y" onclick="kk_rInput()" style="padding:12px 24px">← 키워드 입력</button></div>';
@@ -1237,6 +1492,9 @@ function kk_buildSectionedCards(edit){
 
 function kk_buildOneCard(s,edit,status){
   var kw=kk_KW[s.row]||'',isShort=kk_SHORT[s.row];
+  if(kk_isOverdueMode()){
+    edit=false;
+  }
   if(edit&&status==='review'){
     return '<div style="padding:10px 20px;border-bottom:1px solid #151515;display:flex;align-items:center;gap:12px"><div class="av av-o">'+s.name[0]+'</div><div style="flex:1;min-width:0"><div class="card-name">'+s.name+'</div><input class="card-kw-input" value="'+esc(kw)+'" oninput="kk_onEditKw('+s.row+',this.value)" placeholder="키워드"/></div></div>';
   }
@@ -1250,6 +1508,11 @@ function kk_buildOneCard(s,edit,status){
   }else{stHtml='<span class="card-st" style="color:'+stC+'">'+stT+'</span>'}
   var cardClass=status==='done'?'card done-card':'card';
   var clickAction=status==='ungen'?'':'onclick="kk_showDet('+s.row+')"';
+  if(kk_isOverdueMode()){
+    var amt=kk_getOverdueAmount(s);
+    var meta=kk_getOverdueMonth()+' 미납 · '+(amt?amt.toLocaleString():'—')+'원';
+    return '<div class="'+cardClass+'" '+clickAction+'><div class="av '+avC+'">'+s.name[0]+'</div><div class="card-body"><div class="card-name">'+s.name+'</div><div class="card-kw"><span class="card-kw-label">미납</span><span class="card-kw-text">'+esc(meta)+'</span></div></div>'+stHtml+'</div>';
+  }
   return '<div class="'+cardClass+'" '+clickAction+'><div class="av '+avC+'">'+s.name[0]+'</div><div class="card-body"><div class="card-name">'+s.name+'</div><div class="card-kw"><span class="card-kw-label">키워드</span><span class="card-kw-text">'+esc(kw.substring(0,35))+'</span></div></div>'+stHtml+'</div>';
 }
 
@@ -1279,7 +1542,7 @@ function kk_doRegenFromList(row){
 function kk_showDet(row){if(kk_EDITMODE)return;if(!kk_MSG[row])return;kk_CI=kk_S.findIndex(function(s){return s.row===row});kk_rDet(false)}
 
 function kk_buildCarousel(anim){
-  var gl=kk_S.filter(function(x){return kk_MSG[x.row]});
+  var gl=kk_getBaseList().filter(function(x){return kk_MSG[x.row]});
   var pos=gl.findIndex(function(x){return x.row===kk_S[kk_CI].row});
   var prev=pos>0?gl[pos-1].name:'';
   var cur=gl[pos]?gl[pos].name:'';
@@ -1295,7 +1558,7 @@ function kk_buildCarousel(anim){
 function kk_rDet(slide){
   kk_VIEW='detail';
   var s=kk_S[kk_CI],m=kk_MSG[s.row]||'',d=kk_DONE.has(s.row),isShort=kk_SHORT[s.row];
-  var gl=kk_S.filter(function(x){return kk_MSG[x.row]});
+  var gl=kk_getBaseList().filter(function(x){return kk_MSG[x.row]});
   var pos=gl.findIndex(function(x){return x.row===s.row})+1;
   var sentBadge=d?'<div class="sent-badge">복사 완료</div>':'';
   var shortWarn=(!d&&isShort)?'<div class="short-warn">⚠ 메시지가 짧습니다. 직접 수정하세요.</div>':'';
@@ -1311,9 +1574,20 @@ function kk_rDet(slide){
   if(d){msgHtml='<div class="msg-display done">'+esc(m)+'</div>'}
   else{msgHtml='<div class="msg-display" id="kk_msgdiv" onclick="kk_enterEdit('+s.row+')">'+esc(m)+'</div><div class="msg-edit-hint">탭하여 수정</div>'}
   var wrap=slide?'<div class="det-body slide">':'<div class="det-body">';
-  Q('app',
+  var overdueBox='';
+  var subText=kk_isOverdueMode()
+    ? (s.gg+' · '+kk_getOverdueMonth()+' 미납 '+(kk_getOverdueAmount(s)?kk_getOverdueAmount(s).toLocaleString():'—')+'원')
+    : (s.gg+' · '+esc(kk_KW[s.row]||''));
+  if(kk_isOverdueMode()){
+    overdueBox='<div class="kk-overdue-info" style="padding: 12px 16px; background: #fff8f0; border-radius: 10px; margin: 8px 0 12px 0;">'
+      +'<div style="font-size: 13px; color: #666; margin-bottom: 4px;">미납 정보 (자동 입력)</div>'
+      +'<div style="font-size: 15px; font-weight: 600;"><span id="kk-overdue-amount">'+esc(kk_getOverdueMonth()+' · '+(kk_getOverdueAmount(s)?kk_getOverdueAmount(s).toLocaleString():'—')+'원')+'</span></div>'
+      +'</div>';
+  }
+  kk_Q(
     '<div class="det-head"><div class="det-row1"><button class="btn btn-d" onclick="kk_rList()" style="padding:7px 14px;font-size:12px">목록으로</button><span id="kk_detCount" style="font-size:13px;font-weight:600;color:#888">'+pos+' / '+gl.length+'</span><div class="det-nav"><div class="nav-b" onclick="kk_nav(-1)">‹</div><div class="nav-b" onclick="kk_nav(1)">›</div></div></div><div class="carousel" id="kk_carousel">'+kk_buildCarousel(slide)+'</div></div>'+
-    wrap+'<div class="det-stu"><div class="det-av">'+s.name[0]+'</div><div><div class="det-name">'+s.name+'</div><div class="det-sub">'+s.gg+' · '+esc(kk_KW[s.row]||'')+'</div></div></div>'+sentBadge+shortWarn+tagHtml+msgHtml+btns+'</div>');
+    kk_typeToggleHtml()+wrap+'<div class="det-stu"><div class="det-av">'+s.name[0]+'</div><div><div class="det-name">'+s.name+'</div><div class="det-sub">'+subText+'</div></div></div>'+overdueBox+sentBadge+shortWarn+tagHtml+msgHtml+btns+'</div>');
+  kk_applyTypeBtnStyles();
 }
 
 function kk_enterEdit(row){
@@ -1346,7 +1620,7 @@ function kk_exitEdit(row){
 function kk_nav(dir){
   var cur=kk_S[kk_CI];
   if(!kk_DONE.has(cur.row)){var b=document.getElementById('kk_msgbox');if(b){kk_MSG[cur.row]=b.value;apiPost('saveMessage',{row:cur.row,text:b.value})}}
-  var gl=kk_S.filter(function(x){return kk_MSG[x.row]});
+  var gl=kk_getBaseList().filter(function(x){return kk_MSG[x.row]});
   var p=gl.findIndex(function(x){return x.row===cur.row})+dir;
   if(p>=0&&p<gl.length){kk_CI=kk_S.findIndex(function(x){return x.row===gl[p].row});kk_rDet(dir>0)}
 }
@@ -1358,7 +1632,7 @@ function kk_doCopy(row){
     kk_DONE.add(row);kk_SHORT[row]=false;
     apiPost('markDone',{row:row,text:m}).catch(function(e){kk_DONE.delete(row)});
   }
-  var gl=kk_S.filter(function(x){return kk_MSG[x.row]});
+  var gl=kk_getBaseList().filter(function(x){return kk_MSG[x.row]});
   var p=gl.findIndex(function(x){return x.row===row});
   var nextPending=gl.slice(p+1).find(function(x){return!kk_DONE.has(x.row)});
   if(nextPending){kk_CI=kk_S.findIndex(function(x){return x.row===nextPending.row});kk_rDet(true)}
@@ -1367,9 +1641,12 @@ function kk_doCopy(row){
 
 function kk_doRegen(row){
   var s=kk_S.find(function(x){return x.row===row}),kw=kk_KW[row]||'';
-  if(!kw.trim()){toast('키워드를 입력해주세요');return}
+  if(!kk_isOverdueMode() && !kw.trim()){toast('키워드를 입력해주세요');return}
   kk_REGEN.add(row);kk_rDet(false);
-  apiPost('generateKakao',{name:s.name,gg:s.gg,kw:kw,hist:s.hist}).then(function(m){
+  var payload=kk_isOverdueMode()
+    ? {name:s.name,gg:s.gg,type:'overdue',overdueAmount:kk_getOverdueAmount(s),overdueMonth:kk_getOverdueMonth(),hist:s.hist}
+    : {name:s.name,gg:s.gg,type:'feedback',kw:kw,hist:s.hist};
+  apiPost('generateKakao',payload).then(function(m){
     kk_REGEN.delete(row);
     if(m.indexOf('[SHORT]')===0){kk_SHORT[row]=true;m=m.substring(7)}else{kk_SHORT[row]=false}
     kk_MSG[row]=m;apiPost('saveMessage',{row:row,text:m});
@@ -1586,7 +1863,7 @@ function more_render(){
   var h='';
 
   function item(icon,title,desc,mode){
-    return '<div class="menu-card" onclick="switchTab(&quot;'+mode+'&quot;)">'
+    return '<div class="menu-card" onclick="more_openSub(&quot;'+mode+'&quot;)">'
       +'<div class="menu-ic">'+icon+'</div>'
       +'<div style="flex:1"><div class="menu-title">'+title+'</div>'
       +'<div class="menu-desc">'+desc+'</div></div>'
@@ -1594,9 +1871,17 @@ function more_render(){
       +'</div>';
   }
 
+  h+=item('👨‍🎓','학생 관리','학생 등록/수정/삭제','stu');
   h+=item('📅','출결 관리','출결·시간표 관리로 이동','att');
   h+=item('💰','원비 관리','매출장부(납부 체크/매출 통계)로 이동','pay');
   Q('app',h);
+}
+
+function more_openSub(which){
+  if(which==='stu'){MODE='stu';switchTab('stu');return;}
+  if(which==='att'){MODE='att';switchTab('att');return;}
+  if(which==='pay'){MODE='pay';switchTab('pay');return;}
+  switchTab('more');
 }
 function inv_runFriendApiOne(idx){
   var s=inv_students[idx];
