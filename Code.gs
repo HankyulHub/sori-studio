@@ -143,8 +143,84 @@ function v7_doPost(body, isTest) {
       var tdata = togglePayment(ty, tm, tnm, paid, isTest);
       return ContentService.createTextOutput(JSON.stringify({ ok: true, data: tdata })).setMimeType(ContentService.MimeType.JSON);
     }
+    if (action === 'sendFriendTalk') {
+      var ft = sendFriendTalk(body.recipients || []);
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, data: ft })).setMimeType(ContentService.MimeType.JSON);
+    }
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err && err.message ? err.message : err) })).setMimeType(ContentService.MimeType.JSON);
   }
   return null;
+}
+
+/**
+ * Aligo 카카오 친구톡 (스크립트 속성: ALIGO_API_KEY, ALIGO_USER_ID, ALIGO_SENDER, ALIGO_PROFILE_KEY)
+ */
+function sendFriendTalk(recipients) {
+  var props = PropertiesService.getScriptProperties();
+  var API_KEY = props.getProperty('ALIGO_API_KEY');
+  var USER_ID = props.getProperty('ALIGO_USER_ID');
+  var SENDER = props.getProperty('ALIGO_SENDER');
+  var PROFILE_KEY = props.getProperty('ALIGO_PROFILE_KEY');
+  var results = [];
+  if (!API_KEY || !USER_ID || !SENDER || !PROFILE_KEY) {
+    for (var z = 0; z < recipients.length; z++) {
+      var rz = recipients[z];
+      results.push({
+        phone: rz && rz.phone,
+        studentName: rz && rz.studentName,
+        success: false,
+        message: '스크립트 속성(ALIGO_*)이 설정되지 않았습니다.'
+      });
+    }
+    return results;
+  }
+  for (var i = 0; i < recipients.length; i++) {
+    var r = recipients[i];
+    if (!r || !r.phone) {
+      results.push({ phone: '', studentName: r && r.studentName, success: false, message: '번호 없음' });
+      continue;
+    }
+    try {
+      var payload = {
+        apikey: API_KEY,
+        userid: USER_ID,
+        token: '',
+        senderkey: PROFILE_KEY,
+        sender: SENDER,
+        receiver_1: String(r.phone).replace(/\D/g, ''),
+        subject_1: '소리마을 알림',
+        message_1: String(r.message || ''),
+        fimage: '',
+        fwide: 'N'
+      };
+      var options = {
+        method: 'post',
+        payload: payload,
+        muteHttpExceptions: true
+      };
+      var res = UrlFetchApp.fetch('https://kakaoapi.aligo.in/akv10/friend/send/', options);
+      var text = res.getContentText();
+      var json = {};
+      try {
+        json = JSON.parse(text);
+      } catch (e1) {
+        json = { code: -1, message: text };
+      }
+      results.push({
+        phone: r.phone,
+        studentName: r.studentName,
+        success: json.code === 0,
+        message: json.message || text || ''
+      });
+    } catch (err2) {
+      results.push({
+        phone: r.phone,
+        studentName: r.studentName,
+        success: false,
+        message: String(err2 && err2.message ? err2.message : err2)
+      });
+    }
+  }
+  return results;
 }

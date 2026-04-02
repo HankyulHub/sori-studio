@@ -139,6 +139,34 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .msg-display{width:100%;padding:14px;background:var(--sc-lowest);border:none;border-radius:14px;color:var(--on);font-size:13.5px;line-height:1.75;min-height:220px;margin-bottom:14px;white-space:pre-wrap;word-break:break-word;-webkit-user-select:none;user-select:none;box-shadow:var(--sh)}
 .msg-display.done{background:rgba(31,122,61,.08);box-shadow:0 0 0 1px rgba(31,122,61,.18),var(--sh);color:var(--on)}
 .msg-edit-hint{font-size:11px;color:#555;text-align:center;margin:-8px 0 10px}
+.kk-prev-bar{display:flex;align-items:center;justify-content:flex-end;margin-bottom:8px}
+.kk-prev-btn{padding:8px 14px;border-radius:10px;font-size:12px;font-weight:700;border:1px solid rgba(196,198,207,.45);background:rgba(255,255,255,.85);color:var(--pri);cursor:pointer;font-family:inherit}
+.kk-prev-btn.on{background:rgba(0,32,70,.1);border-color:rgba(0,32,70,.22)}
+.kakao-preview{background:#B2C7D9;padding:16px;border-radius:12px;max-width:360px;margin:0 auto 14px}
+.kakao-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.kakao-profile{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#fff;flex-shrink:0}
+.kakao-profile--ph{display:flex;align-items:center;justify-content:center;font-size:18px;background:#fff}
+.kakao-sender{font-size:13px;font-weight:600;color:#111}
+.kakao-bubble{background:#FFF;border-radius:0 12px 12px 12px;padding:10px 14px;font-size:14px;line-height:1.5;word-break:keep-all;max-width:260px;color:#111}
+.kakao-bubble p{margin:0;white-space:pre-wrap}
+.kakao-time{font-size:11px;color:#555;margin-top:4px;display:block}
+.kk-sq-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(196,198,207,.18)}
+.kk-sq-list{padding:8px 0 100px}
+.kk-sq-item{padding:12px 16px;border-bottom:1px solid rgba(196,198,207,.12);display:flex;gap:10px;align-items:flex-start}
+.kk-sq-item.disabled{opacity:.55}
+.kk-sq-cb{margin-top:4px;width:18px;height:18px;flex-shrink:0}
+.kk-sq-main{flex:1;min-width:0}
+.kk-sq-line1{font-size:14px;font-weight:800;color:var(--pri);margin-bottom:4px}
+.kk-sq-line2{font-size:12px;color:var(--on-v);margin-bottom:6px}
+.kk-sq-snip{font-size:12px;color:#666;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.kk-sq-foot{padding:12px 16px 24px;position:sticky;bottom:0;background:linear-gradient(180deg,rgba(250,249,246,0) 0%,#faf9f6 12%);border-top:1px solid rgba(196,198,207,.2)}
+.kk-sq-count{font-size:12px;font-weight:700;color:var(--on-v);margin-bottom:10px}
+.kk-sq-actions{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.kk-sq-actions .btn{flex:1;min-width:120px;padding:10px 12px;font-size:12px}
+.kk-sendprog-item{font-size:12px;padding:6px 0;border-bottom:1px solid rgba(196,198,207,.15)}
+.kk-sendprog-bar{height:8px;background:rgba(196,198,207,.25);border-radius:999px;overflow:hidden;margin:10px 0}
+.kk-sendprog-fill{height:100%;background:linear-gradient(90deg,var(--pri),var(--pri-2));transition:width .3s}
+.modal-card--wide{max-width:380px;text-align:left}
 .sec-header{padding:16px 20px 10px;display:flex;align-items:center;gap:10px;border-bottom:none}
 .sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .sec-dot-y{background:var(--sec-fixed)}
@@ -973,6 +1001,9 @@ var kk_CI=0,kk_CANCEL=false,kk_EDITMODE=false,kk_VIEW='input',kk_GEN=false,kk_GC
 var kk_loaded=false;
 var kk_doneFolded=true;
 var kk_messageType='feedback'; // 'feedback' | 'overdue'
+var kk_PREVIEW=false;
+var kk_SEND_QUEUE=new Set();
+var KK_USE_ALIGO_API=false;
 
 function kk_target(){
   if(MODE==='home' && document.getElementById('home-message-body'))return 'home-message-body';
@@ -1159,9 +1190,10 @@ function kk_applyTypeBtnStyles(){
 function kk_setType(type){
   kk_messageType=type;
   kk_applyTypeBtnStyles();
-  if(MODE!=='kakao')return;
+  if(MODE!=='kakao'&&MODE!=='home')return;
   if(kk_VIEW==='detail')kk_rDet(false);
   else if(kk_VIEW==='list')kk_rList();
+  else if(kk_VIEW==='sendqueue')kk_rSendQueue();
   else kk_rInput();
 }
 
@@ -1189,7 +1221,7 @@ function kk_init(){
   });
 }
 
-function kk_goHome(){kk_CANCEL=true;kk_GEN=false;kk_EDITMODE=false;kk_rInput()}
+function kk_goHome(){kk_CANCEL=true;kk_GEN=false;kk_EDITMODE=false;kk_VIEW='input';kk_rInput()}
 function kk_hasMsg(){return kk_S.some(function(s){return kk_MSG[s.row]})}
 function kk_isReview(s){return!kk_DONE.has(s.row)&&kk_MSG[s.row]&&kk_MSG[s.row].trim()}
 function kk_isUngen(s){return!kk_DONE.has(s.row)&&(!kk_MSG[s.row]||!kk_MSG[s.row].trim())}
@@ -1323,7 +1355,7 @@ function kk_buildMonthlySummarySection(){
 }
 
 function kk_rInput(){
-  kk_VIEW='input';
+  kk_VIEW='input';kk_PREVIEW=false;
   var base=kk_getBaseList();
   var pending=base.filter(function(s){return!kk_DONE.has(s.row)});
   var done=base.filter(function(s){return kk_DONE.has(s.row)});
@@ -1466,7 +1498,7 @@ function kk_refreshCards(){
 }
 
 function kk_rList(){
-  kk_VIEW='list';kk_EDITMODE=false;kk_EDITED.clear();
+  kk_VIEW='list';kk_EDITMODE=false;kk_EDITED.clear();kk_PREVIEW=false;
   var base=kk_getBaseList();
   var reviewList=base.filter(function(s){return kk_isReview(s)});
   var ungenList=kk_isOverdueMode()?base.filter(function(s){return kk_isUngen(s)}):base.filter(function(s){return(kk_KW[s.row]||'').trim()&&kk_isUngen(s)});
@@ -1482,12 +1514,134 @@ function kk_rList(){
   if(doneList.length>0)infoParts.push('복사완료 <b class="b-g">'+doneList.length+'</b>명');
   var h=kk_typeToggleHtml()+'<div class="bar"><span class="bar-info">'+infoParts.join(' · ')+'</span>';
   if(reviewList.length>0 && !kk_isOverdueMode())h+='<button class="btn btn-d" id="kk_editBtn" onclick="kk_toggleEdit()">키워드 수정</button>';
-  h+='</div><div class="progress"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
+  h+='</div>';
+  if(doneList.length>0)h+='<div style="padding:0 16px 12px"><button type="button" class="btn btn-y" style="width:100%;padding:12px;font-size:13px" onclick="kk_rSendQueue()">전송 준비 ('+doneList.length+'명)</button></div>';
+  h+='<div class="progress"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
     '<div class="gen-bar" id="kk_genBar" style="display:none"></div>'+
     '<div class="resume-bar" id="kk_resumeBar" style="'+((!kk_GEN&&remaining>0)?'display:flex':'display:none')+'"><span>'+remaining+'명 미생성</span><button class="btn btn-y" onclick="kk_resumeGen()" style="padding:8px 16px;font-size:12px">이어서 생성</button></div>'+
     '<div id="kk_cardList">'+kk_buildSectionedCards(false)+'</div>';
   kk_Q(h);kk_updGB();
   kk_applyTypeBtnStyles();
+}
+
+function kk_phoneOk(s){
+  var p=String((s&&s.phone)||'').replace(/\D/g,'');
+  return p.length>=10;
+}
+function kk_snipMsg(row){
+  var t=(kk_MSG[row]||'').replace(/\s+/g,' ');
+  if(t.length>20)return esc(t.substring(0,20))+'…';
+  return esc(t);
+}
+function kk_sendSelCount(){
+  var n=0;
+  var base=kk_getBaseList();
+  kk_SEND_QUEUE.forEach(function(row){
+    var s=base.find(function(x){return x.row===row});
+    if(s&&kk_phoneOk(s))n++;
+  });
+  return n;
+}
+function kk_maskPhone(phone){
+  var d=String(phone||'').replace(/\D/g,'');
+  if(d.length<10)return phone||'';
+  if(d.length===10)return d.slice(0,3)+'-****-'+d.slice(6);
+  if(d.length===11)return d.slice(0,3)+'-****-'+d.slice(7);
+  return d.slice(0,3)+'-****-'+d.slice(-4);
+}
+function kk_rSendQueue(){
+  kk_VIEW='sendqueue';
+  var base=kk_getBaseList();
+  var doneList=base.filter(function(s){return kk_DONE.has(s.row)&&kk_MSG[s.row]});
+  kk_SEND_QUEUE.clear();
+  doneList.forEach(function(s){if(kk_phoneOk(s))kk_SEND_QUEUE.add(s.row)});
+  var h='';
+  h+=kk_typeToggleHtml();
+  h+='<div class="kk-sq-head"><button type="button" class="btn btn-d" onclick="kk_rList()" style="padding:8px 14px;font-size:12px">← 목록</button><span style="font-size:15px;font-weight:900">전송 준비 ('+doneList.length+'명)</span><span style="width:56px"></span></div>';
+  h+='<div class="kk-sq-list">';
+  doneList.forEach(function(s){
+    var ok=kk_phoneOk(s);
+    var checked=kk_SEND_QUEUE.has(s.row);
+    var pn=esc(s.parentName||'(이름 없음)');
+    var ph=ok?esc(s.phone):'번호 없음';
+    var warn=!ok?' <span style="color:#f59e0b">⚠</span>':'';
+    var dis=ok?'':' disabled';
+    h+='<label class="kk-sq-item'+(ok?'':' disabled')+'"><input type="checkbox" class="kk-sq-cb"'+(checked?' checked':'')+dis+' onchange="kk_toggleSend('+s.row+')"/>';
+    h+='<div class="kk-sq-main"><div class="kk-sq-line1">'+esc(s.name)+' <span style="font-weight:600">'+pn+'</span>  '+ph+warn+'</div>';
+    h+='<div class="kk-sq-snip">"'+kk_snipMsg(s.row)+'"</div></div></label>';
+  });
+  h+='</div>';
+  var selN=kk_sendSelCount();
+  h+='<div class="kk-sq-foot"><div class="kk-sq-count">선택: '+selN+'명 / 전체: '+doneList.length+'명</div>';
+  h+='<div class="kk-sq-actions"><button type="button" class="btn btn-d" onclick="kk_toggleAllSend(true)">전체 선택</button><button type="button" class="btn btn-d" onclick="kk_toggleAllSend(false)">전체 해제</button></div>';
+  h+='<button type="button" class="btn-y-full" onclick="kk_openSendConfirm()" '+(selN<1?'disabled':'')+' style="margin-bottom:6px">'+(selN||0)+'명에게 전송하기</button>';
+  h+='<div style="font-size:11px;color:#888;text-align:center;line-height:1.4">'+(KK_USE_ALIGO_API?'':'Aligo 연동 후 실제 발송 · 지금은 확인만 가능')+'</div></div>';
+  kk_Q(h);
+  kk_applyTypeBtnStyles();
+}
+function kk_toggleSend(row){
+  var s=kk_getBaseList().find(function(x){return x.row===row});
+  if(!s||!kk_phoneOk(s))return;
+  if(kk_SEND_QUEUE.has(row))kk_SEND_QUEUE.delete(row);
+  else kk_SEND_QUEUE.add(row);
+  kk_rSendQueue();
+}
+function kk_toggleAllSend(on){
+  var base=kk_getBaseList();
+  var doneList=base.filter(function(s){return kk_DONE.has(s.row)&&kk_MSG[s.row]});
+  kk_SEND_QUEUE.clear();
+  if(on)doneList.forEach(function(s){if(kk_phoneOk(s))kk_SEND_QUEUE.add(s.row)});
+  kk_rSendQueue();
+}
+function kk_openSendConfirm(){
+  var n=kk_sendSelCount();
+  if(n<1){toast('선택된 수신자가 없습니다');return;}
+  var lines=[];
+  var base=kk_getBaseList();
+  kk_SEND_QUEUE.forEach(function(row){
+    var s=base.find(function(x){return x.row===row});
+    if(!s||!kk_phoneOk(s))return;
+    lines.push('<div style="font-size:12px;margin:6px 0">· '+esc(s.name)+' '+esc(s.parentName||'')+' ('+esc(kk_maskPhone(s.phone))+')</div>');
+  });
+  showModal('<div class="modal-title">⚠️ 전송 확인</div><div class="modal-desc" style="text-align:left">아래 '+n+'명의 학부모에게 친구톡이 전송됩니다.</div><div style="text-align:left;max-height:160px;overflow-y:auto;margin:10px 0">'+lines.join('')+'</div><div class="modal-desc" style="font-size:11px;color:#ba1a1a">전송 후 취소할 수 없습니다.</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="closeModal();kk_execSend()">전송하기</button></div>');
+}
+function kk_execSend(){
+  if(!KK_USE_ALIGO_API){toast('Aligo 연동이 필요합니다');return;}
+  var recipients=[];
+  var base=kk_getBaseList();
+  kk_SEND_QUEUE.forEach(function(row){
+    var s=base.find(function(x){return x.row===row});
+    if(s&&kk_phoneOk(s))recipients.push({phone:s.phone,message:kk_MSG[row]||'',studentName:s.name,parentName:s.parentName||''});
+  });
+  if(!recipients.length){toast('전송할 대상이 없습니다');return;}
+  kk_showSendingProgress(recipients);
+  apiPost('sendFriendTalk',{recipients:recipients}).then(function(results){
+    kk_hideSendProgress();
+    if(!Array.isArray(results))results=[];
+    var ok=results.filter(function(r){return r&&r.success}).length;
+    var fail=results.length-ok;
+    kk_showSendResult(ok,fail,results);
+  }).catch(function(){
+    kk_hideSendProgress();
+    toast('전송 중 오류가 발생했습니다.');
+  });
+}
+function kk_showSendingProgress(recipients){
+  var n=recipients.length;
+  showModal('<div class="modal-title">📤 전송 중...</div><div class="modal-desc">'+n+'명에게 발송 요청 중입니다.</div><div style="display:flex;justify-content:center;padding:20px 0"><div class="spin"></div></div>',false);
+}
+function kk_hideSendProgress(){closeModal()}
+function kk_showSendResult(ok,fail,results){
+  var lines='<div style="font-size:13px;color:var(--pri);font-weight:800;margin-bottom:8px">전송 완료</div>';
+  lines+='<div style="font-size:12px;margin:6px 0">✅ 성공: '+ok+'명</div>';
+  if(fail>0)lines+='<div style="font-size:12px;margin:6px 0">❌ 실패: '+fail+'명</div>';
+  if(fail>0&&results){
+    results.filter(function(r){return r&&!r.success}).forEach(function(r){
+      lines+='<div style="font-size:11px;color:#666;word-break:break-all">· '+esc(r.studentName||'')+' — '+esc(r.message||'실패')+'</div>';
+    });
+  }
+  lines+='<div class="modal-btns" style="margin-top:14px"><button class="btn btn-y" onclick="closeModal()">확인</button></div>';
+  showModal(lines,true);
 }
 
 function kk_buildSectionedCards(edit){
@@ -1581,6 +1735,20 @@ function kk_buildCarousel(anim){
   return h;
 }
 
+function kk_formatKakaoTime(){
+  var d=new Date();
+  var h=d.getHours(),mi=d.getMinutes();
+  var ap=h<12?'오전':'오후';
+  var hh=h%12;if(hh===0)hh=12;
+  return ap+' '+hh+':'+(mi<10?'0':'')+mi;
+}
+function kk_toggleKakaoPreview(){
+  var ta=document.getElementById('kk_msgbox');
+  if(ta){kk_MSG[kk_S[kk_CI].row]=ta.value;kk_SHORT[kk_S[kk_CI].row]=false}
+  kk_PREVIEW=!kk_PREVIEW;
+  kk_rDet(false);
+}
+
 function kk_rDet(slide){
   kk_VIEW='detail';
   var s=kk_S[kk_CI],m=kk_MSG[s.row]||'',d=kk_DONE.has(s.row),isShort=kk_SHORT[s.row];
@@ -1596,9 +1764,15 @@ function kk_rDet(slide){
   var btns;
   if(d){btns='<div class="det-btns"><button class="btn btn-d" onclick="kk_undo('+s.row+')">되돌리기</button><button class="btn btn-y" onclick="kk_doCopy('+s.row+')">복사하기</button></div>'}
   else{btns='<button class="btn-y-full" onclick="kk_doCopy('+s.row+')">복사하기</button>'}
-  var msgHtml;
-  if(d){msgHtml='<div class="msg-display done">'+esc(m)+'</div>'}
-  else{msgHtml='<div class="msg-display" id="kk_msgdiv" onclick="kk_enterEdit('+s.row+')">'+esc(m)+'</div><div class="msg-edit-hint">탭하여 수정</div>'}
+  var prevBar='<div class="kk-prev-bar"><button type="button" class="kk-prev-btn'+(kk_PREVIEW?' on':'')+'" id="kk_prev_toggle" onclick="kk_toggleKakaoPreview()">'+(kk_PREVIEW?'미리보기 끄기':'미리보기')+'</button></div>';
+  var bubbleBlock='<div class="kakao-preview" id="kk_preview_wrap" style="display:'+(kk_PREVIEW?'block':'none')+'"><div class="kakao-header"><div class="kakao-profile kakao-profile--ph">🎵</div><span class="kakao-sender">소리마을</span></div><div class="kakao-bubble"><p id="kk_preview_body">'+esc(m)+'</p></div><span class="kakao-time" id="kk_kakao_time">'+esc(kk_formatKakaoTime())+'</span></div>';
+  var plainWrap;
+  if(d){
+    plainWrap='<div id="kk_plain_wrap" style="display:'+(kk_PREVIEW?'none':'block')+'"><div class="msg-display done">'+esc(m)+'</div></div>';
+  }else{
+    plainWrap='<div id="kk_plain_wrap" style="display:'+(kk_PREVIEW?'none':'block')+'"><div class="msg-display" id="kk_msgdiv" onclick="kk_enterEdit('+s.row+')">'+esc(m)+'</div><div class="msg-edit-hint">탭하여 수정</div></div>';
+  }
+  var msgHtml=prevBar+plainWrap+bubbleBlock;
   var wrap=slide?'<div class="det-body slide">':'<div class="det-body">';
   var overdueBox='';
   var subText=kk_isOverdueMode()
@@ -1617,6 +1791,11 @@ function kk_rDet(slide){
 }
 
 function kk_enterEdit(row){
+  kk_PREVIEW=false;
+  var pw=document.getElementById('kk_plain_wrap'),vw=document.getElementById('kk_preview_wrap'),btn=document.getElementById('kk_prev_toggle');
+  if(pw)pw.style.display='block';
+  if(vw)vw.style.display='none';
+  if(btn){btn.textContent='미리보기';btn.classList.remove('on')}
   var div=document.getElementById('kk_msgdiv');if(!div)return;
   var m=kk_MSG[row]||'';
   var ta=document.createElement('textarea');
