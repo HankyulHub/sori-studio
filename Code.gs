@@ -147,6 +147,18 @@ function v7_doPost(body, isTest) {
       var ft = sendFriendTalk(body.recipients || []);
       return ContentService.createTextOutput(JSON.stringify({ ok: true, data: ft })).setMimeType(ContentService.MimeType.JSON);
     }
+    if (action === 'saveMessage') {
+      v7_saveMessage(body.row, body.text, body.type || 'feedback', isTest);
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, data: true })).setMimeType(ContentService.MimeType.JSON);
+    }
+    if (action === 'markDone') {
+      v7_markDone(body.row, body.text, body.type || 'feedback', isTest);
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, data: true })).setMimeType(ContentService.MimeType.JSON);
+    }
+    if (action === 'undoDone') {
+      v7_undoDone(body.row, body.type || 'feedback', isTest);
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, data: true })).setMimeType(ContentService.MimeType.JSON);
+    }
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err && err.message ? err.message : err) })).setMimeType(ContentService.MimeType.JSON);
   }
@@ -223,4 +235,77 @@ function sendFriendTalk(recipients) {
     }
   }
   return results;
+}
+
+/** 시트 1행 헤더 기준 열 번호(1부터). loadStudents 직전에 ensureOverdueColumns_(sheet) 호출 권장 */
+function getColByHeader_(sheet, headerName) {
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var idx = headers.indexOf(headerName);
+  if (idx === -1) throw new Error('컬럼 없음: ' + headerName);
+  return idx + 1;
+}
+
+function ensureOverdueColumns_(sheet) {
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  ['msg_overdue', 'done_overdue'].forEach(function(name) {
+    if (headers.indexOf(name) === -1) {
+      var newCol = sheet.getLastColumn() + 1;
+      sheet.getRange(1, newCol).setValue(name);
+      headers.push(name);
+    }
+  });
+}
+
+/**
+ * loadStudents에서 학생 객체에 합치기: var o = v7_studentOverduePatch_(headers, rowValues); Object.assign(student, o);
+ */
+function v7_studentOverduePatch_(headers, rowArr) {
+  var mi = headers.indexOf('msg_overdue');
+  var di = headers.indexOf('done_overdue');
+  return {
+    msgOverdue: mi >= 0 ? (rowArr[mi] || '') : '',
+    doneOverdue: di >= 0 ? !!rowArr[di] : false
+  };
+}
+
+function v7_studentSheet_(isTest) {
+  if (typeof getStudentSheet_ !== 'function') {
+    throw new Error('getStudentSheet_ 함수를 메인 프로젝트에 정의하고 v7과 합치세요.');
+  }
+  return getStudentSheet_(isTest);
+}
+
+function v7_saveMessage(row, text, msgType, isTest) {
+  var sheet = v7_studentSheet_(isTest);
+  ensureOverdueColumns_(sheet);
+  var t = msgType || 'feedback';
+  if (t === 'overdue') {
+    sheet.getRange(row, getColByHeader_(sheet, 'msg_overdue')).setValue(text);
+  } else {
+    sheet.getRange(row, getColByHeader_(sheet, 'msg')).setValue(text);
+  }
+}
+
+function v7_markDone(row, text, msgType, isTest) {
+  var sheet = v7_studentSheet_(isTest);
+  ensureOverdueColumns_(sheet);
+  var t = msgType || 'feedback';
+  if (t === 'overdue') {
+    sheet.getRange(row, getColByHeader_(sheet, 'msg_overdue')).setValue(text);
+    sheet.getRange(row, getColByHeader_(sheet, 'done_overdue')).setValue(true);
+  } else {
+    sheet.getRange(row, getColByHeader_(sheet, 'msg')).setValue(text);
+    sheet.getRange(row, getColByHeader_(sheet, 'done')).setValue(true);
+  }
+}
+
+function v7_undoDone(row, msgType, isTest) {
+  var sheet = v7_studentSheet_(isTest);
+  ensureOverdueColumns_(sheet);
+  var t = msgType || 'feedback';
+  if (t === 'overdue') {
+    sheet.getRange(row, getColByHeader_(sheet, 'done_overdue')).setValue('');
+  } else {
+    sheet.getRange(row, getColByHeader_(sheet, 'done')).setValue('');
+  }
 }
