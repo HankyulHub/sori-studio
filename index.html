@@ -436,10 +436,13 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .home-tuition-premium{margin-top:14px;border-radius:22px;padding:22px 22px 20px;background:linear-gradient(45deg,var(--pri),var(--pri-2));border:none;box-shadow:0 20px 50px rgba(26,28,26,.08)}
 .home-tuition-premium-lab{font-size:12px;font-weight:600;color:rgba(184,201,232,.9);letter-spacing:.08em;text-transform:uppercase}
 .home-tuition-premium-num{margin-top:10px;font-family:'StitchHeadline','Noto Serif KR',Georgia,serif!important;font-size:32px;font-weight:700;color:#fff;letter-spacing:-0.02em;line-height:1.12}
-.home-tuition-premium-foot{margin-top:14px;font-size:12px;font-weight:600;letter-spacing:.01em}
-.home-tuition-premium-foot--up{color:#dec482}
-.home-tuition-premium-foot--down{color:#c5daf3}
-.home-tuition-premium-foot--flat{color:rgba(255,255,255,.88)}
+.home-tuition-premium-foot{margin-top:16px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:.01em;font-family:'Manrope','StitchBody',system-ui,sans-serif!important}
+.home-tuition-mom-ic{font-size:26px;line-height:1;flex-shrink:0;font-variation-settings:'FILL'0,'wght'500,'opsz'24}
+.home-tuition-premium-foot--up .home-tuition-mom-ic{color:#dec482}
+.home-tuition-premium-foot--down .home-tuition-mom-ic{color:#e8c078}
+.home-tuition-premium-foot--flat .home-tuition-mom-ic{color:rgba(222,196,130,.88)}
+.home-tuition-mom-txt{color:rgba(255,255,255,.92)}
+.home-tuition-premium-foot--down .home-tuition-mom-txt{color:rgba(255,255,255,.9)}
 .home4-tuition{padding:8px 20px 6px;font-size:15px;color:var(--on-v);font-weight:700}
 .home4-tuition-num{font-size:22px;font-weight:900;color:var(--pri);margin-left:6px}
 .home4-payrow{display:flex;align-items:center;gap:8px;padding:14px 20px 22px;font-size:15px;font-weight:800;color:var(--on);cursor:pointer}
@@ -999,17 +1002,17 @@ function home_getTuitionMoM(){
     else if(typeof st.prevMonthTotal==='number')p=st.prevMonthTotal;
   }
   if(p===null||typeof p!=='number'||isNaN(p)||p<=0){
-    return{text:'↗ 지난달 대비 +0%',tone:'flat'};
+    return{line:'지난달 대비 +0%',tone:'flat',icon:'trending_flat'};
   }
   var raw=((c-p)/p)*100;
   var pct=Math.round(raw*10)/10;
   if(Math.abs(pct)<0.05){
-    return{text:'→ 지난달 대비 +0%',tone:'flat'};
+    return{line:'지난달 대비 +0%',tone:'flat',icon:'trending_flat'};
   }
   if(pct>0){
-    return{text:'↗ 지난달 대비 +'+pct+'%',tone:'up'};
+    return{line:'지난달 대비 +'+pct+'%',tone:'up',icon:'trending_up'};
   }
-  return{text:'↘ 지난달 대비 '+pct+'%',tone:'down'};
+  return{line:'지난달 대비 '+pct+'%',tone:'down',icon:'trending_down'};
 }
 function home_fitGreetTitle(){
   var el=document.querySelector('.home-greet-title');
@@ -1114,7 +1117,7 @@ function home_render(){
   h+='<div class="home-tuition-premium">';
   h+='<div class="home-tuition-premium-lab">이번 달 수강료</div>';
   h+='<div class="home-tuition-premium-num">'+(tuition!==null?'₩'+tuition.toLocaleString():'—')+'</div>';
-  h+='<div class="home-tuition-premium-foot home-tuition-premium-foot--'+mom.tone+'">'+esc(mom.text)+'</div>';
+  h+='<div class="home-tuition-premium-foot home-tuition-premium-foot--'+mom.tone+'"><span class="material-symbols-outlined home-tuition-mom-ic" aria-hidden="true">'+mom.icon+'</span><span class="home-tuition-mom-txt">'+esc(mom.line)+'</span></div>';
   h+='</div>';
   h+='</div>';
   Q('app',h);
