@@ -427,16 +427,19 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .home-dash-card--click{cursor:pointer}
 .home-dash-card--click:active{transform:scale(.995)}
 .home-pay-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.home-pay-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:900;color:#fff;letter-spacing:.04em}
-.home-pay-pill--due{background:linear-gradient(135deg,#c43d3d,#a32e2e);box-shadow:0 2px 8px rgba(196,60,60,.22)}
-.home-pay-pill--ok{background:linear-gradient(135deg,#4a8c3a,#3a6d2e);box-shadow:0 2px 8px rgba(60,120,50,.18)}
+.home-pay-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.04em}
+.home-pay-pill--due{background:rgba(0,32,70,.09);color:var(--pri);border:1px solid rgba(0,32,70,.2);box-shadow:none}
+.home-pay-pill--ok{background:linear-gradient(135deg,#4a8c3a,#3a6d2e);color:#fff;border:none;box-shadow:0 2px 8px rgba(60,120,50,.18)}
 .home-pay-headline{font-size:15px;font-weight:900;color:var(--pri);margin-left:8px;flex:1;min-width:0}
 .home-pay-chev{font-size:22px;color:rgba(0,32,70,.35);font-weight:700;flex-shrink:0}
 .home-pay-sub{margin-top:10px;font-size:12px;color:var(--on-v);line-height:1.45;font-weight:600;padding-left:2px;opacity:.92}
-.home-tuition-premium{margin-top:14px;border-radius:22px;padding:22px 22px 20px;background:linear-gradient(155deg,#061832 0%,#0a2141 42%,#0f2d52 100%);border:1px solid rgba(255,255,255,.1);box-shadow:0 14px 36px rgba(6,24,50,.32)}
-.home-tuition-premium-lab{font-size:12px;font-weight:600;color:rgba(195,210,232,.75);letter-spacing:.08em;text-transform:uppercase}
+.home-tuition-premium{margin-top:14px;border-radius:22px;padding:22px 22px 20px;background:linear-gradient(45deg,var(--pri),var(--pri-2));border:none;box-shadow:0 20px 50px rgba(26,28,26,.08)}
+.home-tuition-premium-lab{font-size:12px;font-weight:600;color:rgba(184,201,232,.9);letter-spacing:.08em;text-transform:uppercase}
 .home-tuition-premium-num{margin-top:10px;font-family:'StitchHeadline','Noto Serif KR',Georgia,serif!important;font-size:32px;font-weight:700;color:#fff;letter-spacing:-0.02em;line-height:1.12}
-.home-tuition-premium-foot{margin-top:14px;font-size:12px;font-weight:600;color:rgba(222,196,130,.95);letter-spacing:.01em}
+.home-tuition-premium-foot{margin-top:14px;font-size:12px;font-weight:600;letter-spacing:.01em}
+.home-tuition-premium-foot--up{color:#dec482}
+.home-tuition-premium-foot--down{color:#c5daf3}
+.home-tuition-premium-foot--flat{color:rgba(222,196,130,.75)}
 .home4-tuition{padding:8px 20px 6px;font-size:15px;color:var(--on-v);font-weight:700}
 .home4-tuition-num{font-size:22px;font-weight:900;color:var(--pri);margin-left:6px}
 .home4-payrow{display:flex;align-items:center;gap:8px;padding:14px 20px 22px;font-size:15px;font-weight:800;color:var(--on);cursor:pointer}
@@ -984,10 +987,23 @@ function home_getMonthTuitionAmount(){
   var cur=(pay_stats&&pay_stats.current)?pay_stats.current:null;
   return cur&&typeof cur.total==='number'?cur.total:null;
 }
-function home_getEnrolledCount(){
-  try{if(Array.isArray(inv_students)&&inv_students.length)return inv_students.length;}catch(e){}
-  var arr=(APP_DATA&&APP_DATA.invoiceStudents)||[];
-  return arr.length;
+function home_getTuitionMoM(){
+  var st=typeof pay_stats!=='undefined'?pay_stats:null;
+  if(!st)return null;
+  var cur=st.current;
+  var prev=st.previous||null;
+  var c=(cur&&typeof cur.total==='number')?cur.total:null;
+  var p=(prev&&typeof prev.total==='number')?prev.total:null;
+  if(p===null&&typeof st.prevMonthTotal==='number')p=st.prevMonthTotal;
+  if(c===null||p===null)return null;
+  if(p<=0)return null;
+  var raw=((c-p)/p)*100;
+  var pct=Math.round(raw*10)/10;
+  var arrow=pct>0?'↗':pct<0?'↘':'→';
+  var sign=pct>0?'+':'';
+  var tone=pct>0?'up':pct<0?'down':'flat';
+  if(pct===0||Math.abs(pct)<0.05){arrow='→';tone='flat';sign='';}
+  return{text:arrow+' 전월 대비 '+sign+pct+'%',tone:tone};
 }
 function home_fitGreetTitle(){
   var el=document.querySelector('.home-greet-title');
@@ -1088,11 +1104,11 @@ function home_render(){
     h+='<span class="home-pay-chev" style="color:#3a6d2e;font-size:22px;font-weight:900">✓</span></div>';
     h+='<div class="home-pay-sub">이번 달 수납이 모두 완료되었습니다</div></div>';
   }
-  var enN=home_getEnrolledCount();
+  var mom=home_getTuitionMoM();
   h+='<div class="home-tuition-premium">';
   h+='<div class="home-tuition-premium-lab">이번 달 수강료</div>';
   h+='<div class="home-tuition-premium-num">'+(tuition!==null?'₩'+tuition.toLocaleString():'—')+'</div>';
-  if(enN>0)h+='<div class="home-tuition-premium-foot">원생 '+enN+'명 기준</div>';
+  if(mom)h+='<div class="home-tuition-premium-foot home-tuition-premium-foot--'+mom.tone+'">'+esc(mom.text)+'</div>';
   h+='</div>';
   h+='</div>';
   Q('app',h);

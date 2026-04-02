@@ -6,6 +6,12 @@
  *
  * 필요: loadStudents, loadInvoiceStudents, loadPaymentStatus, getRevenueStats, togglePayment, _gemini
  * 이미 generateKakao / generateNotice를 쓰고 있다면 중복 분기만 제거하고 내용만 합치세요.
+ *
+ * getRevenueStats(isTest) — 홈 대시보드「전월 대비 n%」는 여기서 내려준 숫자로만 계산됩니다.
+ * 반환 예: { current: { total: 1650000 }, previous: { total: 1480000 } }
+ * · current.total = 이번 달 매출 장부 합계(앱 매출 장부와 같은 기준)
+ * · previous.total = 직전 달 같은 방식 합계(전월이 없으면 생략 가능 — 생략 시 홈에는 % 줄 안 뜸)
+ * 대안: 최상위에 prevMonthTotal 숫자만 넣어도 동일하게 동작합니다.
  */
 
 function v7_doGet(e, isTest) {
