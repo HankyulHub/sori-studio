@@ -393,39 +393,53 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .tabbar-item.active .ms{font-variation-settings:'FILL' 1,'wght' 650,'opsz' 24,'GRAD' 0}
 
 /* 폰트(타이틀/숫자 강조) */
-.home3-w1,.home3-cta-title,.home3-sec-title,.home3-alert-title,.home3-stat-num,.home3-money,.title{font-family:'Manrope','StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
+.home3-w1,.home-greet-title,.home3-cta-title,.home3-sec-title,.home3-alert-title,.home3-stat-num,.home3-money,.title{font-family:'Manrope','StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
 
 /* 홈(대시보드 v3) */
 .home3-wrap{padding:18px 20px 10px}
 .home3-welcome{margin:6px 0 18px}
 .home3-w1{font-size:32px;font-weight:800;color:var(--pri);letter-spacing:-0.02em;line-height:1.12}
 .home3-w2{font-size:14px;color:var(--on-v);font-weight:600;margin-top:8px;line-height:1.45}
-.home3-grid2{display:grid;grid-template-columns:1fr;gap:12px}
-.home3-cta{border-radius:18px;padding:18px 16px;box-shadow:0 20px 50px rgba(26,28,26,.08);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+.home3-grid2{display:grid;grid-template-columns:1fr;gap:16px}
+.home3-cta{border-radius:18px;padding:28px 22px;box-shadow:0 20px 50px rgba(26,28,26,.08);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease;display:flex;flex-direction:column;align-items:flex-start;text-align:left}
 .home3-cta:active{transform:scale(.99)}
 .home3-cta--pri{background:linear-gradient(45deg,var(--pri),var(--pri-2));color:#fff}
-.home3-cta--sec{background:var(--sc-lowest);color:var(--pri);border:1px solid rgba(196,198,207,.10)}
+.home3-cta--sec{background:var(--sc-lowest);color:var(--pri);border:1px solid rgba(196,198,207,.22)}
 .home3-cta-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.home3-cta-ic{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.home3-cta-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:4px}
 .home3-cta--pri .home3-cta-ic{background:rgba(255,255,255,.10)}
 .home3-cta--sec .home3-cta-ic{background:rgba(0,32,70,.06)}
-.home3-cta-ic .ms{font-size:26px;line-height:1}
+.home3-cta-ic .ms{font-size:28px;line-height:1}
 .home3-cta--pri .home3-cta-ic .ms{color:#dec482;font-variation-settings:'FILL' 1,'wght' 650,'opsz' 24,'GRAD' 0}
 .home3-cta--sec .home3-cta-ic .ms{color:var(--pri);font-variation-settings:'FILL' 1,'wght' 650,'opsz' 24,'GRAD' 0}
 .home3-cta-title{font-size:20px;font-weight:900;letter-spacing:-0.01em}
 .home3-cta-desc{margin-top:10px;font-size:14px;line-height:1.55;font-weight:650}
-.home3-cta--pri .home3-cta-desc{color:#87a0cd}
+.home3-cta--pri .home3-cta-desc{color:#b8c9e8}
 .home3-cta--sec .home3-cta-desc{color:var(--on-v)}
-.home3-cta-foot{margin-top:14px;font-size:14px;font-weight:900}
+.home3-cta-foot{margin-top:22px;font-size:14px;font-weight:900}
 .home3-cta--pri .home3-cta-foot{color:#dec482}
 .home3-cta--sec .home3-cta-foot{color:var(--pri)}
 .home3-cta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
 .home3-cta-arrow{font-size:20px;font-weight:900;opacity:.9}
+.home-greet-title{font-size:36px;font-weight:800;color:var(--pri);letter-spacing:-0.03em;line-height:1.12;margin:6px 0 24px;font-family:'Manrope','StitchBody',system-ui,sans-serif!important}
+.home-dash-card{background:var(--sc-lowest);border:1px solid rgba(196,198,207,.22);border-radius:18px;padding:18px 18px;box-shadow:var(--sh);margin-top:14px}
+.home-dash-card--click{cursor:pointer}
+.home-dash-card--click:active{transform:scale(.995)}
+.home-dash-card--due{border-left:4px solid rgba(226,75,74,.45)}
+.home-pay-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.home-pay-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:900;color:#fff;letter-spacing:.02em}
+.home-pay-pill--due{background:#E24B4A}
+.home-pay-pill--ok{background:#639922}
+.home-pay-headline{font-size:15px;font-weight:900;color:var(--pri);margin-left:8px;flex:1}
+.home-pay-chev{font-size:20px;color:rgba(0,32,70,.4);font-weight:700}
+.home-pay-sub{margin-top:8px;font-size:12px;color:var(--on-v);line-height:1.45;font-weight:600;padding-left:2px}
+.home-tuition-card{margin-top:14px}
+.home-tuition-lab{font-size:12px;font-weight:800;color:var(--on-v);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.home-tuition-num{font-size:28px;font-weight:900;color:var(--pri);letter-spacing:-0.02em}
 .home4-tuition{padding:8px 20px 6px;font-size:15px;color:var(--on-v);font-weight:700}
 .home4-tuition-num{font-size:22px;font-weight:900;color:var(--pri);margin-left:6px}
 .home4-payrow{display:flex;align-items:center;gap:8px;padding:14px 20px 22px;font-size:15px;font-weight:800;color:var(--on);cursor:pointer}
 .home4-payrow--ok{cursor:default;color:#7a6210;font-weight:800}
-.home-ai-greet{font-size:15px;font-weight:650;color:var(--on-v);line-height:1.5;margin:4px 0 16px;padding:12px 14px;background:rgba(255,222,165,.22);border-radius:14px;border:1px solid rgba(184,150,12,.15)}
 .kk-msg-hub{padding:16px 16px 24px;display:flex;flex-direction:column;gap:12px}
 .kk-hub-card{display:flex;align-items:center;gap:14px;padding:18px 16px;border-radius:18px;background:var(--sc-lowest);border:1px solid rgba(196,198,207,.2);box-shadow:var(--sh);cursor:pointer;text-align:left;width:100%;font-family:inherit}
 .kk-hub-card:active{transform:scale(.99)}
@@ -457,13 +471,13 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .pay-v2-card{background:var(--sc-lowest);border-radius:16px;padding:14px 14px;margin-bottom:10px;border:1px solid rgba(196,198,207,.18);box-shadow:var(--sh)}
 .pay-v2-row1{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .pay-v2-av{width:40px;height:40px;border-radius:50%;background:rgba(255,222,165,.55);color:#5c4201;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0}
-.pay-v2-av.paid{background:rgba(184,150,12,.2);color:#5c4a08}
+.pay-v2-av.paid{background:rgba(99,153,34,.18);color:#4a7518}
 .pay-v2-nm{font-size:15px;font-weight:800;color:var(--on);flex:1;min-width:0}
 .pay-v2-row2{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .pay-v2-meta{font-size:12px;color:var(--on-v);flex:1;min-width:0}
 .pay-v2-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .pay-v2-btn-mi{padding:8px 14px;border-radius:10px;font-size:12px;font-weight:900;border:1px solid #e8b4b4;background:#fff5f5;color:#b91c1c;cursor:pointer;font-family:inherit}
-.pay-v2-row-paid{font-size:12px;font-weight:700;color:#5c4a08}
+.pay-v2-row-paid{font-size:12px;font-weight:700;color:#4a7518}
 .pay-v2-btn-can{padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(196,198,207,.5);background:#fff;color:var(--on-v);cursor:pointer;font-family:inherit}
 .stu-badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:#ecebe8;color:#444;margin:3px 6px 0 0}
 .stu-badges-wrap{margin-top:6px}
@@ -974,6 +988,19 @@ function home_getUnpaidCount(){
   var list=(ps&&ps.students)?ps.students.filter(function(s){return !s.paid}):[];
   return list.length;
 }
+function home_unpaidSubline(){
+  var ps=(APP_DATA&&APP_DATA.paymentStatus)?APP_DATA.paymentStatus:null;
+  var list=(ps&&ps.students)?ps.students.filter(function(s){return !s.paid}):[];
+  if(!list.length)return'';
+  var first=String(list[0].name||'').trim();
+  var rest=list.length-1;
+  if(rest<=0)return esc(first)+' · 결제일이 지났습니다';
+  return esc(first)+' 외 '+rest+'명 · 결제일이 지났습니다';
+}
+function home_goPayLedger(){
+  MODE='pay';
+  switchTab('pay');
+}
 function home_backFromUnpaid(){
   HOME_PANEL='dash';
   home_render();
@@ -1017,21 +1044,37 @@ function home_render(){
   var unpaidN=home_getUnpaidCount();
   var h='';
   h+='<div class="home3-wrap'+(HOME_RENDERED?'':' fade-in')+'">';
-  h+='<div class="home-ai-greet">'+esc(home_greetingLine())+'</div>';
+  h+='<div class="home-greet-title">'+esc(home_greetingLine())+'</div>';
   h+='<div class="home3-grid2">';
   h+='<div class="home3-cta home3-cta--pri" onclick="home_goFeedback()">';
-  h+='<div class="home3-cta-row"><div class="home3-cta-ic"><span class="material-symbols-outlined ms">edit_note</span></div><span class="home3-cta-title" style="flex:1;font-size:18px">레슨 피드백 쓰기</span><span class="home3-cta-arrow">→</span></div>';
-  h+='</div>';
+  h+='<div class="home3-cta-ic"><span class="material-symbols-outlined ms">edit_note</span></div>';
+  h+='<div class="home3-cta-title">레슨 피드백 쓰기</div>';
+  h+='<div class="home3-cta-desc">학생의 성장을 기록하고 학부모님과 공유하세요.</div>';
+  h+='<div class="home3-cta-foot">바로 작성하기 →</div></div>';
   h+='<div class="home3-cta home3-cta--sec" onclick="home_goNotice()">';
-  h+='<div class="home3-cta-row"><div class="home3-cta-ic"><span class="material-symbols-outlined ms">campaign</span></div><span class="home3-cta-title" style="flex:1;font-size:18px">안내문 쓰기</span><span class="home3-cta-arrow">→</span></div>';
-  h+='</div>';
+  h+='<div class="home3-cta-ic"><span class="material-symbols-outlined ms">campaign</span></div>';
+  h+='<div class="home3-cta-title">안내문 쓰기</div>';
+  h+='<div class="home3-cta-desc">수업료 안내, 일정 변경, 휴원 공지를 자동 생성합니다.</div>';
+  h+='<div class="home3-cta-foot">새 공지 작성 +</div></div>';
   h+='</div>';
   if(unpaidN>0){
-    h+='<div class="home4-payrow" onclick="home_rUnpaid()"><span class="home4-paydot"></span> 미납 '+unpaidN+'명 <span class="home4-paychev">›</span></div>';
+    h+='<div class="home-dash-card home-dash-card--click home-dash-card--due" onclick="home_goPayLedger()">';
+    h+='<div class="home-pay-top"><div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;flex:1;min-width:0">';
+    h+='<span class="home-pay-pill home-pay-pill--due">미납</span>';
+    h+='<span class="home-pay-headline" style="margin-left:0">'+unpaidN+'건</span></div>';
+    h+='<span class="home-pay-chev">›</span></div>';
+    h+='<div class="home-pay-sub">'+home_unpaidSubline()+'</div></div>';
   }else{
-    h+='<div class="home4-payrow home4-payrow--ok">모두 완납 ✅</div>';
+    h+='<div class="home-dash-card">';
+    h+='<div class="home-pay-top"><div style="display:flex;align-items:center;flex:1;gap:8px">';
+    h+='<span class="home-pay-pill home-pay-pill--ok">완납</span>';
+    h+='<span class="home-pay-headline" style="margin-left:0">모두 완료</span></div>';
+    h+='<span class="home-pay-chev" style="color:#639922;font-size:22px;font-weight:900">✓</span></div>';
+    h+='<div class="home-pay-sub">이번 달 수납이 모두 완료되었습니다</div></div>';
   }
-  h+='<div class="home4-tuition" style="padding-top:4px"><b class="home4-tuition-num">'+(tuition!==null?'₩'+tuition.toLocaleString():'—')+'</b></div>';
+  h+='<div class="home-dash-card home-tuition-card">';
+  h+='<div class="home-tuition-lab">이번 달 수강료</div>';
+  h+='<div class="home-tuition-num">'+(tuition!==null?'₩'+tuition.toLocaleString():'—')+'</div></div>';
   h+='</div>';
   Q('app',h);
   HOME_RENDERED=true;
