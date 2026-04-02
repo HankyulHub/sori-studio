@@ -421,21 +421,22 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .home3-cta--sec .home3-cta-foot{color:var(--pri)}
 .home3-cta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
 .home3-cta-arrow{font-size:20px;font-weight:900;opacity:.9}
-.home-greet-title{font-size:36px;font-weight:800;color:var(--pri);letter-spacing:-0.03em;line-height:1.12;margin:6px 0 24px;font-family:'Manrope','StitchBody',system-ui,sans-serif!important}
-.home-dash-card{background:var(--sc-lowest);border:1px solid rgba(196,198,207,.22);border-radius:18px;padding:18px 18px;box-shadow:var(--sh);margin-top:14px}
+.home-greet-wrap{width:100%;max-width:100%;overflow:hidden;margin:6px 0 24px}
+.home-greet-title{font-size:30px;font-weight:800;color:var(--pri);letter-spacing:-0.03em;line-height:1.12;margin:0;font-family:'Manrope','StitchBody',system-ui,sans-serif!important;white-space:nowrap;overflow:hidden;max-width:100%}
+.home-dash-card{background:var(--sc-lowest);border:1px solid rgba(196,198,207,.2);border-radius:20px;padding:18px 18px;box-shadow:var(--sh);margin-top:14px}
 .home-dash-card--click{cursor:pointer}
 .home-dash-card--click:active{transform:scale(.995)}
-.home-dash-card--due{border-left:4px solid rgba(226,75,74,.45)}
 .home-pay-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.home-pay-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:900;color:#fff;letter-spacing:.02em}
-.home-pay-pill--due{background:#E24B4A}
-.home-pay-pill--ok{background:#639922}
-.home-pay-headline{font-size:15px;font-weight:900;color:var(--pri);margin-left:8px;flex:1}
-.home-pay-chev{font-size:20px;color:rgba(0,32,70,.4);font-weight:700}
-.home-pay-sub{margin-top:8px;font-size:12px;color:var(--on-v);line-height:1.45;font-weight:600;padding-left:2px}
-.home-tuition-card{margin-top:14px}
-.home-tuition-lab{font-size:12px;font-weight:800;color:var(--on-v);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
-.home-tuition-num{font-size:28px;font-weight:900;color:var(--pri);letter-spacing:-0.02em}
+.home-pay-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:900;color:#fff;letter-spacing:.04em}
+.home-pay-pill--due{background:linear-gradient(135deg,#c43d3d,#a32e2e);box-shadow:0 2px 8px rgba(196,60,60,.22)}
+.home-pay-pill--ok{background:linear-gradient(135deg,#4a8c3a,#3a6d2e);box-shadow:0 2px 8px rgba(60,120,50,.18)}
+.home-pay-headline{font-size:15px;font-weight:900;color:var(--pri);margin-left:8px;flex:1;min-width:0}
+.home-pay-chev{font-size:22px;color:rgba(0,32,70,.35);font-weight:700;flex-shrink:0}
+.home-pay-sub{margin-top:10px;font-size:12px;color:var(--on-v);line-height:1.45;font-weight:600;padding-left:2px;opacity:.92}
+.home-tuition-premium{margin-top:14px;border-radius:22px;padding:22px 22px 20px;background:linear-gradient(155deg,#061832 0%,#0a2141 42%,#0f2d52 100%);border:1px solid rgba(255,255,255,.1);box-shadow:0 14px 36px rgba(6,24,50,.32)}
+.home-tuition-premium-lab{font-size:12px;font-weight:600;color:rgba(195,210,232,.75);letter-spacing:.08em;text-transform:uppercase}
+.home-tuition-premium-num{margin-top:10px;font-family:'StitchHeadline','Noto Serif KR',Georgia,serif!important;font-size:32px;font-weight:700;color:#fff;letter-spacing:-0.02em;line-height:1.12}
+.home-tuition-premium-foot{margin-top:14px;font-size:12px;font-weight:600;color:rgba(222,196,130,.95);letter-spacing:.01em}
 .home4-tuition{padding:8px 20px 6px;font-size:15px;color:var(--on-v);font-weight:700}
 .home4-tuition-num{font-size:22px;font-weight:900;color:var(--pri);margin-left:6px}
 .home4-payrow{display:flex;align-items:center;gap:8px;padding:14px 20px 22px;font-size:15px;font-weight:800;color:var(--on);cursor:pointer}
@@ -983,6 +984,21 @@ function home_getMonthTuitionAmount(){
   var cur=(pay_stats&&pay_stats.current)?pay_stats.current:null;
   return cur&&typeof cur.total==='number'?cur.total:null;
 }
+function home_getEnrolledCount(){
+  try{if(Array.isArray(inv_students)&&inv_students.length)return inv_students.length;}catch(e){}
+  var arr=(APP_DATA&&APP_DATA.invoiceStudents)||[];
+  return arr.length;
+}
+function home_fitGreetTitle(){
+  var el=document.querySelector('.home-greet-title');
+  if(!el)return;
+  el.style.whiteSpace='nowrap';
+  var maxPx=30,minPx=12;
+  for(var w=maxPx;w>=minPx;w-=1){
+    el.style.fontSize=w+'px';
+    if(el.scrollWidth<=el.clientWidth)break;
+  }
+}
 function home_getUnpaidCount(){
   var ps=(APP_DATA&&APP_DATA.paymentStatus)?APP_DATA.paymentStatus:null;
   var list=(ps&&ps.students)?ps.students.filter(function(s){return !s.paid}):[];
@@ -1044,7 +1060,7 @@ function home_render(){
   var unpaidN=home_getUnpaidCount();
   var h='';
   h+='<div class="home3-wrap'+(HOME_RENDERED?'':' fade-in')+'">';
-  h+='<div class="home-greet-title">'+esc(home_greetingLine())+'</div>';
+  h+='<div class="home-greet-wrap"><div class="home-greet-title">'+esc(home_greetingLine())+'</div></div>';
   h+='<div class="home3-grid2">';
   h+='<div class="home3-cta home3-cta--pri" onclick="home_goFeedback()">';
   h+='<div class="home3-cta-ic"><span class="material-symbols-outlined ms">edit_note</span></div>';
@@ -1058,26 +1074,30 @@ function home_render(){
   h+='<div class="home3-cta-foot">새 공지 작성 +</div></div>';
   h+='</div>';
   if(unpaidN>0){
-    h+='<div class="home-dash-card home-dash-card--click home-dash-card--due" onclick="home_goPayLedger()">';
-    h+='<div class="home-pay-top"><div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;flex:1;min-width:0">';
+    h+='<div class="home-dash-card home-dash-card--click" onclick="home_goPayLedger()">';
+    h+='<div class="home-pay-top"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">';
     h+='<span class="home-pay-pill home-pay-pill--due">미납</span>';
     h+='<span class="home-pay-headline" style="margin-left:0">'+unpaidN+'건</span></div>';
     h+='<span class="home-pay-chev">›</span></div>';
     h+='<div class="home-pay-sub">'+home_unpaidSubline()+'</div></div>';
   }else{
     h+='<div class="home-dash-card">';
-    h+='<div class="home-pay-top"><div style="display:flex;align-items:center;flex:1;gap:8px">';
+    h+='<div class="home-pay-top"><div style="display:flex;align-items:center;flex:1;gap:10px">';
     h+='<span class="home-pay-pill home-pay-pill--ok">완납</span>';
     h+='<span class="home-pay-headline" style="margin-left:0">모두 완료</span></div>';
-    h+='<span class="home-pay-chev" style="color:#639922;font-size:22px;font-weight:900">✓</span></div>';
+    h+='<span class="home-pay-chev" style="color:#3a6d2e;font-size:22px;font-weight:900">✓</span></div>';
     h+='<div class="home-pay-sub">이번 달 수납이 모두 완료되었습니다</div></div>';
   }
-  h+='<div class="home-dash-card home-tuition-card">';
-  h+='<div class="home-tuition-lab">이번 달 수강료</div>';
-  h+='<div class="home-tuition-num">'+(tuition!==null?'₩'+tuition.toLocaleString():'—')+'</div></div>';
+  var enN=home_getEnrolledCount();
+  h+='<div class="home-tuition-premium">';
+  h+='<div class="home-tuition-premium-lab">이번 달 수강료</div>';
+  h+='<div class="home-tuition-premium-num">'+(tuition!==null?'₩'+tuition.toLocaleString():'—')+'</div>';
+  if(enN>0)h+='<div class="home-tuition-premium-foot">원생 '+enN+'명 기준</div>';
+  h+='</div>';
   h+='</div>';
   Q('app',h);
   HOME_RENDERED=true;
+  setTimeout(home_fitGreetTitle,0);
 }
 
 // ═══════════════════════════════════════
