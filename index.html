@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>소리마을 매니저</title>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=block" rel="stylesheet">
 <style>
 @font-face{
   font-family:'StitchBody';
@@ -406,7 +406,7 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .home3-cta--pri{background:linear-gradient(45deg,var(--pri),var(--pri-2));color:#fff}
 .home3-cta--sec{background:var(--sc-lowest);color:var(--pri);border:1px solid rgba(196,198,207,.22)}
 .home3-cta-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.home3-cta-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:4px}
+.home3-cta-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:14px}
 .home3-cta--pri .home3-cta-ic{background:rgba(255,255,255,.10)}
 .home3-cta--sec .home3-cta-ic{background:rgba(0,32,70,.06)}
 .home3-cta-ic .ms{font-size:28px;line-height:1}
@@ -422,13 +422,14 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .home3-cta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
 .home3-cta-arrow{font-size:20px;font-weight:900;opacity:.9}
 .home-greet-wrap{width:100%;max-width:100%;overflow:hidden;margin:6px 0 24px}
-.home-greet-title{font-size:30px;font-weight:700;color:var(--pri);letter-spacing:-0.02em;line-height:1.15;margin:0;font-family:'StitchHeadline','Noto Serif KR',Georgia,serif!important;white-space:nowrap;overflow:hidden;max-width:100%}
+.home-greet-title{font-size:30px;font-weight:700;color:var(--pri);letter-spacing:-0.02em;line-height:1.15;margin:0;font-family:'StitchHeadline','Noto Serif KR',Georgia,serif!important;white-space:nowrap;overflow:hidden;max-width:100%;opacity:0;transition:opacity .15s ease}
+.home-greet-title.fitted{opacity:1}
 .home-dash-card{background:var(--sc-lowest);border:1px solid rgba(196,198,207,.2);border-radius:20px;padding:18px 18px;box-shadow:var(--sh);margin-top:14px}
 .home-dash-card--click{cursor:pointer}
 .home-dash-card--click:active{transform:scale(.995)}
 .home-pay-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .home-pay-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.04em}
-.home-pay-pill--due{background:rgba(0,32,70,.09);color:var(--pri);border:1px solid rgba(0,32,70,.2);box-shadow:none}
+.home-pay-pill--due{background:#4A5568;color:#fff;border:none;box-shadow:0 2px 8px rgba(74,85,104,.18)}
 .home-pay-pill--ok{background:linear-gradient(135deg,#4a8c3a,#3a6d2e);color:#fff;border:none;box-shadow:0 2px 8px rgba(60,120,50,.18)}
 .home-pay-headline{font-size:15px;font-weight:900;color:var(--pri);margin-left:8px;flex:1;min-width:0}
 .home-pay-chev{font-size:22px;color:rgba(0,32,70,.35);font-weight:700;flex-shrink:0}
@@ -473,21 +474,26 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .pay-v2-sumval{margin-top:6px;font-size:15px;font-weight:900;color:var(--pri)}
 .pay-v2-filt{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 14px}
 .pay-v2-fpill{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid rgba(196,198,207,.45);background:rgba(255,255,255,.75);color:var(--on-v);cursor:pointer;font-family:inherit}
-.pay-v2-fpill.on{background:#C9A84C;color:#fff;border-color:#C9A84C}
+.pay-v2-fpill.on[data-f="all"]{background:var(--pri);color:#fff;border-color:var(--pri)}
+.pay-v2-fpill.on[data-f="paid"]{background:#2e7d32;color:#fff;border-color:#2e7d32}
+.pay-v2-fpill.on[data-f="unpaid"]{background:#4A5568;color:#fff;border-color:#4A5568}
 .pay-v2-list{padding:0 20px 100px}
 .pay-v2-card{background:var(--sc-lowest);border-radius:16px;padding:14px 14px;margin-bottom:10px;border:1px solid rgba(196,198,207,.18);box-shadow:var(--sh);cursor:pointer;transition:opacity .12s,transform .12s}
 .pay-v2-card:active{opacity:.88;transform:scale(.995)}
 .pay-v2-row1{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .pay-v2-av{width:40px;height:40px;border-radius:50%;background:#E8D5A3;color:#3d3318;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0}
-.pay-v2-av.paid{background:#C9A84C;color:#fff}
+.pay-v2-av.paid{background:#2e7d32;color:#fff}
 .pay-v2-nm{font-size:15px;font-weight:800;color:var(--on);flex:1;min-width:0}
 .pay-v2-row2{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.pay-v2-meta{font-size:12px;color:var(--on-v);flex:1;min-width:0}
+.pay-v2-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--on-v);flex:1;min-width:0}
 .pay-v2-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.pay-v2-btn-mi{padding:8px 14px;border-radius:10px;font-size:12px;font-weight:900;border:1px solid #4A5568;background:#4A5568;color:#fff;cursor:pointer;font-family:inherit}
-.pay-v2-row-paid{font-size:12px;font-weight:700;color:#5c4a08}
+.pay-v2-btn-mi{padding:8px 14px;border-radius:10px;font-size:12px;font-weight:900;border:1px solid var(--pri);background:var(--pri);color:#fff;cursor:pointer;font-family:inherit}
+.pay-v2-row-paid{font-size:12px;font-weight:700;color:#2e7d32}
 .pay-v2-btn-can{padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(196,198,207,.5);background:#fff;color:var(--on-v);cursor:pointer;font-family:inherit}
-.pay-v2-sumcell .pay-v2-sumval.pay-v2-sum--unpaid{color:#4A5568!important}
+.pay-v2-sumcell .pay-v2-sumval.pay-v2-sum--unpaid{color:#c62828!important}
+.pay-meta-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(244,243,241,.9);color:var(--on-v);border:1px solid rgba(196,198,207,.3);margin-right:6px}
+.pay-fee-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(0,32,70,.06);color:var(--pri);border:1px solid rgba(0,32,70,.12)}
+.pay-fee-badge--high{background:rgba(0,32,70,.1);color:var(--pri);border:1px solid rgba(0,32,70,.2);font-weight:900}
 .stu-badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:#ecebe8;color:#444;margin:3px 6px 0 0}
 .stu-badges-wrap{margin-top:6px}
 .home4-paydot{width:8px;height:8px;border-radius:50%;background:#c62828;flex-shrink:0}
@@ -829,16 +835,26 @@ function appMergeCacheFromData(data){
   if(data.paymentsByMonth&&typeof data.paymentsByMonth==='object'){
     for(var k in data.paymentsByMonth){
       var e=data.paymentsByMonth[k];
-      if(e&&e.paymentStatus)pay_monthCache[k]={status:e.paymentStatus,stats:e.revenueStats||null};
+      if(e&&e.paymentStatus&&e.paymentStatus.year!=null&&e.paymentStatus.month!=null){
+        pay_setCached(Number(e.paymentStatus.year),Number(e.paymentStatus.month),e.paymentStatus,e.revenueStats||null);
+      }
     }
   }
   pay_mergeCacheFromAppData();
 }
 function appApplyInitData(data){
   APP_LOADING=false;
+  var prevUnpaid=home_getUnpaidCount();
+  var prevTuition=home_getMonthTuitionAmount();
   appMergeCacheFromData(data);
   appRemoveLoader();
-  if(MODE==='home'){home_render();}
+  if(MODE==='home'){
+    var newUnpaid=home_getUnpaidCount();
+    var newTuition=home_getMonthTuitionAmount();
+    if(!HOME_RENDERED||prevUnpaid!==newUnpaid||prevTuition!==newTuition){
+      home_render();
+    }
+  }
   else if(MODE==='kakao'){kk_rInput();kk_checkFirstRun();}
   else if(MODE==='invoice')inv_render();
   else if(MODE==='stu')stu_render();
@@ -1031,6 +1047,7 @@ function home_fitGreetTitle(){
     el.style.fontSize=w+'px';
     if(el.scrollWidth<=el.clientWidth)break;
   }
+  el.classList.add('fitted');
 }
 function home_getUnpaidCount(){
   var ps=(APP_DATA&&APP_DATA.paymentStatus)?APP_DATA.paymentStatus:null;
@@ -2313,7 +2330,7 @@ function inv_renderSetting(){
   var pm=(inv_students&&inv_students.length)?(inv_students.length+'명'):'—';
   var paidSum=inv_sumPaidTuition();
   var h='';
-  h+='<div class="inv-tab-summary"><div><div class="inv-tab-sum-big">₩'+total+'</div><div class="inv-tab-sum-row">예상 매출 · 원생 '+pmStr+'</div></div><div style="text-align:right"><div class="inv-tab-sum-row">수납 완료</div><div class="inv-tab-sum-big" style="font-size:16px">₩'+paidSum.toLocaleString()+'</div></div></div>';
+  h+='<div class="inv-tab-summary"><div><div class="inv-tab-sum-big">₩'+total+'</div><div class="inv-tab-sum-row">예상 매출 · 원생 '+pm+'</div></div><div style="text-align:right"><div class="inv-tab-sum-row">수납 완료</div><div class="inv-tab-sum-big" style="font-size:16px">₩'+paidSum.toLocaleString()+'</div></div></div>';
   h+=inv_buildSec('greeting','🎶 인삿말',null,inv_openSections.greeting,inv_buildGreeting);
   h+=inv_buildSec('students','📌 수강료 안내',inv_students.length+'명',inv_openSections.students,inv_buildStudents);
   h+=inv_buildSec('schedule','🎵 수업 일정',null,inv_openSections.schedule,inv_buildSchedule);
@@ -3224,8 +3241,24 @@ function att_render(){
 // ═══════════════════════════════════════
 var pay_loaded=false,pay_status=null,pay_stats=null,pay_year=now.getFullYear(),pay_month=now.getMonth()+1,pay_saving={},pay_uiFilter='all';
 function pay_monthKeyStr(y,m){return String(y)+'_'+String(m)}
+function pay_snapKey(y,m){return 'pay_snap_'+(IS_TEST?'t_':'m_')+y+'_'+m}
+function pay_saveSnapshot(y,m,status,stats){
+  if(y===now.getFullYear()&&m===now.getMonth()+1)return;
+  try{
+    localStorage.setItem(pay_snapKey(y,m),JSON.stringify({status:status,stats:stats,ts:Date.now()}));
+  }catch(e){}
+}
+function pay_loadSnapshot(y,m){
+  try{
+    var raw=localStorage.getItem(pay_snapKey(y,m));
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
 function pay_getCached(y,m){return pay_monthCache[pay_monthKeyStr(y,m)]||null}
-function pay_setCached(y,m,status,stats){pay_monthCache[pay_monthKeyStr(y,m)]={status:status,stats:stats}}
+function pay_setCached(y,m,status,stats){
+  pay_monthCache[pay_monthKeyStr(y,m)]={status:status,stats:stats};
+  pay_saveSnapshot(y,m,status,stats);
+}
 function pay_mergeCacheFromAppData(){
   if(!pay_status||pay_status.year==null||pay_status.month==null)return;
   pay_setCached(Number(pay_status.year),Number(pay_status.month),pay_status,pay_stats);
@@ -3320,9 +3353,14 @@ function pay_statsCounts(){
   return{tot:st.length,paid:paid,unpaid:st.length-paid};
 }
 function pay_renderCardHtml(s){
-  var meta=pay_studentMetaLine(s.name);
-  var feeDisp=s.feeDisplay||(typeof s.fee==='number'?s.fee.toLocaleString():s.fee);
-  var sub=meta||(feeDisp?(feeDisp+'원'):'');
+  var freq='';
+  var feeNum=typeof s.fee==='number'?s.fee:parseInt(String(s.feeDisplay||s.fee||'').replace(/,/g,''),10);
+  if(isNaN(feeNum))feeNum=0;
+  try{
+    var rec=stu_list.find(function(x){return x&&x.name===s.name;});
+    if(rec)freq=rec.freq||'';
+  }catch(e){}
+  var feeDisp=feeNum?feeNum.toLocaleString()+'원':'';
   var paid=!!s.paid;
   var av=esc((s.name&&s.name[0])||'?');
   var nmJs=JSON.stringify(String(s.name||''));
@@ -3330,10 +3368,27 @@ function pay_renderCardHtml(s){
   var actions=paid
     ? '<span class="pay-v2-row-paid">'+esc(dd)+' 완납</span><button type="button" class="pay-v2-btn-can" onclick=\'event.stopPropagation();pay_setPaid('+nmJs+',false)\'>취소</button>'
     : '<button type="button" class="pay-v2-btn-mi" onclick=\'event.stopPropagation();pay_setPaid('+nmJs+',true)\'>완납</button>';
+  var feeBadgeCls=feeNum>=150000?'pay-fee-badge pay-fee-badge--high':'pay-fee-badge';
+  var metaHtml='';
+  if(freq)metaHtml+='<span class="pay-meta-chip">'+esc(freq)+'</span>';
+  if(feeDisp)metaHtml+='<span class="'+feeBadgeCls+'">'+esc(feeDisp)+'</span>';
   return '<div class="pay-v2-card" data-student-id="'+esc(s.name)+'" onclick="pay_openStudent('+nmJs+')"><div class="pay-v2-row1">'
     +'<div class="pay-v2-av'+(paid?' paid':'')+'">'+av+'</div>'
     +'<div class="pay-v2-nm">'+esc(s.name)+'</div></div>'
-    +'<div class="pay-v2-row2"><div class="pay-v2-meta">'+esc(sub||'')+'</div><div class="pay-v2-actions">'+actions+'</div></div></div>';
+    +'<div class="pay-v2-row2"><div class="pay-v2-meta">'+metaHtml+'</div><div class="pay-v2-actions">'+actions+'</div></div></div>';
+}
+function pay_replaceCard(studentId,s){
+  var cards=document.querySelectorAll('.pay-v2-card');
+  for(var i=0;i<cards.length;i++){
+    if(cards[i].getAttribute('data-student-id')===studentId){
+      var tmp=document.createElement('div');
+      tmp.innerHTML=pay_renderCardHtml(s);
+      if(tmp.firstElementChild){
+        cards[i].replaceWith(tmp.firstElementChild);
+      }
+      break;
+    }
+  }
 }
 function pay_openStudent(nm){
   var st=(typeof stu_list!=='undefined'&&stu_list)?stu_list.find(function(x){return x&&x.name===nm;}):null;
@@ -3357,7 +3412,16 @@ function pay_updateV2Header(){
   var elU=document.getElementById('pay_v2_unpaid_n');
   if(elG)elG.textContent='₩'+totalMoney.toLocaleString();
   if(elP)elP.textContent=c.paid+'명';
-  if(elU){elU.textContent=c.unpaid+'명';elU.classList.add('pay-v2-sum--unpaid');}
+  if(elU){
+    elU.textContent=c.unpaid+'명';
+    if(c.unpaid>0){
+      elU.classList.add('pay-v2-sum--unpaid');
+      elU.style.color='';
+    }else{
+      elU.classList.remove('pay-v2-sum--unpaid');
+      elU.style.color='#2e7d32';
+    }
+  }
   document.querySelectorAll('.pay-v2-fpill').forEach(function(el){
     var f=el.getAttribute('data-f');
     el.classList.toggle('on',f===pay_uiFilter);
@@ -3375,8 +3439,17 @@ function pay_renderCardList(){
 }
 function pay_selectMonth(m){
   pay_month=m;
+  var hd=document.getElementById('headerDate');
+  if(hd)hd.textContent=pay_year+'년 '+m+'월';
   pay_uiFilter='all';
   var hit=pay_getCached(pay_year,m);
+  if(!hit){
+    var snap=pay_loadSnapshot(pay_year,m);
+    if(snap&&snap.status){
+      pay_setCached(pay_year,m,snap.status,snap.stats);
+      hit=pay_getCached(pay_year,m);
+    }
+  }
   if(hit&&hit.status){
     pay_status=hit.status;
     pay_stats=hit.stats||pay_stats;
@@ -3424,7 +3497,9 @@ function pay_setPaid(studentId, wantPaid){
   var prevDate=s.paidDate||'';
   s.paid=!!wantPaid;
   s.paidDate=wantPaid?pay_fmtDate():'';
-  pay_renderCardList();
+  pay_replaceCard(studentId,s);
+  pay_updateV2Header();
+  if(!pay_filteredStudents().some(function(x){return x&&x.name===studentId;}))pay_renderCardList();
   try{if(APP_DATA)APP_DATA.paymentStatus=pay_status;}catch(e){}
   apiPost('togglePayment',{year:pay_year,month:pay_month,name:studentId,paid:s.paid}).then(function(){
     pay_saving[studentId]=false;
@@ -3432,7 +3507,9 @@ function pay_setPaid(studentId, wantPaid){
   }).catch(function(){
     s.paid=curPaid;
     s.paidDate=prevDate;
-    pay_renderCardList();
+    pay_replaceCard(studentId,s);
+    pay_updateV2Header();
+    if(!pay_filteredStudents().some(function(x){return x&&x.name===studentId;}))pay_renderCardList();
     try{if(APP_DATA)APP_DATA.paymentStatus=pay_status;}catch(e){}
     pay_saving[studentId]=false;
     toast('저장 실패, 다시 시도해주세요');
@@ -3485,8 +3562,10 @@ function pay_init(){
 function pay_render(){
   if(!pay_status){pay_init();return;}
   if(!pay_stats)pay_stats={current:{total:0}};
+  var hd=document.getElementById('headerDate');
+  if(hd)hd.textContent=pay_year+'년 '+pay_month+'월';
   var c=pay_statsCounts();
-  var h='<div class="pay-v2-head"><div class="pay-v2-ym">'+pay_year+'년 '+pay_month+'월</div></div>';
+  var h='<div class="pay-v2-head"></div>';
   h+='<div class="month-sel" style="padding:0 20px 12px;overflow-x:auto;flex-wrap:nowrap;display:flex;gap:8px;-webkit-overflow-scrolling:touch">';
   for(var mm=1;mm<=12;mm++){
     var on=mm===pay_month;
@@ -3495,7 +3574,7 @@ function pay_render(){
   h+='</div>';
   h+='<div class="pay-v2-sumgrid"><div class="pay-v2-sumcell"><div class="pay-v2-sumlabel">총 매출</div><div class="pay-v2-sumval" id="pay_v2_grand">₩0</div></div>';
   h+='<div class="pay-v2-sumcell"><div class="pay-v2-sumlabel">완납</div><div class="pay-v2-sumval" id="pay_v2_paid_n">'+c.paid+'명</div></div>';
-  h+='<div class="pay-v2-sumcell"><div class="pay-v2-sumlabel">미납</div><div class="pay-v2-sumval pay-v2-sum--unpaid" id="pay_v2_unpaid_n">'+c.unpaid+'명</div></div></div>';
+  h+='<div class="pay-v2-sumcell"><div class="pay-v2-sumlabel">미납</div><div class="pay-v2-sumval" id="pay_v2_unpaid_n">'+c.unpaid+'명</div></div></div>';
   h+='<div class="pay-v2-filt">';
   h+='<button type="button" class="pay-v2-fpill'+(pay_uiFilter==='all'?' on':'')+'" data-f="all" onclick="pay_setUiFilter(\'all\')">전체</button>';
   h+='<button type="button" class="pay-v2-fpill'+(pay_uiFilter==='paid'?' on':'')+'" data-f="paid" onclick="pay_setUiFilter(\'paid\')">완납</button>';
