@@ -30,6 +30,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{font-family:'Manrope','StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
 body{background:#faf9f6;color:#1a1c1a;max-width:500px;margin:0 auto;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;padding-bottom:92px}
+body.inv-immersive{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 *{font-family:inherit}
 
 h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
@@ -264,6 +265,37 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .fee-chip{padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;cursor:pointer;border:1px solid rgba(196,198,207,.38);background:rgba(255,255,255,.7);color:var(--on-v);transition:background .1s,color .1s,border-color .1s;font-family:inherit;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .fee-chip:active{transform:scale(.95);opacity:.85}
 .fee-chip.selected{background:rgba(255,212,59,.12);color:#FFD43B;border-color:rgba(255,212,59,.3)}
+.fee-seg{display:flex;width:100%;border-radius:12px;overflow:hidden;border:1px solid rgba(196,198,207,.38);margin-bottom:10px;background:rgba(255,255,255,.55)}
+.fee-seg-item{flex:1;min-width:0;padding:10px 2px;font-size:10px;font-weight:800;border:none;background:transparent;color:var(--on-v);font-family:inherit;border-right:1px solid rgba(196,198,207,.32);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;line-height:1.2}
+.fee-seg-item:last-child{border-right:none}
+.fee-seg-item.selected{background:rgba(255,212,59,.14);color:#B8960C;font-weight:900}
+.stu-sum-wrap{display:inline-flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stu-sum-badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid rgba(196,198,207,.35);background:rgba(255,255,255,.75);color:var(--on-v)}
+.stu-sum-badge--warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08);color:#b45309}
+.stu-sum-badge--mat{border-color:rgba(184,150,12,.28);background:rgba(184,150,12,.08);color:#5c4a08}
+.inv-bulk-screen{padding:0 0 88px;min-height:50dvh}
+.inv-bulk-head{padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid rgba(196,198,207,.22);position:sticky;top:0;background:rgba(250,249,246,.96);z-index:8;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.inv-bulk-title{flex:1;min-width:0;font-size:15px;font-weight:900;color:var(--pri)}
+.inv-bulk-link{font-size:11px;font-weight:800;color:#888;text-decoration:underline;cursor:pointer;border:none;background:none;font-family:inherit;padding:4px 0}
+.inv-bulk-list{padding:8px 16px 12px}
+.inv-bulk-item{border-bottom:1px solid rgba(196,198,207,.18)}
+.inv-bulk-item:last-child{border-bottom:none}
+.inv-bulk-row{display:flex;align-items:center;gap:8px;padding:11px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.inv-bulk-row:active{opacity:.88}
+.inv-bulk-name{font-size:14px;font-weight:800;flex-shrink:0;max-width:34%}
+.inv-bulk-meta{font-size:11px;font-weight:650;color:#555;flex:1;min-width:0;line-height:1.35;text-align:right}
+.inv-bulk-meta .w{color:#b45309;font-weight:800}
+.inv-bulk-meta .sep{opacity:.35;margin:0 4px}
+.inv-bulk-arr{font-size:11px;color:#888;flex-shrink:0;transition:transform .2s}
+.inv-bulk-arr.open{transform:rotate(180deg)}
+.inv-bulk-panel{max-height:0;overflow:hidden;transition:max-height .28s ease}
+.inv-bulk-panel.open{max-height:2400px}
+.inv-bulk-panel-inner{padding:0 0 12px}
+.inv-bulk-prev{width:100%;padding:12px;background:var(--sc-lowest);border:1px solid rgba(196,198,207,.28);border-radius:12px;font-size:12px;line-height:1.75;white-space:pre-wrap;word-break:break-word;margin-bottom:10px;box-shadow:var(--sh)}
+.inv-bulk-send{width:100%;padding:12px;border-radius:12px;font-size:13px;font-weight:800;border:1px solid rgba(196,198,207,.4);background:rgba(255,255,255,.85);color:var(--pri);font-family:inherit;cursor:pointer}
+.inv-bulk-send:active{opacity:.9}
+.inv-bulk-foot{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;padding:10px 16px max(10px,env(safe-area-inset-bottom));background:rgba(250,249,246,.94);border-top:1px solid rgba(196,198,207,.22);box-sizing:border-box;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.inv-bulk-foot .btn-gen{margin:0}
 .fee-chip,.stu-mini,.btn,.month-chip,.pay-v2-fpill,.pay-v2-btn-mi,.pay-v2-btn-can{touch-action:manipulation}
 .mat-quick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
 .mat-quick-label{font-size:11px;color:#666;flex-shrink:0}
@@ -859,7 +891,10 @@ function appApplyInitData(data){
     }
   }
   else if(MODE==='kakao'){kk_rInput();kk_checkFirstRun();}
-  else if(MODE==='invoice')inv_render();
+  else if(MODE==='invoice'){
+    if(!inv_greetEditing)inv_applyMonthGreeting(inv_selectedMonth);
+    inv_render();
+  }
   else if(MODE==='stu')stu_render();
   else if(MODE==='pay')pay_render();
   else if(MODE==='att')att_render();
@@ -894,7 +929,10 @@ function appInit(){
     appMergeCacheFromData(cached);
     if(MODE==='home')home_render();
     else if(MODE==='kakao'){kk_rInput();kk_checkFirstRun();}
-    else if(MODE==='invoice')inv_render();
+    else if(MODE==='invoice'){
+      if(!inv_greetEditing)inv_applyMonthGreeting(inv_selectedMonth);
+      inv_render();
+    }
     else if(MODE==='stu')stu_render();
     else if(MODE==='pay')pay_render();
     else if(MODE==='att')att_render();
@@ -934,6 +972,12 @@ function appRemoveLoader(){
 }
 
 function switchTab(m){
+  if(MODE==='invoice'&&m!=='invoice'){
+    inv_VIEW='setting';
+    var tb0=document.getElementById('tabbar');
+    if(tb0)tb0.style.display='';
+    document.body.classList.remove('inv-immersive');
+  }
   MODE=m;
   var activeTab=m;
   if(m==='stu'||m==='att'||m==='pay')activeTab='more';
@@ -950,7 +994,10 @@ function switchTab(m){
   else if(m==='stu')stu_render();
   else if(m==='att')att_render();
   else if(m==='kakao'){kk_rInput();kk_checkFirstRun();}
-  else if(m==='invoice')inv_render();
+  else if(m==='invoice'){
+    if(!inv_greetEditing)inv_applyMonthGreeting(inv_selectedMonth);
+    inv_render();
+  }
   else if(m==='pay')pay_render();
   else if(m==='more')more_render();
 }
@@ -2101,6 +2148,9 @@ document.getElementById('tut').addEventListener('touchend',function(e){
 var inv_students=[];
 var inv_loaded=false;
 var inv_VIEW='setting';
+var inv_prevView='setting';
+var inv_bulkAccOpen=-1;
+var inv_pendingBulkIdxs=[];
 var inv_stuPage=0,inv_carIdx=0,inv_PER_PAGE=5;
 var inv_sent=new Set();
 var inv_editingMsg={};
@@ -2329,12 +2379,24 @@ var inv_noticeOn=false;
 var inv_openSections={greeting:false,students:true,schedule:false,pay:false,closing:false};
 var inv_openStudents=new Set();
 
-function inv_init(){
-  inv_loadStudents();
-}
-
 function inv_cacheKey(){
   return 'invstu_'+inv_targetYear+'_'+inv_selectedMonth+(IS_TEST?'_t':'');
+}
+function inv_greetStorageKey(mm){
+  return 'inv_greet_'+inv_targetYear+'_'+mm+(IS_TEST?'_t':'');
+}
+function inv_defaultGreetingForMonth(mm){
+  return '안녕하세요, 소리마을음악교습소입니다🎶\n따뜻한 봄바람과 함께 새로운 시작을 알리는 '+mm+'월입니다. 새 학기를 맞이하여 우리 아이들이 음악 속에서 더 큰 꿈을 키워가길 바랍니다.☘️';
+}
+function inv_applyMonthGreeting(mm){
+  try{
+    var raw=localStorage.getItem(inv_greetStorageKey(mm));
+    if(raw){inv_greeting=raw;return;}
+  }catch(e){}
+  inv_greeting=inv_defaultGreetingForMonth(mm);
+}
+function inv_persistGreeting(mm,text){
+  try{localStorage.setItem(inv_greetStorageKey(mm),text);}catch(e){}
 }
 function inv_loadStudents(){
   var ck=inv_cacheKey();
@@ -2362,28 +2424,25 @@ function inv_loadStudents(){
 
 function invGoHome(){inv_VIEW='setting';inv_render()}
 
+function inv_syncInvoiceChrome(){
+  if(MODE!=='invoice')return;
+  var tb=document.getElementById('tabbar');
+  if(!tb)return;
+  var immersive=(inv_VIEW==='bulk'||inv_VIEW==='carousel');
+  tb.style.display=immersive?'none':'';
+  document.body.classList.toggle('inv-immersive',immersive);
+}
+
 function inv_render(){
   if(inv_VIEW==='setting')inv_renderSetting();
   else if(inv_VIEW==='carousel')inv_renderCarousel();
   else if(inv_VIEW==='summary')inv_renderSummary();
+  else if(inv_VIEW==='bulk')inv_renderBulk();
+  inv_syncInvoiceChrome();
 }
 
 function inv_renderSetting(){
-  var pm=(inv_students&&inv_students.length)?(inv_students.length+'명'):'—';
-  var totalRaw=inv_calcTotalRaw();
-  var paidRaw=inv_sumPaidTuition();
-  var pct=totalRaw>0?Math.round((paidRaw/totalRaw)*100):0;
   var h='';
-  h+='<div class="inv-tab-summary" style="flex-direction:column;gap:10px">';
-  h+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
-  h+='<div class="inv-tab-sum-big">₩'+totalRaw.toLocaleString()+'</div>';
-  h+='<div style="font-size:12px;color:var(--on-v);font-weight:700">'+pm+'</div></div>';
-  h+='<div style="height:8px;background:rgba(196,198,207,.22);border-radius:999px;overflow:hidden">';
-  h+='<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#2e7d32,#4caf50);border-radius:999px;transition:width 0.4s ease"></div></div>';
-  h+='<div style="font-size:11px;color:var(--on-v);display:flex;justify-content:space-between">';
-  h+='<span>수납 '+pct+'%</span>';
-  h+='<span>₩'+paidRaw.toLocaleString()+' / ₩'+totalRaw.toLocaleString()+'</span></div>';
-  h+='</div>';
   h+=inv_buildSec('greeting','🎶 인삿말',null,inv_openSections.greeting,inv_buildGreeting);
   h+=inv_buildSec('students','📌 수강료 안내',inv_students.length+'명',inv_openSections.students,inv_buildStudents);
   h+=inv_buildSec('schedule','🎵 수업 일정',null,inv_openSections.schedule,inv_buildSchedule);
@@ -2391,7 +2450,7 @@ function inv_renderSetting(){
   h+=inv_buildNotice();
   h+=inv_buildSec('closing','❤️ 마무리 인사',null,inv_openSections.closing,inv_buildClosing);
   h+='<div class="gen-area">';
-  h+='<button class="btn-gen" onclick="inv_goCarousel()">전체 명세서 생성 ('+inv_students.length+'명)</button>';
+  h+='<button class="btn-gen" onclick="inv_goBulkGen()">전체 명세서 생성 ('+inv_students.length+'명)</button>';
   h+='</div>';
   Q('app',h);
   inv_attachSwipe();
@@ -2469,7 +2528,7 @@ function inv_buildGreeting(){
 function inv_regenGreeting(){
   inv_greetLoading=true;inv_openSections.greeting=true;inv_renderSetting();
   apiPost('generateGreeting',{month:inv_selectedMonth}).then(function(text){
-    inv_greeting=text;inv_greetLoading=false;inv_renderSetting();
+    inv_greeting=text;inv_persistGreeting(inv_selectedMonth,text);inv_greetLoading=false;inv_renderSetting();
   }).catch(function(){
     inv_greetLoading=false;toast('생성 실패, 다시 시도해주세요');inv_renderSetting();
   });
@@ -2478,6 +2537,7 @@ function inv_regenGreeting(){
 function inv_saveGreetEdit(){
   var ta=document.getElementById('inv_greetTA');
   if(ta)inv_greeting=ta.value;
+  inv_persistGreeting(inv_selectedMonth,inv_greeting);
   inv_greetEditing=false;inv_renderSetting();
 }
 
@@ -2485,26 +2545,60 @@ function inv_setMonth(m){
   inv_selectedMonth=m;
   document.getElementById('headerDate').textContent=inv_targetYear+'년 '+m+'월';
   inv_scheduleItems.forEach(function(si){si.placeholder=si.placeholder.replace(/\d+\//g,m+'/')});
+  inv_applyMonthGreeting(m);
+  var ck=inv_cacheKey();
+  try{
+    var raw=sessionStorage.getItem(ck);
+    if(raw){
+      inv_students=JSON.parse(raw)||[];
+      inv_loaded=true;
+      if(APP_DATA)APP_DATA.invoiceStudents=inv_students;
+      inv_render();
+      apiGet('loadInvoiceStudents',{month:m,year:inv_targetYear}).then(function(data){
+        inv_students=data||[];
+        try{sessionStorage.setItem(ck,JSON.stringify(inv_students));}catch(e){}
+        if(APP_DATA)APP_DATA.invoiceStudents=inv_students;
+        inv_render();
+      }).catch(function(e){toast('목록 새로고침 실패 — 이전 목록 유지');});
+      return;
+    }
+  }catch(e){}
   inv_loaded=false;
   inv_students=[];
   inv_loadStudents();
 }
 
+function inv_stuTuitionComplete(s){
+  var fq=String(s&&s.freq||'').trim();
+  if(!fq)return false;
+  return inv_feeNumber(s)>0;
+}
+function inv_stuSummaryBadgesHtml(st,i){
+  var fq=String(st.freq||'').trim();
+  var feeN=inv_feeNumber(st);
+  var incomplete=!fq||feeN<1;
+  var feeLabel=feeN>0?feeN.toLocaleString()+'원':'0원';
+  if(incomplete){
+    return '<span class="stu-sum-wrap" onclick="event.stopPropagation();inv_openFeeEdit('+i+')"><span class="stu-sum-badge stu-sum-badge--warn">미입력 · '+esc(feeLabel)+'</span></span>';
+  }
+  var h='<span class="stu-sum-wrap" onclick="event.stopPropagation();inv_openFeeEdit('+i+')">';
+  h+='<span class="stu-sum-badge">'+esc(fq)+'</span>';
+  h+='<span class="stu-sum-badge">'+esc(feeN.toLocaleString())+'원</span>';
+  var matSum=inv_materialsSumForStudent(st);
+  if(matSum>0)h+='<span class="stu-sum-badge stu-sum-badge--mat">교재 '+matSum.toLocaleString()+'원</span>';
+  h+='</span>';
+  return h;
+}
 function inv_buildStudents(){
   var totalPages=Math.ceil(inv_students.length/inv_PER_PAGE);
   var start=inv_stuPage*inv_PER_PAGE,end=Math.min(start+inv_PER_PAGE,inv_students.length);
   var s='<div id="inv_stuListWrap">';
   for(var i=start;i<end;i++){
     var st=inv_students[i],isOpen=inv_openStudents.has(i);
-    var matAny=st.materials&&st.materials.some(function(x){return(x.text||'').trim()});
-    var feeDisp=inv_displayFee(st);
     s+='<div class="stu-item"><div class="stu-row" onclick="inv_toggleStu('+i+')">';
     s+='<div class="stu-av">'+st.name[0]+'</div>';
     s+='<span class="stu-name">'+st.name+'</span>';
-    s+='<span class="stu-summary" onclick="event.stopPropagation();inv_openFeeEdit('+i+')" style="background:rgba(0,32,70,.05);padding:6px 10px;border-radius:10px;text-decoration:none;border:1px solid rgba(196,198,207,.3);font-weight:700">';
-    s+=(st.freq||'미입력')+' · '+feeDisp+'원';
-    if(matAny)s+=' · 교재비';
-    s+=' ›</span>';
+    s+=inv_stuSummaryBadgesHtml(st,i);
     s+='<span class="stu-arrow'+(isOpen?' open':'')+'">›</span></div>';
     s+='<div class="stu-detail'+(isOpen?' open':'')+'"><div class="stu-detail-inner">';
     if(st.materials&&st.materials.length>0){
@@ -2590,17 +2684,17 @@ function inv_openFeeEdit(i){
   var fq=String(s.freq||'').trim();
   var chips=freqs.map(function(fr){
     var on=fq===fr;
-    return '<button type="button" class="fee-chip'+(on?' selected':'')+'" onclick=\'inv_feeModalPickFreq(this,'+JSON.stringify(fr)+')\'>'+esc(fr)+'</button>';
+    return '<button type="button" class="fee-seg-item'+(on?' selected':'')+'" onclick=\'inv_feeModalPickFreq(this,'+JSON.stringify(fr)+')\'>'+esc(fr)+'</button>';
   }).join('');
   showModal('<div class="modal-title">'+esc(s.name)+'</div><div class="modal-desc" style="text-align:left">수강료 · 주 횟수</div>'
     +'<input type="hidden" id="inv_fee_modal_freq" value="'+esc(fq)+'"/>'
-    +'<div class="fee-chips" style="margin-bottom:10px">'+chips+'</div>'
+    +'<div class="fee-seg" role="group">'+chips+'</div>'
     +'<input class="fee-input" id="inv_fee_modal_val" type="text" inputmode="numeric" value="'+esc(inv_displayFee(s))+'" placeholder="수강료" style="width:100%"/>'
     +'<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="inv_saveFeeEdit('+i+')">저장</button></div>');
 }
 function inv_feeModalPickFreq(btn,v){
   document.getElementById('inv_fee_modal_freq').value=v;
-  var p=btn.parentNode;if(p)p.querySelectorAll('.fee-chip').forEach(function(c){c.classList.toggle('selected',c===btn);});
+  var p=btn.parentNode;if(p)p.querySelectorAll('.fee-seg-item').forEach(function(c){c.classList.toggle('selected',c===btn);});
 }
 function inv_saveFeeEdit(i){
   var s=inv_students[i];
@@ -2633,15 +2727,95 @@ function inv_saveFeeEdit(i){
     s.fee=prevFee;s.freq=prevFreq;
     if(stu){stu.fee=prevFee;stu.freq=prevFreq;}
     if(APP_DATA){APP_DATA.students=stu_list;APP_DATA.invoiceStudents=inv_students;}
+    inv_syncPayLedgerFromStudent(s);
     inv_renderSetting();
   });
 }
 
-function inv_goCarousel(){
+function inv_startCarousel(){
   inv_VIEW='carousel';inv_carIdx=0;inv_carSlide='';inv_sent.clear();inv_editingMsg={};inv_historySaving=false;
   inv_cancelRevAnim();inv_revSum=0;inv_revDisplay=0;inv_lastAdd=0;inv_listFilter='all';
   inv_students.forEach(function(s,i){inv_editingMsg[i]=inv_buildMessage(s)});
   inv_render();
+}
+function inv_goBulkGen(){
+  inv_prevView='setting';
+  inv_VIEW='bulk';
+  inv_bulkAccOpen=-1;
+  inv_editingMsg={};
+  inv_students.forEach(function(s,i){inv_editingMsg[i]=inv_buildMessage(s)});
+  inv_render();
+}
+function inv_goCarouselFromBulk(){
+  inv_prevView='bulk';
+  inv_startCarousel();
+}
+function inv_carBack(){
+  inv_VIEW=inv_prevView||'setting';
+  inv_render();
+}
+function inv_renderBulk(){
+  var h='<div class="inv-bulk-screen">';
+  h+='<div class="inv-bulk-head">';
+  h+='<button type="button" class="inv-car-back" onclick="inv_carBack()">← 돌아가기</button>';
+  h+='<div class="inv-bulk-title">'+inv_targetYear+'년 '+inv_selectedMonth+'월 명세서</div>';
+  h+='<button type="button" class="inv-bulk-link" onclick="inv_goCarouselFromBulk()">슬라이드로 보기</button>';
+  h+='</div><div class="inv-bulk-list">';
+  for(var i=0;i<inv_students.length;i++){
+    var st=inv_students[i],ok=inv_stuTuitionComplete(st);
+    var fq=String(st.freq||'').trim();
+    var feeN=inv_feeNumber(st);
+    var matSum=inv_materialsSumForStudent(st);
+    var col1=ok?esc(fq):'<span class="w">주 -회</span>';
+    var col2=ok?esc(feeN.toLocaleString()+'원'):'<span class="w">미입력</span>';
+    var col3=matSum>0?('교재 '+matSum.toLocaleString()+'원'):'교재비 없음';
+    var isOpen=inv_bulkAccOpen===i;
+    h+='<div class="inv-bulk-item">';
+    h+='<div class="inv-bulk-row" onclick="inv_toggleBulkAcc('+i+')">';
+    h+='<span class="inv-bulk-name">'+esc(st.name)+'</span>';
+    h+='<span class="inv-bulk-meta">'+col1+'<span class="sep">|</span>'+col2+'<span class="sep">|</span>'+esc(col3)+'</span>';
+    h+='<span class="inv-bulk-arr'+(isOpen?' open':'')+'">▾</span></div>';
+    h+='<div class="inv-bulk-panel'+(isOpen?' open':'')+'" id="inv_bulk_panel_'+i+'"><div class="inv-bulk-panel-inner">';
+    h+='<div class="inv-bulk-prev" id="inv_bulk_prev_'+i+'"></div>';
+    h+='<button type="button" class="inv-bulk-send" '+(inv_phoneOk(st)?'':'disabled ')+'onclick="event.stopPropagation();inv_sendBulkOne('+i+')">이 학생만 발송</button>';
+    h+='</div></div></div>';
+  }
+  h+='</div></div>';
+  var n=0;
+  for(var j=0;j<inv_students.length;j++){
+    if(inv_phoneOk(inv_students[j])&&inv_stuTuitionComplete(inv_students[j]))n++;
+  }
+  h+='<div class="inv-bulk-foot"><button type="button" class="btn-gen" onclick="inv_confirmBulkSendAll()">전체 발송 ('+n+'명)</button></div>';
+  Q('app',h);
+  if(inv_bulkAccOpen>=0){
+    var ss=inv_students[inv_bulkAccOpen];
+    var prevEl=document.getElementById('inv_bulk_prev_'+inv_bulkAccOpen);
+    if(prevEl&&ss)prevEl.innerHTML=inv_highlightMsg(inv_buildMessage(ss),ss);
+  }
+}
+function inv_toggleBulkAcc(i){
+  inv_bulkAccOpen=(inv_bulkAccOpen===i)?-1:i;
+  inv_renderBulk();
+}
+function inv_sendBulkOne(i){
+  var s=inv_students[i];
+  if(!s||!inv_phoneOk(s))return;
+  inv_editingMsg[i]=inv_buildMessage(s);
+  inv_sendFriendTalkOne(i);
+}
+function inv_confirmBulkSendAll(){
+  var idxs=[];
+  var skip=0;
+  for(var i=0;i<inv_students.length;i++){
+    if(!inv_phoneOk(inv_students[i]))continue;
+    if(!inv_stuTuitionComplete(inv_students[i])){skip++;continue;}
+    idxs.push(i);
+  }
+  if(!idxs.length){toast('발송 가능한 학생이 없습니다 (연락처·수강료 확인)');return;}
+  var msg='총 '+idxs.length+'명에게 발송할까요?';
+  if(skip>0)msg+=' (미입력 '+skip+'명 제외)';
+  inv_pendingBulkIdxs=idxs;
+  showModal('<div class="modal-title">'+esc(msg)+'</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="closeModal();inv_runBulkFriend(inv_pendingBulkIdxs)">발송</button></div>');
 }
 
 function inv_renderCarousel(){
@@ -2652,7 +2826,7 @@ function inv_renderCarousel(){
   var next=inv_carIdx<inv_students.length-1?inv_students[inv_carIdx+1]:null;
   var isSent=inv_sent.has(inv_carIdx);
   var h='<div class="inv-car-header"><div class="inv-car-row1">';
-  h+='<button class="inv-car-back" onclick="inv_VIEW=\'setting\';inv_render()">← 설정</button>';
+  h+='<button class="inv-car-back" onclick="inv_carBack()">'+(inv_prevView==='bulk'?'← 목록':'← 설정')+'</button>';
   h+='<span class="inv-car-counter">'+(inv_carIdx+1)+' / '+inv_students.length+'</span>';
   h+='<div class="inv-car-nav"><div class="inv-car-nav-btn" onclick="inv_showList()">☰</div><div class="inv-car-nav-btn" onclick="inv_carNav(-1)">‹</div><div class="inv-car-nav-btn" onclick="inv_carNav(1)">›</div></div></div>';
   h+='<div class="inv-car-names">';
