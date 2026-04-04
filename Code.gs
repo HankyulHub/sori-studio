@@ -165,6 +165,33 @@ function v7_doPost(body, isTest) {
       v7_undoDone(body.row, body.type || 'feedback', isTest);
       return ContentService.createTextOutput(JSON.stringify({ ok: true, data: true })).setMimeType(ContentService.MimeType.JSON);
     }
+    if (action === 'updateStudent') {
+      v7_updateStudent(body, isTest);
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, data: true })).setMimeType(ContentService.MimeType.JSON);
+    }
+    if (action === 'generatePaymentTemplates') {
+      try {
+        if (typeof _gemini !== 'function') throw new Error('_gemini 미정의');
+        var ptx =
+          String(body.prompt || '') +
+          '\n\nJSON만 출력: {"formal":"…","casual":"…","short":"…"} — {이름},{금액},{월} 플레이스홀더 필수.';
+        var gr = _gemini(ptx, 0.7, 1200);
+        var txt = gr && gr.text ? String(gr.text).trim() : '';
+        var obj = null;
+        try {
+          obj = JSON.parse(txt);
+        } catch (e0) {
+          var mj = txt.match(/\{[\s\S]*\}/);
+          if (mj)
+            try {
+              obj = JSON.parse(mj[0]);
+            } catch (e1) {}
+        }
+        return ContentService.createTextOutput(JSON.stringify({ ok: true, data: obj || {} })).setMimeType(ContentService.MimeType.JSON);
+      } catch (ge) {
+        return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(ge && ge.message ? ge.message : ge) })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err && err.message ? err.message : err) })).setMimeType(ContentService.MimeType.JSON);
   }
@@ -260,6 +287,55 @@ function ensureOverdueColumns_(sheet) {
       headers.push(name);
     }
   });
+}
+
+/** 학생 시트에 level(수강 레벨: 기초/초급/중급/고급) 열이 없으면 추가 */
+function ensureLevelColumn_(sheet) {
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  if (headers.indexOf('level') === -1) {
+    var nc = sheet.getLastColumn() + 1;
+    sheet.getRange(1, nc).setValue('level');
+  }
+}
+
+/**
+ * updateStudent — 행 번호(body.row) 기준으로 시트 갱신. loadStudents와 동일한 헤더명 사용.
+ * level: 직접 입력 시 빈 문자열 저장 가능
+ */
+function v7_updateStudent(body, isTest) {
+  var sheet = v7_studentSheet_(isTest);
+  ensureOverdueColumns_(sheet);
+  ensureLevelColumn_(sheet);
+  var row = parseInt(body.row, 10);
+  if (!row || row < 2) throw new Error('잘못된 행 번호');
+  var map = [
+    ['name', 'name'],
+    ['grade', 'grade'],
+    ['gender', 'gender'],
+    ['phone', 'phone'],
+    ['parentName', 'parentName'],
+    ['freq', 'freq'],
+    ['fee', 'fee'],
+    ['memo', 'memo'],
+    ['level', 'level']
+  ];
+  for (var i = 0; i < map.length; i++) {
+    var key = map[i][0];
+    var header = map[i][1];
+    if (body[key] === undefined) continue;
+    try {
+      var col = getColByHeader_(sheet, header);
+      sheet.getRange(row, col).setValue(body[key]);
+    } catch (err) {
+      if (header === 'level') {
+        try {
+          var col2 = getColByHeader_(sheet, 'tuition_level');
+          sheet.getRange(row, col2).setValue(body[key]);
+        } catch (err2) {}
+      }
+    }
+  }
+  return true;
 }
 
 /**
