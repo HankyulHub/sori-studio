@@ -172,6 +172,47 @@ function v7_doPost(body, isTest) {
     if (action === 'generatePaymentTemplates') {
       try {
         if (typeof _gemini !== 'function') throw new Error('_gemini 미정의');
+        if (body.single) {
+          var toneKey = String(body.tone || 'formal');
+          var toneLab = { formal: '정중하고 격식 있는', casual: '캐주얼하고 친근한', short: '짧고 간결한' }[toneKey] || toneKey;
+          var avoidArr = [];
+          if (body.avoidTexts && body.avoidTexts.length) {
+            for (var ai = 0; ai < body.avoidTexts.length; ai++) {
+              var ax = String(body.avoidTexts[ai] || '').trim();
+              if (ax) avoidArr.push(ax);
+            }
+          }
+          var avoidBlock =
+            avoidArr.length > 0
+              ? '\n아래 텍스트들과는 다른 표현, 다른 문장 구조, 다른 인사말을 사용해서 새로 작성할 것:\n' +
+                avoidArr
+                  .map(function (t, i) {
+                    return '[' + (i + 1) + '] ' + t;
+                  })
+                  .join('\n')
+              : '';
+          var ptxSingle =
+            '수납 안내 카카오톡용 메시지 템플릿을 1개만 작성하세요.\n' +
+            '톤: ' +
+            toneLab +
+            '.\n반드시 플레이스홀더 {이름}, {금액}, {월} 을 본문에 모두 포함하고, 중괄호는 그대로 유지(치환 금지).' +
+            avoidBlock +
+            '\n\nJSON만 출력: {"template":"여기에 한 개의 문자열"}';
+          var grS = _gemini(ptxSingle, 0.75, 1200);
+          var txtS = grS && grS.text ? String(grS.text).trim() : '';
+          var objS = null;
+          try {
+            objS = JSON.parse(txtS);
+          } catch (e0s) {
+            var mjS = txtS.match(/\{[\s\S]*\}/);
+            if (mjS)
+              try {
+                objS = JSON.parse(mjS[0]);
+              } catch (e1s) {}
+          }
+          var oneTpl = objS && objS.template ? String(objS.template) : '';
+          return ContentService.createTextOutput(JSON.stringify({ ok: true, data: { template: oneTpl } })).setMimeType(ContentService.MimeType.JSON);
+        }
         var ptx =
           String(body.prompt || '') +
           '\n\nJSON만 출력: {"formal":"…","casual":"…","short":"…"} — {이름},{금액},{월} 플레이스홀더 필수.';

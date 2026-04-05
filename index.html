@@ -307,7 +307,7 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .inv-bulk-send:active{opacity:.9}
 .inv-bulk-foot{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;padding:10px 16px max(10px,env(safe-area-inset-bottom));background:rgba(250,249,246,.94);border-top:1px solid rgba(196,198,207,.22);box-sizing:border-box;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .inv-bulk-foot .btn-gen{margin:0}
-.fee-chip,.stu-mini,.btn,.month-chip,.pay-v2-fpill,.pay-v2-btn-mi,.pay-v2-btn-can,.pay-month-nav-btn,.pay-btn-paid,.pay-btn-od,.pay-tbl-name{touch-action:manipulation}
+.fee-chip,.stu-mini,.btn,.month-chip,.pay-v2-fpill,.pay-v2-btn-mi,.pay-v2-btn-can,.pay-month-nav-btn,.pay-btn-paid,.pay-btn-od,.pay-tbl-name-txt{touch-action:manipulation}
 .mat-quick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
 .mat-quick-label{font-size:11px;color:#666;flex-shrink:0}
 .mat-quick-btn{padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid rgba(196,198,207,.40);background:rgba(255,255,255,.75);color:var(--on-v);font-family:inherit}
@@ -536,20 +536,54 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .pay-month-nav-lbl{font-size:18px;font-weight:900;color:#1B2A4A;min-width:132px;text-align:center}
 .pay-tbl-wrap{margin:0 20px 8px;border-radius:12px;border:1px solid rgba(196,198,207,.22);overflow:hidden;background:var(--sc-lowest);box-shadow:var(--sh)}
 .pay-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
-.pay-tbl thead th{font-size:11px;font-weight:800;color:var(--on-v);text-align:left;padding:10px 8px;border-bottom:1px solid rgba(196,198,207,.25);background:rgba(27,42,74,.04)}
-.pay-tbl .pay-th-nm{width:30%}
-.pay-tbl .pay-th-st{width:36%}
-.pay-tbl-tr{border-bottom:1px solid rgba(196,198,207,.2)}
-.pay-tbl-tr:last-child{border-bottom:none}
-.pay-tbl td{vertical-align:middle;padding:0 8px;height:52px}
-.pay-td-nm{padding-left:12px!important}
-.pay-td-nm-in{display:flex;align-items:center;gap:8px;min-width:0}
-.pay-tbl-av{width:28px;height:28px;border-radius:50%;background:#1B2A4A;color:#D4A843;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0}
-.pay-tbl-av.paid{opacity:.95}
-.pay-tbl-name{font-size:14px;font-weight:800;color:var(--on);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:none;background:none;padding:0;cursor:pointer;font-family:inherit;max-width:100%}
-.pay-td-meta{font-size:13px;color:rgba(68,71,78,.62);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pay-td-act{text-align:right}
-.pay-td-act-in{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.pay-tbl thead th{font-size:11px;font-weight:800;color:var(--on-v);text-align:left;padding:8px 6px;border-bottom:1px solid rgba(196,198,207,.25);background:rgba(27,42,74,.04)}
+.pay-tbl .pay-th-nm{width:28%}
+.pay-tbl .pay-th-st{width:22%}
+.pay-tbl-tr.pay-tbl-main{border-bottom:1px solid rgba(196,198,207,.18);cursor:pointer}
+.pay-tbl-tr.pay-tbl-main:active{opacity:.92}
+.pay-tbl-detail{border-bottom:1px solid rgba(196,198,207,.18)}
+.pay-tbl-detail:last-child{border-bottom:none}
+.pay-tbl td{vertical-align:middle;padding:8px 6px}
+.pay-td-nm{padding-left:10px!important}
+.pay-tbl-name-txt{font-size:14px;font-weight:800;color:var(--on);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pay-td-meta{font-size:13px;color:rgba(68,71,78,.72)}
+.pay-td-freq{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pay-td-fee{white-space:normal;word-break:break-all;color:var(--on)}
+.pay-td-st{text-align:right}
+.pay-st-badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.pay-st-badge--unpaid{background:rgba(212,168,67,.22);color:#6B4A0B;border:1px solid rgba(133,79,11,.25)}
+.pay-st-badge--paid{background:rgba(100,120,100,.15);color:#2d4a2d;border:1px solid rgba(60,90,60,.2)}
+.pay-td-detail{padding:0!important;background:rgba(27,42,74,.03)}
+.pay-detail-panel{padding:12px 12px 14px}
+.pay-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.pay-d-span2{grid-column:1/-1}
+.pay-d-lab{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:800;color:var(--on-v)}
+.pay-d-select,.pay-d-fee{padding:8px 10px;border-radius:10px;border:1px solid rgba(196,198,207,.45);font-size:14px;font-family:inherit;background:var(--sc-lowest)}
+.pay-d-warn{font-size:12px;color:#854F0B;margin:0}
+.pay-detail-actions{display:flex;flex-wrap:wrap;gap:8px}
+.pay-detail-actions .btn{padding:8px 12px;font-size:12px}
+.pay-d-save{font-weight:800}
+.pay-v2-bulk-link{display:block;width:100%;margin-top:8px;padding:0;border:none;background:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:800;color:#854F0B;text-decoration:underline}
+.kk-od-ph{background:rgba(212,168,67,.38);padding:1px 4px;border-radius:4px;font-weight:800}
+.kk-od-tpl-view{padding:12px 16px 20px}
+.kk-od-tpl-read{border:1px solid rgba(196,198,207,.35);border-radius:12px;padding:14px;min-height:120px;font-size:14px;line-height:1.55;background:var(--sc-lowest);word-break:break-word}
+.kk-od-tpl-read--empty{color:var(--on-v);text-align:center;padding:28px}
+.kk-od-empty-hint,.kk-od-tpl-hint{font-size:12px;color:var(--on-v);margin:0 0 10px;line-height:1.45}
+.kk-od-tpl-btns{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.kk-od-tpl-edit{padding:12px 16px 24px}
+.kk-od-tpl-ta{min-height:240px;width:100%;box-sizing:border-box}
+.kk-od-btn-sec{margin-top:8px;width:100%}
+.kk-od-ai-tone{padding:12px 16px 20px}
+.kk-od-tone-btn{width:100%;margin-bottom:8px;text-align:left}
+.kk-od-carousel{padding:12px 16px 20px}
+.kk-od-car-head{display:flex;justify-content:center;margin-bottom:8px}
+.kk-od-car-ind{font-size:12px;font-weight:900;color:var(--pri)}
+.kk-od-car-slide{touch-action:pan-y}
+.kk-od-car-nav{display:flex;justify-content:center;gap:12px;margin:10px 0 14px}
+.pay-bulk-prev-body{max-height:60vh;overflow-y:auto}
+.pay-bulk-prev-h{font-size:11px;font-weight:900;color:var(--on-v);margin:12px 0 6px}
+.pay-bulk-prev-tpl{font-size:13px;line-height:1.5;padding:10px;border-radius:10px;background:rgba(27,42,74,.05);word-break:break-word}
+.pay-bulk-prev-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(196,198,207,.2)}
 .pay-btn-paid{padding:7px 12px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:#1B2A4A;color:#fff;cursor:pointer;font-family:inherit}
 .pay-btn-od{padding:7px 10px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(212,168,67,.45);background:linear-gradient(180deg,rgba(212,168,67,.18),rgba(212,168,67,.08));color:#854F0B;cursor:pointer;font-family:inherit;box-shadow:0 1px 0 rgba(27,42,74,.06)}
 .pay-row-paid{font-size:12px;font-weight:700;color:#1B2A4A;white-space:nowrap}
@@ -1292,10 +1326,12 @@ var kk_messageType='feedback'; // 'feedback' | 'overdue'
 var kk_PREVIEW=false;
 var kk_SEND_QUEUE=new Set();
 var KK_USE_ALIGO_API=false;
-var kk_od_phase='landing';
+var kk_od_phase='tpl_view';
 var kk_od_picks=null;
 var kk_od_editBuffer='';
 var kk_od_accRow=-1;
+var kk_od_aiHistory=[],kk_od_carIdx=0;
+var pay_acc_name='';
 
 function kk_key(row){return String(row)+'_'+kk_messageType}
 function kk_kwFeedbackKey(row){return String(row)+'_feedback'}
@@ -1499,7 +1535,7 @@ function kk_init(){
   });
 }
 
-function kk_goHome(){kk_CANCEL=true;kk_GEN=false;kk_EDITMODE=false;kk_VIEW='list';kk_messageType='feedback';kk_od_phase=null;kk_od_picks=null;kk_od_editBuffer='';kk_od_accRow=-1;kk_rList()}
+function kk_goHome(){kk_CANCEL=true;kk_GEN=false;kk_EDITMODE=false;kk_VIEW='list';kk_messageType='feedback';kk_od_phase=null;kk_od_picks=null;kk_od_editBuffer='';kk_od_accRow=-1;kk_od_aiHistory=[];kk_od_carIdx=0;kk_rList()}
 function kk_hasMsg(){return kk_S.some(function(s){return kk_MSG[kk_key(s.row)]})}
 function kk_isReview(s){return!kk_DONE.has(kk_key(s.row))&&kk_MSG[kk_key(s.row)]&&kk_MSG[kk_key(s.row)].trim()}
 function kk_isUngen(s){return!kk_DONE.has(kk_key(s.row))&&(!kk_MSG[kk_key(s.row)]||!kk_MSG[kk_key(s.row)].trim())}
@@ -1641,52 +1677,157 @@ function pay_od_redraw(){
 }
 function pay_od_exitWizard(){
   pay_od_inWizard=false;
-  kk_od_phase='landing';
+  kk_od_phase='tpl_view';
   kk_od_picks=null;
   kk_od_editBuffer='';
   kk_od_accRow=-1;
+  kk_od_aiHistory=[];
+  kk_od_carIdx=0;
   if(MODE==='pay')pay_render();
 }
 function pay_openOdTemplateWizard(){
   pay_od_inWizard=true;
-  kk_od_phase='landing';
+  kk_od_phase='tpl_view';
   kk_od_picks=null;
   kk_od_editBuffer='';
   kk_od_accRow=-1;
+  kk_od_aiHistory=[];
+  kk_od_carIdx=0;
   pay_render();
 }
 function pay_od_unpaidBaseList(){
   return kk_S.filter(function(s){return kk_isOverdueStudent(s);});
 }
+function kk_od_highlightForDisplay(raw){
+  var s=String(raw||'');
+  var out='',re=/(\{이름\}|\{금액\}|\{월\})/g,last=0,m;
+  while((m=re.exec(s))!==null){
+    out+=esc(s.slice(last,m.index));
+    out+='<span class="kk-od-ph">'+esc(m[1])+'</span>';
+    last=re.lastIndex;
+  }
+  out+=esc(s.slice(last));
+  return out.replace(/\n/g,'<br>');
+}
+function kk_od_buildTplViewHtml(){
+  var tpl=kk_od_getPreset();
+  var h='<div class="kk-od-tpl-view">';
+  if(!tpl.trim()){
+    h+='<p class="kk-od-empty-hint">저장된 템플릿이 없어요. AI로 만들거나 직접 입력해 주세요.</p>';
+    h+='<div class="kk-od-tpl-read kk-od-tpl-read--empty">—</div>';
+  }else{
+    h+='<p class="kk-od-tpl-hint">저장된 템플릿 · {이름} {금액} {월} 은 발송 시 자동 치환됩니다</p>';
+    h+='<div class="kk-od-tpl-read">'+kk_od_highlightForDisplay(tpl)+'</div>';
+  }
+  h+='<div class="kk-od-tpl-btns"><button type="button" class="btn btn-d" onclick="kk_od_enterTplEdit()">직접 수정</button>';
+  h+='<button type="button" class="btn btn-y" onclick="kk_od_phase=&quot;ai_tone&quot;;pay_od_redraw()">AI로 다시 만들기</button></div></div>';
+  return h;
+}
+function kk_od_buildTplEditHtml(){
+  if(!kk_od_editBuffer)kk_od_editBuffer=kk_od_getPreset();
+  return '<div class="kk-od-tpl-edit"><p class="kk-od-tpl-hint">{이름} · {금액} · {월} 을 모두 포함해 주세요</p>'
+    +'<textarea id="kk_od_ta" class="msg-area kk-od-tpl-ta" oninput="kk_od_editBuffer=this.value">'+esc(kk_od_editBuffer)+'</textarea>'
+    +'<button type="button" class="btn-y-full" onclick="kk_od_savePresetFromEdit()">저장</button>'
+    +'<button type="button" class="btn btn-d kk-od-btn-sec" onclick="kk_od_cancelTplEdit()">취소</button></div>';
+}
+function kk_od_buildAiToneHtml(){
+  var h='<div class="kk-od-ai-tone"><p class="kk-od-tpl-hint">톤을 고르면 새 문안이 만들어져요 (최대 5개까지 쌓입니다)</p>';
+  h+='<button type="button" class="btn btn-d kk-od-tone-btn" onclick="kk_od_runAiSingle(&quot;formal&quot;)">① 정중한 톤</button>';
+  h+='<button type="button" class="btn btn-d kk-od-tone-btn" onclick="kk_od_runAiSingle(&quot;casual&quot;)">② 캐주얼 톤</button>';
+  h+='<button type="button" class="btn btn-d kk-od-tone-btn" onclick="kk_od_runAiSingle(&quot;short&quot;)">③ 간결한 톤</button>';
+  h+='<button type="button" class="btn btn-d kk-od-btn-sec" onclick="kk_od_phase=&quot;tpl_view&quot;;pay_od_redraw()">← 돌아가기</button></div>';
+  return h;
+}
+function kk_od_buildAiCarouselHtml(){
+  var n=kk_od_aiHistory.length,ix=Math.max(0,Math.min(kk_od_carIdx,n-1)),cur=n?kk_od_aiHistory[ix]:'';
+  var h='<div class="kk-od-carousel"><div class="kk-od-car-head"><span class="kk-od-car-ind">'+(n?(ix+1)+' / '+n:'0 / 0')+'</span></div>';
+  h+='<div class="kk-od-car-slide" id="kk_od_car_swipe">';
+  h+='<div class="kk-od-tpl-read">'+kk_od_highlightForDisplay(cur)+'</div></div>';
+  h+='<div class="kk-od-car-nav"><button type="button" class="btn btn-d" '+(ix<=0?'disabled':'')+' onclick="kk_od_carStep(-1)">◀</button>';
+  h+='<button type="button" class="btn btn-d" '+(ix>=n-1||n<2?'disabled':'')+' onclick="kk_od_carStep(1)">▶</button></div>';
+  h+='<button type="button" class="btn-y-full" onclick="kk_od_saveCarouselPick()">이걸로 저장</button>';
+  h+='<button type="button" class="btn btn-d kk-od-btn-sec" onclick="kk_od_leaveAiCarousel()">닫기</button></div>';
+  return h;
+}
+function kk_od_carStep(d){
+  var n=kk_od_aiHistory.length;
+  if(!n)return;
+  kk_od_carIdx=Math.max(0,Math.min(n-1,kk_od_carIdx+d));
+  pay_od_redraw();
+  kk_od_bindCarSwipe();
+}
+function kk_od_carOnTouchStart(e){var t=e.changedTouches&&e.changedTouches[0];if(!t)return;kk_od_swX0=t.clientX;}
+function kk_od_carOnTouchEnd(e){
+  var t=e.changedTouches&&e.changedTouches[0];if(!t||kk_od_swX0==null)return;
+  var dx=t.clientX-kk_od_swX0;kk_od_swX0=null;
+  if(dx>50)kk_od_carStep(-1);else if(dx<-50)kk_od_carStep(1);
+}
+var kk_od_swX0=null;
+function kk_od_bindCarSwipe(){
+  setTimeout(function(){
+    var el=document.getElementById('kk_od_car_swipe');
+    if(!el)return;
+    el.ontouchstart=kk_od_carOnTouchStart;
+    el.ontouchend=kk_od_carOnTouchEnd;
+  },0);
+}
+function kk_od_runAiSingle(tone){
+  kk_od_phase='ai_loading';
+  pay_od_redraw();
+  var preset=kk_od_getPreset().trim();
+  var avoid=[];
+  if(preset)avoid.push(preset);
+  kk_od_aiHistory.forEach(function(tx){if(tx&&String(tx).trim())avoid.push(String(tx));});
+  apiPost('generatePaymentTemplates',{single:true,tone:tone,avoidTexts:avoid,month:kk_od_monthToken()}).then(function(data){
+    var t=data&&data.template?String(data.template).trim():'';
+    if(!t){toast('생성에 실패했어요');kk_od_phase='ai_tone';pay_od_redraw();return;}
+    kk_od_aiHistory.push(t);
+    if(kk_od_aiHistory.length>5)kk_od_aiHistory.shift();
+    kk_od_carIdx=kk_od_aiHistory.length-1;
+    kk_od_phase='ai_carousel';
+    pay_od_redraw();
+    kk_od_bindCarSwipe();
+  }).catch(function(){
+    toast('연결 오류');
+    kk_od_phase='ai_tone';
+    pay_od_redraw();
+  });
+}
+function kk_od_saveCarouselPick(){
+  var n=kk_od_aiHistory.length;
+  if(!n)return;
+  var t=String(kk_od_aiHistory[Math.max(0,Math.min(kk_od_carIdx,n-1))]||'');
+  if(!t.trim())return;
+  if(t.indexOf('{이름}')<0||t.indexOf('{금액}')<0||t.indexOf('{월}')<0){toast('{이름}, {금액}, {월}을 모두 넣어주세요');return;}
+  kk_od_setPreset(t);
+  toast('저장했어요');
+  kk_od_aiHistory=[];
+  kk_od_carIdx=0;
+  kk_od_phase='tpl_view';
+  pay_od_redraw();
+}
+function kk_od_leaveAiCarousel(){
+  kk_od_phase='ai_tone';
+  pay_od_redraw();
+}
+function kk_od_enterTplEdit(){
+  kk_od_editBuffer=kk_od_getPreset();
+  kk_od_phase='tpl_edit';
+  pay_od_redraw();
+}
+function kk_od_cancelTplEdit(){
+  kk_od_editBuffer='';
+  kk_od_phase='tpl_view';
+  pay_od_redraw();
+}
 function pay_od_buildWizardHtml(){
   var h='';
   h+='<div class="bar" style="padding-top:4px"><button type="button" class="btn btn-d" onclick="pay_od_exitWizard()" style="padding:8px 12px;font-size:12px">← 매출 장부</button><span class="bar-info">수납 안내 템플릿</span></div>';
-  if(kk_od_phase==='landing'){
-    h+='<div class="kk-od-landing"><p style="font-weight:800;color:var(--pri);margin-bottom:8px;font-size:15px">수납 안내 템플릿</p><p>AI로 한 번 만든 뒤 저장하면, 매달 {이름}·{금액}·{월}만 바꿔서 보낼 수 있어요.</p>';
-    if(kk_od_getPreset().trim()){
-      h+='<p style="font-size:12px;color:#666;margin-top:12px">저장된 템플릿이 있습니다. 변경하거나 장부에서 미납 학생에게 발송할 수 있어요.</p>';
-      h+='<button type="button" class="btn btn-d" style="width:100%;margin-top:10px" onclick="kk_od_openChangePreset()">프리셋 변경</button>';
-    }
-    h+='<button type="button" class="btn-y-full" style="margin-top:16px" onclick="kk_od_startAi()">AI로 템플릿 만들기</button></div>';
-  }else if(kk_od_phase==='loading'){
-    h+='<div class="loading" style="padding:40px 20px"><div class="spin"></div><span>Gemini로 템플릿 생성 중...</span></div>';
-  }else if(kk_od_phase==='pick'&&kk_od_picks){
-    h+='<div class="kk-od-pick">';
-    [['formal','① 정중한 톤'],['casual','② 캐주얼 톤'],['short','③ 간결한 톤']].forEach(function(pair){
-      var k=pair[0],lab=pair[1],txt=kk_od_picks[k]||'';
-      h+='<div class="kk-od-pick-card"><div style="font-size:12px;font-weight:900;color:var(--pri)">'+lab+'</div>';
-      h+='<div class="kk-od-pick-pre">'+esc(txt)+'</div>';
-      h+='<button type="button" class="btn btn-y" style="width:100%" onclick="kk_od_pickSelect(&quot;'+k+'&quot;)">이걸로 선택</button></div>';
-    });
-    h+='</div>';
-  }else if(kk_od_phase==='edit'){
-    h+='<div style="padding:12px 16px 20px"><p style="font-size:12px;color:#666;margin-bottom:8px">{이름} {금액} {월} 을 꼭 넣어주세요</p>';
-    h+='<textarea id="kk_od_ta" class="msg-area" style="width:100%;min-height:220px;box-sizing:border-box" oninput="kk_od_editBuffer=this.value">'+esc(kk_od_editBuffer)+'</textarea>';
-    h+='<button type="button" class="btn-y-full" style="margin-top:12px" onclick="kk_od_savePresetFromEdit()">프리셋 저장</button>';
-    h+='<button type="button" class="btn btn-d" style="margin-top:8px;width:100%" onclick="kk_od_cancelEdit()">취소</button></div>';
-  }else{
-    h+='<div class="kk-od-landing"><button type="button" class="btn-y-full" onclick="kk_od_phase=&quot;landing&quot;;pay_od_redraw()">처음으로</button></div>';
-  }
+  if(kk_od_phase==='tpl_edit')h+=kk_od_buildTplEditHtml();
+  else if(kk_od_phase==='ai_tone')h+=kk_od_buildAiToneHtml();
+  else if(kk_od_phase==='ai_loading')h+='<div class="loading" style="padding:40px 20px"><div class="spin"></div><span>새 템플릿 생성 중...</span></div>';
+  else if(kk_od_phase==='ai_carousel'){h+=kk_od_buildAiCarouselHtml();setTimeout(kk_od_bindCarSwipe,0);}
+  else h+=kk_od_buildTplViewHtml();
   return h;
 }
 function kk_od_presetKey(){return 'sori_od_preset'+(IS_TEST?'_t':'')}
@@ -1724,48 +1865,6 @@ function kk_od_substitute(tpl,s){
     .split('{금액}').join(kk_od_fmtAmount(s))
     .split('{월}').join(kk_od_monthToken());
 }
-function kk_od_parseTemplates(res){
-  if(res==null)return null;
-  var o=res;
-  if(typeof o==='string'){
-    try{o=JSON.parse(o);}catch(e){return null}
-  }
-  if(o&&o.data&&o.data.formal)o=o.data;
-  if(o&&o.formal&&o.casual&&o.short)return o;
-  return null;
-}
-function kk_od_defaultTemplates(){
-  return{
-    formal:'안녕하세요, 소리마을음악교습소입니다.\n{이름} 학생 {월}월 수강료 {금액}원 납부가 확인되지 않았습니다.\n확인 부탁드립니다.\n감사합니다.',
-    casual:'안녕하세요! 소리마을이에요 🎵\n{이름}님, {월}월 수강료 {금액}원 아직 입금 전이에요.\n편하실 때 확인 한 번만 부탁드릴게요 ^^',
-    short:'[소리마을] {이름}님 {월}월 수강료 {금액}원 미납입니다. 확인 부탁드립니다.'
-  };
-}
-function kk_od_startAi(){
-  kk_od_phase='loading';
-  pay_od_redraw();
-  apiPost('generatePaymentTemplates',{
-    prompt:'수납 안내 메시지 템플릿을 작성하세요. 반드시 {이름}, {금액}, {월} 플레이스홀더를 모두 포함할 것. 플레이스홀더는 중괄호 그대로 유지할 것(치환 금지). formal·casual·short 키로 JSON 객체만 출력할 것.',
-    month:kk_od_monthToken()
-  }).then(function(data){
-    var p=kk_od_parseTemplates(data);
-    if(!p){p=kk_od_defaultTemplates();toast('AI 응답 형식에 맞춰 예시 템플릿을 보여드려요');}
-    kk_od_picks=p;
-    kk_od_phase='pick';
-    pay_od_redraw();
-  }).catch(function(){
-    kk_od_picks=kk_od_defaultTemplates();
-    kk_od_phase='pick';
-    toast('서버 연결 실패 — 예시 템플릿으로 진행해요');
-    pay_od_redraw();
-  });
-}
-function kk_od_pickSelect(key){
-  if(!kk_od_picks)return;
-  kk_od_editBuffer=String(kk_od_picks[key]||'');
-  kk_od_phase='edit';
-  pay_od_redraw();
-}
 function kk_od_savePresetFromEdit(){
   var ta=document.getElementById('kk_od_ta');
   var t=ta?ta.value:kk_od_editBuffer;
@@ -1774,12 +1873,8 @@ function kk_od_savePresetFromEdit(){
   if(t.indexOf('{이름}')<0||t.indexOf('{금액}')<0||t.indexOf('{월}')<0){toast('{이름}, {금액}, {월}을 모두 포함해주세요');return;}
   kk_od_setPreset(t);
   kk_od_editBuffer='';
-  toast('저장되었어요');
-  pay_od_exitWizard();
-}
-function kk_od_cancelEdit(){
-  if(kk_od_picks)kk_od_phase='pick';
-  else kk_od_phase='landing';
+  toast('저장했어요');
+  kk_od_phase='tpl_view';
   pay_od_redraw();
 }
 function kk_od_confirmSendOne(row){
@@ -1790,7 +1885,8 @@ function kk_od_confirmSendOne(row){
   if(!kk_phoneOk(s)){toast('학부모 연락처를 확인해주세요');return;}
   var msg=kk_od_substitute(tpl,s);
   var rj=JSON.stringify(row);
-  showModal('<div class="modal-title">'+esc(s.name)+'님에게 발송하시겠습니까?</div><div class="modal-desc" style="text-align:left;max-height:140px;overflow-y:auto;white-space:pre-wrap;font-size:13px">'+esc(msg)+'</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="closeModal();kk_od_execSendOne('+rj+')">발송</button></div>');
+  var act=KK_USE_ALIGO_API?'발송':'클립보드에 복사';
+  showModal('<div class="modal-title">수납 안내 미리보기 · '+esc(s.name)+'</div><div class="modal-desc" style="text-align:left;max-height:200px;overflow-y:auto;white-space:pre-wrap;font-size:13px">'+esc(msg)+'</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="closeModal();kk_od_execSendOne('+rj+')">'+act+'</button></div>');
 }
 function kk_od_execSendOne(row){
   var tpl=kk_od_getPreset();
@@ -1822,14 +1918,19 @@ function kk_od_execSendOne(row){
   }
 }
 function kk_od_sendOne(row){kk_od_confirmSendOne(row);}
-function kk_od_confirmSendAll(){
+function kk_od_openBulkPreview(){
   var tpl=kk_od_getPreset();
-  if(!tpl.trim()){toast('먼저 수납 안내 템플릿을 설정해주세요');return;}
+  if(!tpl.trim()){toast('먼저 수납 안내 템플릿을 저장해주세요');return;}
   var base=pay_od_unpaidBaseList();
   var rows=base.filter(function(s){return kk_phoneOk(s)&&!kk_DONE.has(kk_rowKey(s.row,'overdue'));});
-  if(!rows.length){toast('발송할 미납 학생이 없습니다');return;}
-  showModal('<div class="modal-title">'+rows.length+'명에게 발송하시겠습니까?</div><div class="modal-desc" style="text-align:left">미납 학생 학부모에게 수납 안내 메시지가 전달됩니다.</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="closeModal();kk_od_execSendAll()">발송</button></div>');
+  if(!rows.length){toast('안내할 미납 학생이 없어요');return;}
+  var listHtml=rows.map(function(s){
+    return '<div class="pay-bulk-prev-row"><span>'+esc(s.name)+'</span><span>'+esc(kk_od_fmtAmount(s))+'</span></div>';
+  }).join('');
+  var act=KK_USE_ALIGO_API?'전체 발송':'전체 복사';
+  showModal('<div class="modal-title">일괄 수납 안내</div><div class="modal-desc pay-bulk-prev-body" style="text-align:left"><div class="pay-bulk-prev-h">템플릿</div><div class="pay-bulk-prev-tpl">'+kk_od_highlightForDisplay(tpl)+'</div><div class="pay-bulk-prev-h">대상 '+rows.length+'명</div>'+listHtml+'</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">닫기</button><button class="btn btn-y" onclick="closeModal();kk_od_execSendAll()">'+act+'</button></div>');
 }
+function kk_od_confirmSendAll(){kk_od_openBulkPreview();}
 function kk_od_execSendAll(){
   var tpl=kk_od_getPreset();
   if(!tpl.trim())return;
@@ -1870,10 +1971,6 @@ function pay_od_openSendByName(nm){
   if(!s){toast('학생 정보를 찾을 수 없습니다');return;}
   if(!kk_isOverdueStudent(s)){toast('완납 처리된 학생입니다');return;}
   kk_od_confirmSendOne(s.row);
-}
-function kk_od_beginEditPreset(){kk_od_editBuffer=kk_od_getPreset();kk_od_phase='edit';pay_od_redraw();}
-function kk_od_openChangePreset(){
-  showModal('<div class="modal-title">프리셋 변경</div><div class="modal-desc" style="text-align:left">AI로 다시 만들거나 직접 수정할 수 있어요.</div><div class="modal-btns" style="flex-direction:column;gap:8px"><button class="btn btn-y" onclick="closeModal();kk_od_startAi()">AI로 다시 만들기</button><button class="btn btn-d" onclick="closeModal();kk_od_beginEditPreset()">직접 수정</button><button class="btn btn-d" onclick="closeModal()">닫기</button></div>');
 }
 function kk_rInput(){kk_rList();}
 
@@ -4064,12 +4161,106 @@ function pay_allPayStudents(){
   return st.filter(function(x){return x;});
 }
 function pay_applyRowFilter(){
-  document.querySelectorAll('tr.pay-tbl-tr').forEach(function(tr){
+  document.querySelectorAll('tr.pay-tbl-main').forEach(function(tr){
     var paid=tr.getAttribute('data-paid')==='1';
     var show=true;
     if(pay_uiFilter==='paid')show=paid;
     else if(pay_uiFilter==='unpaid')show=!paid;
     tr.style.display=show?'':'none';
+    var det=tr.nextElementSibling;
+    if(det&&det.classList.contains('pay-tbl-detail')){
+      var id=tr.getAttribute('data-student-id');
+      if(!show)det.style.display='none';
+      else det.style.display=(pay_acc_name===id)?'table-row':'none';
+    }
+  });
+}
+function pay_rowClick(ev,nm){
+  if(ev.target.closest('button,a,input,select,textarea,label'))return;
+  pay_acc_name=(pay_acc_name===nm)?'':nm;
+  pay_renderTableBody();
+}
+function pay_detailPanelHtml(s,rec,nmJs){
+  var paid=!!s.paid;
+  var stRow=rec?rec.row:null;
+  var feeNum=typeof s.fee==='number'?s.fee:parseInt(String(s.feeDisplay||s.fee||'').replace(/,/g,''),10);
+  if(isNaN(feeNum)||!feeNum){
+    if(rec){
+      var nf=parseInt(String(rec.fee||'').replace(/,/g,''),10);
+      if(!isNaN(nf)&&nf)feeNum=nf;
+    }else feeNum=0;
+  }
+  var freqCur=rec?String(rec.freq||'').trim():'';
+  var opts=['주 1회','주 2회','주 3회','주 4회'];
+  var selHtml='';
+  if(stRow){
+    opts.forEach(function(v){
+      selHtml+='<option value="'+esc(v)+'"'+(freqCur===v?' selected':'')+'>'+esc(v)+'</option>';
+    });
+    if(freqCur&&opts.indexOf(freqCur)<0)selHtml+='<option value="'+esc(freqCur)+'" selected>'+esc(freqCur)+'</option>';
+  }
+  var h='<div class="pay-detail-panel"><div class="pay-detail-grid">';
+  if(stRow){
+    h+='<label class="pay-d-lab">주횟수<select id="pay_il_'+stRow+'_freq" class="pay-d-select" onclick="event.stopPropagation()">'+selHtml+'</select></label>';
+    h+='<label class="pay-d-lab">수강료(원)<input id="pay_il_'+stRow+'_fee" type="tel" inputmode="numeric" class="pay-d-fee" value="'+(feeNum>0?String(feeNum):'')+'" onclick="event.stopPropagation()"></label>';
+  }else{
+    h+='<p class="pay-d-warn pay-d-span2">학생 관리에 등록된 학생만 주횟수·수강료를 저장할 수 있어요.</p>';
+  }
+  h+='</div><div class="pay-detail-actions">';
+  if(stRow)h+='<button type="button" class="btn btn-d pay-d-save" onclick="event.stopPropagation();pay_saveInlineFreqFee('+nmJs+')">저장</button>';
+  if(paid)h+='<button type="button" class="btn btn-d" onclick="event.stopPropagation();pay_setPaid('+nmJs+',false)">미납으로 바꾸기</button>';
+  else{
+    h+='<button type="button" class="btn btn-y" onclick="event.stopPropagation();pay_setPaid('+nmJs+',true)">완납 처리</button>';
+    h+='<button type="button" class="btn btn-d" onclick="event.stopPropagation();pay_od_openSendByName('+nmJs+')">수납 안내 보내기</button>';
+  }
+  h+='<button type="button" class="btn btn-d pay-d-link" onclick="event.stopPropagation();pay_openStudent('+nmJs+')">학생 카드 열기</button>';
+  h+='</div></div>';
+  return h;
+}
+function pay_saveInlineFreqFee(nm){
+  var rec=pay_stuRecByName(nm);
+  if(!rec||!rec.row){toast('학생 카드에서 먼저 등록해 주세요');return;}
+  var sel=document.getElementById('pay_il_'+rec.row+'_freq');
+  var inp=document.getElementById('pay_il_'+rec.row+'_fee');
+  if(!sel||!inp)return;
+  var fq=String(sel.value||'').trim()||'주 3회';
+  var raw=String(inp.value||'').replace(/[^\d]/g,'');
+  var n=parseInt(raw,10);
+  if(isNaN(n)||n<=0){toast('수강료를 확인해주세요');return;}
+  var feeStr=n.toLocaleString();
+  var prevF=rec.fee,prevFq=rec.freq;
+  var stEntry=pay_findStudentByName(nm);
+  rec.freq=fq;rec.fee=feeStr;
+  if(stEntry){stEntry.fee=n;stEntry.feeDisplay=feeStr;}
+  if(APP_DATA){APP_DATA.students=stu_list;APP_DATA.paymentStatus=pay_status;}
+  if(Number(pay_year)===inv_targetYear&&Number(pay_month)===inv_selectedMonth&&typeof inv_students!=='undefined'&&inv_students){
+    for(var i=0;i<inv_students.length;i++){
+      if(inv_students[i]&&inv_students[i].row===rec.row){
+        inv_students[i].freq=fq;
+        inv_students[i].fee=feeStr;
+        try{sessionStorage.setItem(inv_cacheKey(),JSON.stringify(inv_students));}catch(e){}
+        break;
+      }
+    }
+    inv_syncPayLedgerFromStudent({name:rec.name,fee:feeStr,freq:fq,row:rec.row});
+  }
+  pay_setCached(pay_year,pay_month,pay_status,pay_stats);
+  stu_markDirty();
+  apiPost('updateStudent',{
+    row:rec.row,name:rec.name,grade:rec.grade||'',gender:rec.gender||'',
+    freq:fq,fee:feeStr,phone:rec.phone||'',parentName:rec.parentName||'',
+    level:rec.level||'',memo:rec.memo||''
+  }).then(function(){
+    toast('저장했어요');
+    pay_renderTableBody();
+  }).catch(function(){
+    rec.fee=prevF;rec.freq=prevFq;
+    if(stEntry){
+      var pn=parseInt(String(prevF||'').replace(/,/g,''),10);
+      stEntry.fee=isNaN(pn)?0:pn;stEntry.feeDisplay=prevF;
+    }
+    toast('저장 실패');
+    pay_renderTableBody();
   });
 }
 function pay_studentMetaLine(nm){
@@ -4106,41 +4297,24 @@ function pay_renderTableRowHtml(s){
       if(!isNaN(nf)&&nf)feeNum=nf;
     }else feeNum=0;
   }
-  var feeCol=(feeNum&&feeNum>0)?feeNum.toLocaleString()+'원':'미입력';
-  var freqCol=freq||'—';
+  var feeCol=(feeNum&&feeNum>0)?String(feeNum.toLocaleString()):'—';
+  var freqCol=(freq&&freq.trim())?freq:'—';
   var paid=!!s.paid;
-  var av=esc((s.name&&s.name[0])||'?');
-  var nmJs=JSON.stringify(String(s.name||''));
-  var dd=paid?pay_dotDate(s.paidDate):'';
-  var stRow=rec?rec.row:null;
-  var sent=stRow!=null&&kk_DONE.has(kk_rowKey(stRow,'overdue'));
-  var actions;
-  if(paid){
-    actions='<span class="pay-row-paid">'+esc(dd)+' 완납</span><button type="button" class="pay-btn-can" onclick="pay_setPaid('+nmJs+',false)">취소</button>';
-  }else{
-    var sentHtml=sent?'<span class="pay-sent-lbl">발송완료</span>':'';
-    actions='<button type="button" class="pay-btn-paid" onclick="pay_setPaid('+nmJs+',true)">완납</button>'+sentHtml+'<button type="button" class="pay-btn-od" onclick="pay_od_openSendByName('+nmJs+')">수납안내↗</button>';
-  }
-  return '<tr class="pay-tbl-tr" data-paid="'+(paid?'1':'0')+'" data-student-id="'+esc(s.name)+'"><td class="pay-td-nm"><div class="pay-td-nm-in">'
-    +'<div class="pay-tbl-av'+(paid?' paid':'')+'">'+av+'</div>'
-    +'<button type="button" class="pay-tbl-name" onclick="pay_openStudent('+nmJs+')">'+esc(s.name)+'</button></div></td>'
-    +'<td class="pay-td-meta">'+esc(freqCol)+'</td>'
-    +'<td class="pay-td-meta">'+esc(feeCol)+'</td>'
-    +'<td class="pay-td-act"><div class="pay-td-act-in">'+actions+'</div></td></tr>';
+  var nm=String(s.name||'');
+  var nmJs=JSON.stringify(nm);
+  var nmAttr=esc(nm);
+  var open=pay_acc_name===nm;
+  var badge=paid?'<span class="pay-st-badge pay-st-badge--paid">완납</span>':'<span class="pay-st-badge pay-st-badge--unpaid">미납</span>';
+  var main='<tr class="pay-tbl-tr pay-tbl-main" data-paid="'+(paid?'1':'0')+'" data-student-id="'+nmAttr+'" onclick="pay_rowClick(event,'+nmJs+')">'
+    +'<td class="pay-td-nm"><span class="pay-tbl-name-txt">'+esc(nm)+'</span></td>'
+    +'<td class="pay-td-meta pay-td-freq">'+esc(freqCol)+'</td>'
+    +'<td class="pay-td-meta pay-td-fee">'+feeCol+'</td>'
+    +'<td class="pay-td-st">'+badge+'</td></tr>';
+  var det='<tr class="pay-tbl-detail" data-student-id="'+nmAttr+'" style="display:'+(open?'table-row':'none')+'"><td colspan="4" class="pay-td-detail">'+pay_detailPanelHtml(s,rec,nmJs)+'</td></tr>';
+  return main+det;
 }
 function pay_replaceTableRow(studentId,s){
-  var rows=document.querySelectorAll('tr.pay-tbl-tr');
-  for(var i=0;i<rows.length;i++){
-    if(rows[i].getAttribute('data-student-id')===studentId){
-      var tmp=document.createElement('tbody');
-      tmp.innerHTML=pay_renderTableRowHtml(s);
-      if(tmp.firstElementChild){
-        rows[i].replaceWith(tmp.firstElementChild);
-        pay_applyRowFilter();
-      }
-      break;
-    }
-  }
+  pay_renderTableBody();
 }
 function pay_openStudent(nm){
   var st=(typeof stu_list!=='undefined'&&stu_list)?stu_list.find(function(x){return x&&x.name===nm;}):null;
@@ -4167,6 +4341,10 @@ function pay_updateV2Header(){
       elU.classList.remove('pay-v2-sum--unpaid');
       elU.style.color='';
     }
+  }
+  var bulk=document.getElementById('pay_v2_bulk_slot');
+  if(bulk){
+    bulk.innerHTML=c.unpaid>0?'<button type="button" class="pay-v2-bulk-link" onclick="kk_od_openBulkPreview()">일괄 안내 →</button>':'';
   }
   document.querySelectorAll('.pay-v2-fpill').forEach(function(el){
     var f=el.getAttribute('data-f');
@@ -4200,10 +4378,13 @@ function pay_selectMonth(m, opts){
   var keepFilter=opts&&opts.keepFilter;
   var prevM=pay_month,prevY=pay_year,prevStatus=pay_status,prevStats=pay_stats,prevLoaded=pay_loaded;
   pay_od_inWizard=false;
-  kk_od_phase='landing';
+  kk_od_phase='tpl_view';
   kk_od_picks=null;
   kk_od_editBuffer='';
   kk_od_accRow=-1;
+  kk_od_aiHistory=[];
+  kk_od_carIdx=0;
+  pay_acc_name='';
   pay_month=m;
   var hd=document.getElementById('headerDate');
   if(hd)hd.textContent=pay_year+'년 '+m+'월';
@@ -4358,16 +4539,13 @@ function pay_render(){
   h+='<button type="button" class="pay-month-nav-btn" onclick="pay_shiftMonth(1)" aria-label="다음 달">▶</button></div>';
   h+='<div class="pay-v2-sumgrid"><div class="pay-v2-sumcell"><div class="pay-v2-sumlabel">총 매출</div><div class="pay-v2-sumval" id="pay_v2_grand">₩0</div></div>';
   h+='<div class="pay-v2-sumcell"><div class="pay-v2-sumlabel">완납</div><div class="pay-v2-sumval" id="pay_v2_paid_n">'+c.paid+'명</div></div>';
-  h+='<div class="pay-v2-sumcell"><div class="pay-v2-sumlabel">미납</div><div class="pay-v2-sumval" id="pay_v2_unpaid_n">'+c.unpaid+'명</div></div></div>';
+  h+='<div class="pay-v2-sumcell"><div class="pay-v2-sumlabel">미납</div><div class="pay-v2-sumval'+(c.unpaid>0?' pay-v2-sum--unpaid':'')+'" id="pay_v2_unpaid_n">'+c.unpaid+'명</div><div id="pay_v2_bulk_slot"></div></div></div>';
   h+='<div class="pay-v2-filt">';
   h+='<button type="button" class="pay-v2-fpill'+(pay_uiFilter==='all'?' on':'')+'" data-f="all" onclick="pay_setUiFilter(\'all\')">전체</button>';
   h+='<button type="button" class="pay-v2-fpill'+(pay_uiFilter==='paid'?' on':'')+'" data-f="paid" onclick="pay_setUiFilter(\'paid\')">완납</button>';
   h+='<button type="button" class="pay-v2-fpill'+(pay_uiFilter==='unpaid'?' on':'')+'" data-f="unpaid" onclick="pay_setUiFilter(\'unpaid\')">미납</button>';
   h+='</div>';
   h+='<div class="pay-v2-od-bar"><button type="button" class="pay-v2-link-tpl" onclick="pay_openOdTemplateWizard()">수납 안내 템플릿</button></div>';
-  if(c.unpaid>0){
-    h+='<div class="pay-v2-od-bar" style="padding-top:0"><button type="button" class="pay-v2-btn-od" onclick="kk_od_confirmSendAll()">미납 '+c.unpaid+'명 일괄 수납 안내</button></div>';
-  }
   h+='<div class="pay-v2-list"><div class="pay-tbl-wrap"><table class="pay-tbl" role="grid">';
   h+='<thead><tr><th class="pay-th-nm">이름</th><th>주횟수</th><th>수강료</th><th class="pay-th-st">상태</th></tr></thead>';
   h+='<tbody id="pay_v2_list"></tbody></table></div></div>';
