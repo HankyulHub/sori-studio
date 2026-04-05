@@ -29,13 +29,15 @@ function v7_doGet(e, isTest) {
       var invoiceStudents = loadInvoiceStudents(isTest, pYear, pMonth);
       var paymentStatus = loadPaymentStatus(isTest, payYear, payMonth);
       var revenueStats = getRevenueStats(isTest);
+      var feeTable = v7_getTuitionFeeTable(isTest);
       var result = {
         ok: true,
         data: {
           students: students,
           invoiceStudents: invoiceStudents,
           paymentStatus: paymentStatus,
-          revenueStats: revenueStats
+          revenueStats: revenueStats,
+          feeTable: feeTable
         }
       };
       return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
@@ -44,6 +46,30 @@ function v7_doGet(e, isTest) {
     return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err && err.message ? err.message : err) })).setMimeType(ContentService.MimeType.JSON);
   }
   return null;
+}
+
+/** 스프레드시트에서 원비표를 쓰려면 프로젝트에 loadTuitionFeeTable(isTest) 를 구현하세요. 반환 형식: { levels: string[], matrix: number[][] } (행 5 = 주1~5회, 열 = levels 순서). */
+function v7_defaultTuitionFeeTable() {
+  return {
+    levels: ['기초', '초급', '중급', '고급'],
+    matrix: [
+      [120000, 130000, 140000, 150000],
+      [130000, 140000, 150000, 160000],
+      [140000, 150000, 160000, 170000],
+      [150000, 160000, 170000, 180000],
+      [160000, 170000, 180000, 190000]
+    ]
+  };
+}
+
+function v7_getTuitionFeeTable(isTest) {
+  try {
+    if (typeof loadTuitionFeeTable === 'function') {
+      var t = loadTuitionFeeTable(isTest);
+      if (t && t.levels && t.matrix) return t;
+    }
+  } catch (e) {}
+  return v7_defaultTuitionFeeTable();
 }
 
 function v7_generateKakao(name, gg, kw, hist, type, overdueAmount, overdueMonth) {

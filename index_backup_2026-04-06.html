@@ -284,10 +284,6 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .inv-fee-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .inv-fee-actions .btn{flex:1;min-width:0;padding:10px;font-size:12px}
 .fee-seg-item.inv-fee-muted{opacity:.35}
-.inv-fee-panel .fee-seg{background:#fff;border-color:rgba(27,42,74,.18)}
-.inv-fee-panel .fee-seg-item{background:#fff;color:#666;border-right-color:rgba(196,198,207,.32)}
-.inv-fee-panel .fee-seg-item.selected{background:#1B2A4A;color:#fff;border-right-color:rgba(27,42,74,.35)}
-.inv-fee-panel .fee-seg-item:active{opacity:.92}
 .inv-bulk-screen{padding:0 0 88px;min-height:50dvh}
 .inv-bulk-head{padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid rgba(196,198,207,.22);position:sticky;top:0;background:rgba(250,249,246,.96);z-index:8;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .inv-bulk-title{flex:1;min-width:0;font-size:15px;font-weight:900;color:var(--pri)}
@@ -1027,18 +1023,6 @@ function appMergeCacheFromData(data){
     }
   }
   pay_mergeCacheFromAppData();
-  inv_applyFeeTableFromData(data.feeTable);
-}
-function inv_applyFeeTableFromData(ft){
-  if(!ft||typeof ft!=='object')return;
-  if(Array.isArray(ft.levels)&&ft.levels.length){
-    INV_TUITION_LEVELS=ft.levels.map(function(x){return String(x||'').trim();}).filter(Boolean);
-  }
-  if(Array.isArray(ft.matrix)&&ft.matrix.length){
-    INV_TUITION_MATRIX_WON=ft.matrix.map(function(row){
-      return Array.isArray(row)?row.map(function(c){var n=parseInt(String(c).replace(/,/g,''),10);return isNaN(n)?0:n;}):[];
-    });
-  }
 }
 function appApplyInitData(data){
   APP_LOADING=false;
@@ -2975,12 +2959,12 @@ function inv_render(){
 
 function inv_renderSetting(){
   var h='';
-  h+=inv_buildSec('greeting','🎶 인삿말',null,inv_openSections.greeting,inv_buildGreeting);
-  h+=inv_buildSec('students','📌 수강료 안내',inv_students.length+'명',inv_openSections.students,inv_buildStudents);
-  h+=inv_buildSec('schedule','🎵 수업 일정',null,inv_openSections.schedule,inv_buildSchedule);
-  h+=inv_buildSec('pay','💳 납부 안내',null,inv_openSections.pay,inv_buildPay);
-  h+=inv_buildSec('notice','➕ 공지 추가',(inv_notice&&String(inv_notice).trim())?'· 입력됨':'',inv_openSections.notice,inv_buildNoticeBody);
-  h+=inv_buildSec('closing','❤️ 마무리 인사',null,inv_openSections.closing,inv_buildClosing);
+  h+=inv_buildSec('greeting','인삿말',null,inv_openSections.greeting,inv_buildGreeting);
+  h+=inv_buildSec('students','수강료 안내',inv_students.length+'명',inv_openSections.students,inv_buildStudents);
+  h+=inv_buildSec('schedule','수업 일정',null,inv_openSections.schedule,inv_buildSchedule);
+  h+=inv_buildSec('pay','납부 안내',null,inv_openSections.pay,inv_buildPay);
+  h+=inv_buildSec('notice','+ 공지 추가',(inv_notice&&String(inv_notice).trim())?'· 입력됨':'',inv_openSections.notice,inv_buildNoticeBody);
+  h+=inv_buildSec('closing','마무리 인사',null,inv_openSections.closing,inv_buildClosing);
   h+='<div class="gen-area">';
   h+='<button class="btn-gen" onclick="inv_goBulkGen()">전체 명세서 생성 ('+inv_students.length+'명)</button>';
   h+='</div>';
@@ -3048,13 +3032,7 @@ function inv_lookupTuitionFee(lev,freq){
   var c=INV_TUITION_LEVELS.indexOf(lev);
   var r=inv_freqIndex(freq);
   if(c<0||r<0)return null;
-  var row=INV_TUITION_MATRIX_WON[r];
-  if(!row||c>=row.length)return null;
-  var v=row[c];
-  return typeof v==='number'&&!isNaN(v)?v:null;
-}
-function inv_freqLabelCompact(freq){
-  return String(freq||'').replace(/\s+/g,'');
+  return INV_TUITION_MATRIX_WON[r][c];
 }
 function inv_formatMatLineBlur(t){
   return String(t).replace(/(\d[\d,]*)\s*원/g,function(_,g){
@@ -3282,16 +3260,14 @@ function inv_fpInitState(i){
   var lev=inv_normalizeTuitionLevel(s.level||'');
   var fq=String(s.freq||'').trim()||'주 3회';
   var feeN=inv_feeNumber(s);
-  var hasCombo=!!(lev&&inv_freqIndex(fq)>=0);
-  var exp=hasCombo?inv_lookupTuitionFee(lev,fq):null;
-  var custom=!hasCombo||exp==null||(feeN>0&&exp!==feeN);
-  var displayNum=custom?feeN:(feeN>0?feeN:(exp!=null?exp:0));
+  var exp=inv_lookupTuitionFee(lev,fq);
+  var custom=!lev||exp==null||exp!==feeN;
   inv_fpState[i]={
-    lev:lev||'',
+    lev:custom?'':lev,
     freq:fq,
     custom:custom,
-    feeNum:displayNum,
-    feeInputStr:displayNum?displayNum.toLocaleString():'0'
+    feeNum:feeN,
+    feeInputStr:feeN?feeN.toLocaleString():'0'
   };
 }
 function inv_buildFeePanelHtml(i){
@@ -3362,20 +3338,20 @@ function inv_fpSyncUI(i){
   if(!st)return;
   panel.querySelectorAll('.inv-fee-lev .fee-seg-item').forEach(function(b){
     var v=b.getAttribute('data-lv');
-    b.classList.toggle('selected',st.lev===v);
+    b.classList.toggle('selected',!st.custom&&st.lev===v);
+    b.classList.toggle('inv-fee-muted',st.custom);
   });
   panel.querySelectorAll('.inv-fee-fr .fee-seg-item').forEach(function(b){
     var v=b.getAttribute('data-fr');
-    b.classList.toggle('selected',st.freq===v);
+    b.classList.toggle('selected',!st.custom&&st.freq===v);
+    b.classList.toggle('inv-fee-muted',st.custom);
   });
   var auto=panel.querySelector('#inv_fp_auto_'+i);
   if(auto){
     if(st.custom)auto.textContent='직접 입력 모드';
-    else if(!st.lev)auto.textContent='레벨을 선택하세요';
-    else if(inv_freqIndex(st.freq)<0)auto.textContent='횟수를 선택하세요';
     else{
       var n=inv_lookupTuitionFee(st.lev,st.freq);
-      auto.textContent=n!=null?'자동 계산 ('+st.lev+' · '+inv_freqLabelCompact(st.freq)+') '+n.toLocaleString()+'원':'금액표에 없는 조합이에요';
+      auto.textContent=n!=null?'→ 자동 계산: '+n.toLocaleString()+'원':'레벨과 횟수를 선택하세요';
     }
   }
   var inp=panel.querySelector('#inv_fp_inp_'+i);
