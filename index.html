@@ -521,16 +521,25 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .pay-v2-head{padding:14px 20px 8px;display:flex;align-items:center;justify-content:flex-end;gap:12px}
 .pay-v2-title{font-size:20px;font-weight:900;color:var(--pri)}
 .pay-v2-ym{font-size:13px;font-weight:700;color:var(--on-v);white-space:nowrap;padding-top:4px}
-.pay-v2-sumgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 20px 12px}
-.pay-v2-sumcell{background:var(--sc-lowest);border-radius:14px;padding:12px 10px;border:1px solid rgba(196,198,207,.2);text-align:center;box-shadow:var(--sh)}
-.pay-v2-sumlabel{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--on-v);opacity:.85}
-.pay-v2-sumval{margin-top:6px;font-size:15px;font-weight:900;color:var(--pri)}
-.pay-v2-filt{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 14px}
-.pay-v2-fpill{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid rgba(196,198,207,.45);background:rgba(255,255,255,.75);color:var(--on-v);cursor:pointer;font-family:inherit}
-.pay-v2-fpill.on[data-f="all"]{background:#1B2A4A;color:#fff;border-color:#1B2A4A}
-.pay-v2-fpill.on[data-f="paid"]{background:#1B2A4A;color:#fff;border-color:#1B2A4A}
-.pay-v2-fpill.on[data-f="unpaid"]{background:#1B2A4A;color:#D4A843;border-color:#1B2A4A}
-.pay-v2-list{padding:0 20px 100px}
+.pay-v2-sumline{margin:0 20px 12px;padding:10px 0;font-size:14px;color:var(--on);line-height:1.5}
+.pay-v2-sumline b{font-weight:800;color:var(--pri)}
+.pay-v2-sum-unpaid-btn{margin:0;padding:0;border:none;background:none;font:inherit;font-weight:800;color:#854F0B;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.pay-th-sort{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.pay-th-sort .pay-sort-ic{font-size:10px;opacity:.65;margin-left:2px}
+.pay-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.pay-seg-btn{padding:8px 10px;border-radius:10px;border:1px solid rgba(196,198,207,.45);background:var(--sc-lowest);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--on-v)}
+.pay-seg-btn.on{border-color:#1B2A4A;background:rgba(27,42,74,.08);color:#1B2A4A}
+.kk-acc{border-bottom:1px solid rgba(196,198,207,.14)}
+.kk-acc-head{width:100%;display:flex;align-items:center;gap:10px;padding:14px 20px;border:none;background:var(--sc-lowest);font:inherit;font-size:14px;font-weight:800;color:var(--on);text-align:left;cursor:pointer}
+.kk-acc-head:active{opacity:.92}
+.kk-acc-arr{font-size:11px;color:var(--on-v);width:1em}
+.kk-acc-n{margin-left:auto;font-size:12px;font-weight:800;color:var(--on-v)}
+.kk-acc-body{display:none;padding:0 0 8px}
+.kk-acc-body.on{display:block}
+.card-kw-meta{font-size:12px;color:var(--on-v);margin-top:4px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.card-kw-meta--open{-webkit-line-clamp:unset;display:block}
+.pay-v2-list{padding:0 16px 100px}
+.pay-modal-tpl-link{display:block;width:100%;margin-top:10px;padding:8px;border:none;background:none;font:inherit;font-size:12px;font-weight:700;color:#854F0B;text-decoration:underline;cursor:pointer}
 .pay-v2-tpl-card{margin:0 20px 12px;border-radius:14px;border:1px solid rgba(196,198,207,.22);background:var(--sc-lowest);box-shadow:var(--sh);overflow:hidden}
 .pay-v2-tpl-card .kk-od-tpl-view{padding:12px 14px 14px}
 .pay-v2-tpl-card .kk-od-tpl-edit{padding:12px 14px 16px}
@@ -548,13 +557,13 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .pay-month-nav{display:flex;align-items:center;justify-content:center;gap:16px;padding:4px 20px 14px}
 .pay-month-nav-btn{width:40px;height:40px;border-radius:12px;border:1px solid rgba(27,42,74,.2);background:var(--sc-lowest);color:#1B2A4A;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:var(--sh)}
 .pay-month-nav-lbl{font-size:18px;font-weight:900;color:#1B2A4A;min-width:132px;text-align:center}
-.pay-tbl-wrap{margin:0 20px 8px;border-radius:12px;border:1px solid rgba(196,198,207,.22);overflow:hidden;background:var(--sc-lowest);box-shadow:var(--sh)}
+.pay-tbl-wrap{margin:0 16px 8px;border-radius:12px;border:1px solid rgba(196,198,207,.22);overflow:hidden;background:var(--sc-lowest);box-shadow:var(--sh)}
 .pay-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
 .pay-tbl thead th{font-size:11px;font-weight:800;color:var(--on-v);text-align:left;padding:8px 8px;border-bottom:1px solid rgba(196,198,207,.25);background:rgba(27,42,74,.04)}
 .pay-tbl .pay-th-nm{width:40%}
-.pay-tbl .pay-th-freq{width:20%}
+.pay-tbl .pay-th-freq{width:18%}
 .pay-tbl .pay-th-fee{width:25%}
-.pay-tbl .pay-th-st{width:15%}
+.pay-tbl .pay-th-st{width:17%}
 .pay-tbl-tr.pay-tbl-main{border-bottom:1px solid rgba(196,198,207,.18);cursor:pointer}
 .pay-tbl-tr.pay-tbl-main:active{opacity:.92}
 .pay-tbl-detail{border-bottom:1px solid rgba(196,198,207,.18)}
@@ -608,7 +617,6 @@ h1,h2,h3,h4,h5,h6,.title{font-family:'Manrope','StitchBody',system-ui,-apple-sys
 .pay-sent-lbl{font-size:11px;font-weight:800;color:#854F0B;white-space:nowrap}
 .pay-v2-btn-mi{padding:8px 14px;border-radius:10px;font-size:12px;font-weight:900;border:1px solid #1B2A4A;background:#1B2A4A;color:#fff;cursor:pointer;font-family:inherit}
 .pay-v2-btn-od{padding:9px 14px;border-radius:10px;font-size:12px;font-weight:800;border:1px solid rgba(27,42,74,.2);background:var(--sc-lowest);color:#854F0B;cursor:pointer;font-family:inherit;width:100%;max-width:100%}
-.pay-v2-sumcell .pay-v2-sumval.pay-v2-sum--unpaid{color:#854F0B!important}
 .pay-meta-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(244,243,241,.9);color:var(--on-v);border:1px solid rgba(196,198,207,.3);margin-right:6px}
 .pay-fee-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(27,42,74,.06);color:#1B2A4A;border:1px solid rgba(27,42,74,.12)}
 .pay-fee-badge--high{background:rgba(27,42,74,.08);color:#1B2A4A;border:1px solid rgba(27,42,74,.18);font-weight:900}
@@ -1173,7 +1181,7 @@ function home_goFeedback(){
   switchTab('kakao');
 }
 function home_goOverdue(){
-  pay_uiFilter='unpaid';
+  pay_sortMode='unpaid_first';
   switchTab('pay');
 }
 function home_goNotice(){
@@ -1251,7 +1259,7 @@ function home_goPayLedger(){
   var d=new Date();
   pay_year=d.getFullYear();
   pay_month=d.getMonth()+1;
-  pay_uiFilter='unpaid';
+  pay_sortMode='unpaid_first';
   var hd=document.getElementById('headerDate');
   if(hd)hd.textContent=pay_year+'년 '+pay_month+'월';
   MODE='pay';
@@ -1270,7 +1278,7 @@ function home_sendOverdueFromUnpaid(){
   var d=new Date();
   pay_year=d.getFullYear();
   pay_month=d.getMonth()+1;
-  pay_uiFilter='unpaid';
+  pay_sortMode='unpaid_first';
   var hd=document.getElementById('headerDate');
   if(hd)hd.textContent=pay_year+'년 '+pay_month+'월';
   MODE='pay';
@@ -1359,6 +1367,7 @@ var kk_od_editBuffer='';
 var kk_od_accRow=-1;
 var kk_od_aiHistory=[],kk_od_carIdx=0;
 var kk_od_aiToneLabels=[];
+var kk_accOpen={review:false,ungen:false,done:false};
 var pay_acc_name='';
 
 function kk_key(row){return String(row)+'_'+kk_messageType}
@@ -1569,7 +1578,7 @@ function kk_init(){
   });
 }
 
-function kk_goHome(){kk_CANCEL=true;kk_GEN=false;kk_EDITMODE=false;kk_VIEW='list';kk_messageType='feedback';kk_od_phase=null;kk_od_picks=null;kk_od_editBuffer='';kk_od_accRow=-1;kk_od_aiHistory=[];kk_od_carIdx=0;kk_od_aiToneLabels=[];kk_rList()}
+function kk_goHome(){kk_CANCEL=true;kk_GEN=false;kk_EDITMODE=false;kk_VIEW='list';kk_messageType='feedback';kk_od_phase=null;kk_od_picks=null;kk_od_editBuffer='';kk_od_accRow=-1;kk_od_aiHistory=[];kk_od_carIdx=0;kk_od_aiToneLabels=[];kk_accOpen={review:false,ungen:false,done:false};kk_rList()}
 function kk_hasMsg(){return kk_S.some(function(s){return kk_MSG[kk_key(s.row)]})}
 function kk_isReview(s){return!kk_DONE.has(kk_key(s.row))&&kk_MSG[kk_key(s.row)]&&kk_MSG[kk_key(s.row)].trim()}
 function kk_isUngen(s){return!kk_DONE.has(kk_key(s.row))&&(!kk_MSG[kk_key(s.row)]||!kk_MSG[kk_key(s.row)].trim())}
@@ -2274,6 +2283,10 @@ function kk_showSendResult(ok,fail,results){
   showModal(lines,true);
 }
 
+function kk_toggleAcc(which){
+  kk_accOpen[which]=!kk_accOpen[which];
+  kk_refreshCards();
+}
 function kk_buildSectionedCards(edit){
   var base=kk_getBaseList();
   var gen=base.filter(function(s){return kk_MSG[kk_key(s.row)]||kk_DONE.has(kk_key(s.row))});
@@ -2283,18 +2296,17 @@ function kk_buildSectionedCards(edit){
   var h='';
   if(!gen.length&&!ungenList.length&&!kk_GEN)return '<div style="padding:40px 20px;text-align:center"><p style="color:#555;font-size:13px;margin-bottom:16px">아래 목록에서 키워드를 입력한 뒤 생성해 주세요</p><button class="btn btn-y" onclick="kk_rList()" style="padding:12px 24px">목록 새로고침</button></div>';
   if(!gen.length&&!ungenList.length&&kk_GEN)return '';
-  if(reviewList.length>0){
-    h+='<div class="sec-header"><div class="sec-dot sec-dot-o"></div><span class="sec-label sec-label-o">검수대기</span><span class="sec-count">'+reviewList.length+'명</span><div class="sec-line"></div></div>';
-    reviewList.forEach(function(s){h+=kk_buildOneCard(s,edit,'review')});
+  function wrapSec(key,title,list){
+    if(!list.length)return'';
+    var op=!!kk_accOpen[key];
+    h+='<div class="kk-acc"><button type="button" class="kk-acc-head" onclick="kk_toggleAcc(\''+key+'\')"><span class="kk-acc-arr">'+(op?'▼':'▶')+'</span>'+title+'<span class="kk-acc-n">'+list.length+'명</span></button>';
+    h+='<div class="kk-acc-body'+(op?' on':'')+'">';
+    list.forEach(function(s){h+=kk_buildOneCard(s,edit,key==='review'?'review':key==='ungen'?'ungen':'done')});
+    h+='</div></div>';
   }
-  if(ungenList.length>0){
-    h+='<div class="sec-header"><div class="sec-dot sec-dot-y"></div><span class="sec-label sec-label-y">미생성</span><span class="sec-count">'+ungenList.length+'명</span><div class="sec-line"></div></div>';
-    ungenList.forEach(function(s){h+=kk_buildOneCard(s,edit,'ungen')});
-  }
-  if(doneList.length>0){
-    h+='<div class="sec-header"><div class="sec-dot sec-dot-g"></div><span class="sec-label sec-label-g">복사완료</span><span class="sec-count">'+doneList.length+'명</span><div class="sec-line"></div></div>';
-    doneList.forEach(function(s){h+=kk_buildOneCard(s,edit,'done')});
-  }
+  wrapSec('review','검수대기',reviewList);
+  wrapSec('ungen','미생성',ungenList);
+  wrapSec('done','복사완료',doneList);
   return h;
 }
 
@@ -2314,9 +2326,11 @@ function kk_buildOneCard(s,edit,status){
   var cardClass=status==='done'?'card done-card':'card';
   var clickAction=status==='ungen'?'':'onclick="kk_showDet('+s.row+')"';
   if(status==='ungen'){
-    return '<div class="'+cardClass+'" style="flex-wrap:wrap"><div class="av av-y">'+s.name[0]+'</div><div class="card-body"><div class="card-name">'+s.name+'</div><div class="card-kw"><span class="card-kw-label">키워드</span><span class="card-kw-text">'+(kwFB?esc(kwFB.substring(0,35)):'미입력')+'</span></div></div><span class="card-st" style="color:#FFD43B">미생성</span><input class="card-kw-input" value="'+esc(kwFB)+'" oninput="kk_kwCh('+s.row+',this.value)" placeholder="예: 바이엘 2권, 손목 힘 좋아짐" onclick="event.stopPropagation()"/></div>';
+    var kwPrev=kwFB?(esc(kwFB.length>72?kwFB.substring(0,72)+'…':kwFB)):'<span style="opacity:.55">키워드를 입력해 주세요</span>';
+    return '<div class="'+cardClass+'" style="flex-wrap:wrap"><div class="av av-y">'+s.name[0]+'</div><div class="card-body"><div class="card-name">'+s.name+'</div><div class="card-kw-meta">'+kwPrev+'</div></div><span class="card-st" style="color:#FFD43B">미생성</span><input class="card-kw-input" value="'+esc(kwFB)+'" oninput="kk_kwCh('+s.row+',this.value)" placeholder="예: 바이엘 2권, 손목 힘 좋아짐" onclick="event.stopPropagation()"/></div>';
   }
-  return '<div class="'+cardClass+'" '+clickAction+'><div class="av '+avC+'">'+s.name[0]+'</div><div class="card-body"><div class="card-name">'+s.name+'</div><div class="card-kw"><span class="card-kw-label">키워드</span><span class="card-kw-text">'+esc(kw.substring(0,35))+'</span></div></div>'+stHtml+'</div>';
+  var kwLine=kw?(esc(kw.length>72?kw.substring(0,72)+'…':kw)):'';
+  return '<div class="'+cardClass+'" '+clickAction+'><div class="av '+avC+'">'+s.name[0]+'</div><div class="card-body"><div class="card-name">'+s.name+'</div><div class="card-kw-meta">'+kwLine+'</div></div>'+stHtml+'</div>';
 }
 
 function kk_onEditKw(row,v){
@@ -2327,6 +2341,7 @@ function kk_onEditKw(row,v){
 
 function kk_toggleEdit(){
   kk_EDITMODE=!kk_EDITMODE;
+  if(kk_EDITMODE)kk_accOpen.review=true;
   document.getElementById('kk_cardList').innerHTML=kk_buildSectionedCards(kk_EDITMODE);
   var btn=document.getElementById('kk_editBtn');
   if(btn){
@@ -2785,8 +2800,7 @@ var inv_payInfo='• 납부 기간: 매월 25일 ~ 말일\n• 납부 방법: �
 var inv_scheduleNote='* 학기 중 수업시간, 요일 변동사항이 있으시면 연락 부탁드립니다♡';
 var inv_closing='문의 사항은 언제든 연락주세요^^ 감사합니다❤️\n소리마을음악교습소 드림';
 var inv_notice='';
-var inv_noticeOn=false;
-var inv_openSections={greeting:false,students:true,schedule:false,pay:false,closing:false};
+var inv_openSections={greeting:false,students:false,schedule:false,pay:false,notice:false,closing:false};
 var inv_openStudents=new Set();
 var INV_TUITION_LEVELS=['기초','초급','중급','고급'];
 var INV_TUITION_MATRIX_WON=[
@@ -2848,7 +2862,7 @@ function inv_renderSetting(){
   h+=inv_buildSec('students','📌 수강료 안내',inv_students.length+'명',inv_openSections.students,inv_buildStudents);
   h+=inv_buildSec('schedule','🎵 수업 일정',null,inv_openSections.schedule,inv_buildSchedule);
   h+=inv_buildSec('pay','💳 납부 안내',null,inv_openSections.pay,inv_buildPay);
-  h+=inv_buildNotice();
+  h+=inv_buildSec('notice','➕ 공지 추가',(inv_notice&&String(inv_notice).trim())?'· 입력됨':'',inv_openSections.notice,inv_buildNoticeBody);
   h+=inv_buildSec('closing','❤️ 마무리 인사',null,inv_openSections.closing,inv_buildClosing);
   h+='<div class="gen-area">';
   h+='<button class="btn-gen" onclick="inv_goBulkGen()">전체 명세서 생성 ('+inv_students.length+'명)</button>';
@@ -2932,7 +2946,7 @@ function inv_blurMat(i,mi,el){
 }
 function inv_buildSec(key,title,badge,isOpen,contentFn){
   var badgeHtml=badge?'<span class="section-badge">'+badge+'</span>':'';
-  return '<div class="section"><div class="section-header" onclick="inv_toggleSec(\''+key+'\')"><div class="section-title"><div class="section-dot"></div>'+title+badgeHtml+'</div><span class="section-arrow'+(isOpen?' open':'')+'">▾</span></div><div class="section-body'+(isOpen?' open':'')+'"><div class="section-inner">'+contentFn()+'</div></div></div>';
+  return '<div class="section"><div class="section-header" onclick="inv_toggleSec(\''+key+'\')"><div class="section-title"><div class="section-dot"></div>'+title+badgeHtml+'</div><span class="section-arrow">'+(isOpen?'▼':'▶')+'</span></div><div class="section-body'+(isOpen?' open':'')+'"><div class="section-inner">'+contentFn()+'</div></div></div>';
 }
 
 function inv_buildGreeting(){
@@ -3092,11 +3106,8 @@ function inv_buildPay(){
   return '<div class="edit-block" contenteditable="false" onclick="inv_makeEditable(this)" onblur="inv_payInfo=this.textContent">'+esc(inv_payInfo)+'</div><div class="edit-hint">탭하여 수정</div>';
 }
 
-function inv_buildNotice(){
-  if(!inv_noticeOn){
-    return '<div style="padding:8px 20px;border-bottom:1px solid rgba(196,198,207,.22)"><div class="add-btn" onclick="inv_noticeOn=true;inv_renderSetting()" style="width:100%;justify-content:center;padding:10px">+ 📢 공지 추가</div></div>';
-  }
-  return '<div class="section"><div style="padding:12px 20px"><div class="notice-block"><div class="notice-label"><span>📢 공지사항</span><span class="added-item-remove" onclick="inv_noticeOn=false;inv_notice=\'\';inv_renderSetting()">✕</span></div><textarea class="notice-input" placeholder="예: 다음 달부터 인상된 원비가 적용됩니다" oninput="inv_notice=this.value">'+esc(inv_notice)+'</textarea></div></div></div>';
+function inv_buildNoticeBody(){
+  return '<div class="notice-block" style="padding:4px 0"><textarea class="notice-input" placeholder="예: 다음 달부터 인상된 원비가 적용됩니다" oninput="inv_notice=this.value">'+esc(inv_notice||'')+'</textarea><div style="margin-top:10px"><span class="added-item-remove" onclick="inv_notice=\'\';inv_renderSetting()" style="cursor:pointer">공지 비우기</span></div></div>';
 }
 
 function inv_buildClosing(){
@@ -3570,7 +3581,7 @@ function inv_buildMessage(s){
     if(item.title.trim()&&item.value.trim())m+='• '+item.title+' - '+item.value+'\n';
   });
   m+=inv_scheduleNote+'\n';
-  if(inv_noticeOn&&inv_notice.trim())m+='━━━━━━━━━━━\n📢 공지\n'+inv_notice+'\n';
+  if(inv_notice&&String(inv_notice).trim())m+='━━━━━━━━━━━\n📢 공지\n'+inv_notice+'\n';
   m+='━━━━━━━━━━━\n'+inv_closing;
   return m;
 }
@@ -4107,7 +4118,7 @@ function att_render(){
 // ═══════════════════════════════════════
 // 매출장부 pay_
 // ═══════════════════════════════════════
-var pay_loaded=false,pay_status=null,pay_stats=null,pay_year=now.getFullYear(),pay_month=now.getMonth()+1,pay_saving={},pay_uiFilter='all';
+var pay_loaded=false,pay_status=null,pay_stats=null,pay_year=now.getFullYear(),pay_month=now.getMonth()+1,pay_saving={},pay_sortMode='name';
 function pay_monthKeyStr(y,m){return String(y)+'_'+String(m)}
 function pay_snapKey(y,m){return 'pay_snap_'+(IS_TEST?'t_':'m_')+y+'_'+m}
 function pay_saveSnapshot(y,m,status,stats){
