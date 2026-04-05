@@ -141,7 +141,7 @@ function v7_doPost(body, isTest) {
       );
       return ContentService.createTextOutput(JSON.stringify({ ok: true, data: text })).setMimeType(ContentService.MimeType.JSON);
     }
-    if (action === 'togglePayment') {
+    if (action === 'togglePayment' || action === 'pay_togglePayment') {
       var paid = !!body.paid;
       var ty = parseInt(body.year || '', 10) || new Date().getFullYear();
       var tm = parseInt(body.month || '', 10) || new Date().getMonth() + 1;
@@ -172,6 +172,54 @@ function v7_doPost(body, isTest) {
     if (action === 'generatePaymentTemplates') {
       try {
         if (typeof _gemini !== 'function') throw new Error('_gemini 미정의');
+        if (body.triple) {
+          var avoidArr3 = [];
+          if (body.avoidTexts && body.avoidTexts.length) {
+            for (var a3 = 0; a3 < body.avoidTexts.length; a3++) {
+              var ax3 = String(body.avoidTexts[a3] || '').trim();
+              if (ax3) avoidArr3.push(ax3);
+            }
+          }
+          var avoidBlock3 =
+            avoidArr3.length > 0
+              ? '\n아래 텍스트들과는 다른 표현, 다른 문장 구조, 다른 인사말을 사용해서 새로 작성할 것:\n' +
+                avoidArr3
+                  .map(function (t, i) {
+                    return '[' + (i + 1) + '] ' + t;
+                  })
+                  .join('\n')
+              : '';
+          var monthTok3 = body.month != null && body.month !== '' ? String(body.month) : '';
+          var monthLine3 = monthTok3 ? '\n정산 월(숫자): ' + monthTok3 + ' — 본문에는 반드시 {월} 플레이스홀더 사용.' : '';
+          var ptx3 =
+            '수납 안내 카카오톡용 메시지 템플릿을 톤이 다른 3벌로 동시에 작성하세요.\n' +
+            '① formal: 정중하고 격식 있는 문체\n' +
+            '② casual: 친근하고 따뜻한 문체\n' +
+            '③ short: 짧고 간결한 문체\n' +
+            '세 버전은 서로 인사말·문장 구조·어휘가 확실히 달라야 합니다.\n' +
+            '각 템플릿에 플레이스홀더 {이름}, {금액}, {월} 을 모두 포함하고 중괄호는 그대로 유지(치환 금지).' +
+            monthLine3 +
+            avoidBlock3 +
+            '\n\nJSON만 출력: {"formal":"…","casual":"…","short":"…"}';
+          var gr3 = _gemini(ptx3, 0.78, 2800);
+          var txt3 = gr3 && gr3.text ? String(gr3.text).trim() : '';
+          var obj3 = null;
+          try {
+            obj3 = JSON.parse(txt3);
+          } catch (e03) {
+            var mj3 = txt3.match(/\{[\s\S]*\}/);
+            if (mj3)
+              try {
+                obj3 = JSON.parse(mj3[0]);
+              } catch (e13) {}
+          }
+          var outF = obj3 && obj3.formal ? String(obj3.formal) : '';
+          var outC = obj3 && obj3.casual ? String(obj3.casual) : '';
+          var outS = obj3 && obj3.short ? String(obj3.short) : '';
+          return ContentService.createTextOutput(
+            JSON.stringify({ ok: true, data: { formal: outF, casual: outC, short: outS } })
+          ).setMimeType(ContentService.MimeType.JSON);
+        }
         if (body.single) {
           var toneKey = String(body.tone || 'formal');
           var toneLab = { formal: '정중하고 격식 있는', casual: '캐주얼하고 친근한', short: '짧고 간결한' }[toneKey] || toneKey;
