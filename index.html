@@ -238,6 +238,9 @@ body[data-view=ledger]{padding-bottom:90px}
 .ldg .dt{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
 .ldg .memo{display:block;font-size:10.5px;color:var(--review);margin-top:2px;max-width:76px;overflow:hidden;text-overflow:ellipsis}
 
+.ldg-sync{display:inline-flex;align-items:center;gap:6px}
+.ldg-sync .spin-s{width:12px;height:12px}
+
 /* 팝업 입력칸 */
 .fld{display:flex;flex-direction:column;gap:6px;text-align:left;margin:12px 0}
 .fld span{font-size:12px;font-weight:600;color:var(--sub)}
@@ -841,7 +844,12 @@ function ldgOpen(){
   ldgFetch(LDG.year,!hit);
 }
 
+// 새 Apps Script 기능(loadPaymentYear)이 없다는 걸 기억해두고 하루 동안은 다시 안 물어봄 (요청 1번 = 1초 절약)
+function ldgNoYearApi(){try{return Date.now()-Number(localStorage.getItem('sori_ldg_noyear')||0)<86400000}catch(e){return false}}
+function ldgSetNoYearApi(){try{localStorage.setItem('sori_ldg_noyear',String(Date.now()))}catch(e){}}
+
 function ldgFetch(y,first){
+  if(ldgNoYearApi()){ldgFetchLegacy(y,first);return}
   LDG.loading=true;
   apiGet('loadPaymentYear',{year:y}).then(function(d){
     LDG.loading=false;
@@ -855,6 +863,7 @@ function ldgFetch(y,first){
     if(VIEW!=='ledger')return;
     if(/Unknown action/.test(e.message)){
       // Apps Script에 새 기능이 없으면, 원래 있던 기능(월별 수납 현황 + 납부 체크)만으로 표를 만든다
+      ldgSetNoYearApi();
       ldgFetchLegacy(y,first);
     }else if(!LDG.data){
       Q('app',ldgHeadHtml()+'<div class="bar"><span class="bar-info">불러오기 실패: '+esc(e.message)+'</span><button class="btn btn-d" onclick="ldgOpen()">다시 시도</button></div>');
@@ -863,40 +872,69 @@ function ldgFetch(y,first){
 }
 
 // 기존 Apps Script 기능만 쓰는 방식: 달마다 loadPaymentStatus를 불러 합친다 (메모·결제수단 없음)
+// 빠르게 하려고: 이번 달부터 먼저 → 표 바로 표시 → 나머지 달은 뒤에서 하나씩 채움
+//               지난 달은 한 번 받으면 폰에 저장해두고, 다음부터는 이번 달·지난달만 다시 확인
 function ldgFetchLegacy(y,first){
-  var now=new Date(),cy=now.getFullYear(),last=y<cy?12:(y===cy?now.getMonth()+1:0);
-  var ms=[];for(var m=1;m<=last;m++)ms.push(m);
+  var now=new Date(),cy=now.getFullYear(),cm=now.getMonth()+1,last=y<cy?12:(y===cy?cm:0);
+  var d=(LDG.data&&LDG.data.legacy&&LDG.data.year===y)?LDG.data:null;
+  if(!d){d={year:y,students:[],legacy:true,fetched:[]};LDG.data=d}
+  if(!d.fetched)d.fetched=[];
+  // 학생 줄은 앱이 이미 받은 학생 목록(S)으로 먼저 만든다
+  var byName={};d.students.forEach(function(s){byName[s.name]=s});
+  var added=false;
+  S.forEach(function(s){
+    var o=byName[s.name];
+    if(!o){o={name:s.name,fee:0,feeDisplay:s.fee||'',level:s.level||'',freq:s.freq||'',method:'',months:{}};d.students.push(o);byName[s.name]=o;added=true}
+    else{o.level=s.level||o.level;o.freq=s.freq||o.freq;if(!o.feeDisplay)o.feeDisplay=s.fee||''}
+  });
   LDG.loading=true;
-  Promise.all(ms.map(function(m){return apiGet('loadPaymentStatus',{year:y,month:m})})).then(function(arr){
-    LDG.loading=false;
-    if(VIEW!=='ledger'||LDG.year!==y)return;
-    var info={};S.forEach(function(s){info[s.name]=s});
-    var order=[],byName={};
-    function add(name,fee,feeDisplay){
-      if(byName[name])return byName[name];
-      var st=info[name]||{};
-      var o={name:name,fee:fee||0,feeDisplay:feeDisplay||st.fee||'',level:st.level||'',freq:st.freq||'',method:'',months:{}};
-      byName[name]=o;order.push(o);return o;
+  if(added||first)ldgRerenderKeepScroll(first);
+  // 받을 달: 아직 안 받은 달 + (올해면) 이번 달·지난달. 이번 달부터 거꾸로
+  var need=[];
+  for(var m=last;m>=1;m--){
+    if(d.fetched.indexOf(m)<0||(y===cy&&m>=cm-1))need.push(m);
+  }
+  if(!need.length){LDG.loading=false;return}
+  var done=0,total=need.length,failed=false;
+  ldgSetHint(total);
+  (function next(){
+    if(VIEW!=='ledger'||LDG.year!==y||LDG.data!==d){LDG.loading=false;return}
+    if(!need.length){
+      LDG.loading=false;ldgSetHint(0);
+      if(failed)T('일부 달을 못 불러왔어요');
+      return;
     }
-    S.forEach(function(s){add(s.name,0,s.fee)});
-    arr.forEach(function(res,k){
-      var m=ms[k];
+    var m=need.shift();
+    apiGet('loadPaymentStatus',{year:y,month:m}).then(function(res){
+      if(LDG.data!==d)return;
+      var grew=false;
       ((res&&res.students)||[]).forEach(function(p){
-        var o=add(p.name,p.fee,p.feeDisplay);
+        var o=byName[p.name];
+        if(!o){o={name:p.name,fee:0,feeDisplay:'',level:'',freq:'',method:'',months:{}};d.students.push(o);byName[p.name]=o;grew=true}
         if(p.fee)o.fee=p.fee;if(p.feeDisplay)o.feeDisplay=p.feeDisplay;
         if(p.paid)o.months[m]={paid:true,date:p.paidDate||'',memo:''};
+        else if(!LDG.saving[d.students.indexOf(o)+'_'+m])delete o.months[m];
       });
+      if(d.fetched.indexOf(m)<0)d.fetched.push(m);
+      ldgWriteCache();
+      if(VIEW==='ledger'){
+        if(grew||!document.getElementById('ldgWrap'))ldgRerenderKeepScroll(!document.getElementById('ldgWrap'));
+        else ldgRefreshMonth(m);
+      }
+    }).catch(function(){failed=true}).then(function(){
+      done++;ldgSetHint(total-done);next();
     });
-    LDG.data={year:y,students:order,legacy:true};ldgWriteCache();
-    var wrap=document.getElementById('ldgWrap'),sl=wrap?wrap.scrollLeft:null;
-    ldgRender(first||sl===null);
-    if(!first&&sl!==null){var w=document.getElementById('ldgWrap');if(w)w.scrollLeft=sl}
-  }).catch(function(e){
-    LDG.loading=false;
-    if(VIEW!=='ledger')return;
-    if(!LDG.data)Q('app',ldgHeadHtml()+'<div class="bar"><span class="bar-info">불러오기 실패: '+esc(e.message)+'</span><button class="btn btn-d" onclick="ldgOpen()">다시 시도</button></div>');
-    else T('최신 내용을 못 불러왔어요');
-  });
+  })();
+}
+
+function ldgRefreshMonth(m){
+  if(!LDG.data)return;
+  LDG.data.students.forEach(function(s,i){ldgRefreshCell(i,m)});
+}
+function ldgSetHint(left){
+  var el=document.querySelector('.ldg-hint');if(!el)return;
+  var base=LDG.data&&LDG.data.legacy?'칸을 누르면 오늘 날짜로 납부 체크 · 체크된 칸을 누르면 취소':'칸을 누르면 오늘 날짜로 납부 체크 · 길게 누르면 메모';
+  el.innerHTML=left>0?'<span class="ldg-sync"><span class="spin-s"></span>최신 내용 확인 중 ('+left+'달 남음)</span>':base;
 }
 
 function ldgShiftYear(d){LDG.year+=d;LDG.data=null;ldgOpen()}
@@ -929,7 +967,7 @@ function ldgCellHtml(i,m,cur){
 function ldgRender(scrollToNow){
   var d=LDG.data,now=new Date(),cur=(d&&d.year===now.getFullYear())?now.getMonth()+1:0;
   var h=ldgHeadHtml()+ldgSummaryHtml();
-  if(!d||!d.students.length){Q('app',h+'<div class="empty"><p>학생이 없어요</p></div>');return}
+  if(!d||!d.students.length){Q('app',h+(LDG.loading?'<div class="loading"><div class="spin"></div>수납 현황 불러오는 중...</div>':'<div class="empty"><p>학생이 없어요</p></div>'));return}
   var lg=!!d.legacy;
   h+='<div class="ldg-hint">'+(lg?'칸을 누르면 오늘 날짜로 납부 체크 · 체크된 칸을 누르면 취소':'칸을 누르면 오늘 날짜로 납부 체크 · 길게 누르면 메모')+'</div>';
   h+='<div class="ldg-wrap" id="ldgWrap"><table class="ldg"><thead><tr><th class="c-nm">이름</th>'+(lg?'':'<th class="c-pay">결제</th>')+'<th class="c-fee">수강료</th><th class="c-lv">레벨·횟수</th>';
@@ -1057,10 +1095,10 @@ function ldgSetMethod(i,v){
   s.method=v;ldgRerenderKeepScroll();
   apiPost('savePayMethod',{name:s.name,method:v}).then(function(){ldgWriteCache()}).catch(function(e){s.method=prev;ldgRerenderKeepScroll();T('저장 실패: '+e.message)});
 }
-function ldgRerenderKeepScroll(){
+function ldgRerenderKeepScroll(toNow){
   var w=document.getElementById('ldgWrap'),sl=w?w.scrollLeft:0,st=window.scrollY;
-  ldgRender(false);
-  var w2=document.getElementById('ldgWrap');if(w2)w2.scrollLeft=sl;window.scrollTo(0,st);
+  ldgRender(!!toNow||!w);
+  var w2=document.getElementById('ldgWrap');if(w2&&w&&!toNow)w2.scrollLeft=sl;window.scrollTo(0,st);
 }
 
 // ═══ Android Back Button ═══
