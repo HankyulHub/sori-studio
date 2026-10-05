@@ -854,10 +854,48 @@ function ldgFetch(y,first){
     LDG.loading=false;
     if(VIEW!=='ledger')return;
     if(/Unknown action/.test(e.message)){
-      Q('app',ldgHeadHtml()+'<div class="bar"><span class="bar-info">Apps Script에 수납 현황 기능이 아직 없어요.<br>코드를 붙여넣고 <b>새 버전으로 배포</b>하면 여기에 표가 나와요.</span></div>');
+      // Apps Script에 새 기능이 없으면, 원래 있던 기능(월별 수납 현황 + 납부 체크)만으로 표를 만든다
+      ldgFetchLegacy(y,first);
     }else if(!LDG.data){
       Q('app',ldgHeadHtml()+'<div class="bar"><span class="bar-info">불러오기 실패: '+esc(e.message)+'</span><button class="btn btn-d" onclick="ldgOpen()">다시 시도</button></div>');
     }else T('최신 내용을 못 불러왔어요');
+  });
+}
+
+// 기존 Apps Script 기능만 쓰는 방식: 달마다 loadPaymentStatus를 불러 합친다 (메모·결제수단 없음)
+function ldgFetchLegacy(y,first){
+  var now=new Date(),cy=now.getFullYear(),last=y<cy?12:(y===cy?now.getMonth()+1:0);
+  var ms=[];for(var m=1;m<=last;m++)ms.push(m);
+  LDG.loading=true;
+  Promise.all(ms.map(function(m){return apiGet('loadPaymentStatus',{year:y,month:m})})).then(function(arr){
+    LDG.loading=false;
+    if(VIEW!=='ledger'||LDG.year!==y)return;
+    var info={};S.forEach(function(s){info[s.name]=s});
+    var order=[],byName={};
+    function add(name,fee,feeDisplay){
+      if(byName[name])return byName[name];
+      var st=info[name]||{};
+      var o={name:name,fee:fee||0,feeDisplay:feeDisplay||st.fee||'',level:st.level||'',freq:st.freq||'',method:'',months:{}};
+      byName[name]=o;order.push(o);return o;
+    }
+    S.forEach(function(s){add(s.name,0,s.fee)});
+    arr.forEach(function(res,k){
+      var m=ms[k];
+      ((res&&res.students)||[]).forEach(function(p){
+        var o=add(p.name,p.fee,p.feeDisplay);
+        if(p.fee)o.fee=p.fee;if(p.feeDisplay)o.feeDisplay=p.feeDisplay;
+        if(p.paid)o.months[m]={paid:true,date:p.paidDate||'',memo:''};
+      });
+    });
+    LDG.data={year:y,students:order,legacy:true};ldgWriteCache();
+    var wrap=document.getElementById('ldgWrap'),sl=wrap?wrap.scrollLeft:null;
+    ldgRender(first||sl===null);
+    if(!first&&sl!==null){var w=document.getElementById('ldgWrap');if(w)w.scrollLeft=sl}
+  }).catch(function(e){
+    LDG.loading=false;
+    if(VIEW!=='ledger')return;
+    if(!LDG.data)Q('app',ldgHeadHtml()+'<div class="bar"><span class="bar-info">불러오기 실패: '+esc(e.message)+'</span><button class="btn btn-d" onclick="ldgOpen()">다시 시도</button></div>');
+    else T('최신 내용을 못 불러왔어요');
   });
 }
 
@@ -892,13 +930,14 @@ function ldgRender(scrollToNow){
   var d=LDG.data,now=new Date(),cur=(d&&d.year===now.getFullYear())?now.getMonth()+1:0;
   var h=ldgHeadHtml()+ldgSummaryHtml();
   if(!d||!d.students.length){Q('app',h+'<div class="empty"><p>학생이 없어요</p></div>');return}
-  h+='<div class="ldg-hint">칸을 누르면 오늘 날짜로 납부 체크 · 길게 누르면 메모</div>';
-  h+='<div class="ldg-wrap" id="ldgWrap"><table class="ldg"><thead><tr><th class="c-nm">이름</th><th class="c-pay">결제</th><th class="c-fee">수강료</th><th class="c-lv">레벨·횟수</th>';
+  var lg=!!d.legacy;
+  h+='<div class="ldg-hint">'+(lg?'칸을 누르면 오늘 날짜로 납부 체크 · 체크된 칸을 누르면 취소':'칸을 누르면 오늘 날짜로 납부 체크 · 길게 누르면 메모')+'</div>';
+  h+='<div class="ldg-wrap" id="ldgWrap"><table class="ldg"><thead><tr><th class="c-nm">이름</th>'+(lg?'':'<th class="c-pay">결제</th>')+'<th class="c-fee">수강료</th><th class="c-lv">레벨·횟수</th>';
   for(var m=1;m<=12;m++)h+='<th class="c-mh'+(m===cur?' c-cur':'')+'" id="ldgM'+m+'">'+m+'월</th>';
   h+='</tr></thead><tbody>';
   d.students.forEach(function(s,i){
     h+='<tr><td class="c-nm"><span class="no">'+(i+1)+'</span>'+esc(s.name)+'</td>'+
-      '<td class="c-pay" data-i="'+i+'" data-k="pay">'+(s.method?esc(s.method):'<span class="ph">선택</span>')+'</td>'+
+      (lg?'':'<td class="c-pay" data-i="'+i+'" data-k="pay">'+(s.method?esc(s.method):'<span class="ph">선택</span>')+'</td>')+
       '<td class="c-fee">'+esc(ldgFee(s.feeDisplay))+'</td>'+
       '<td class="c-lv">'+esc([s.level,ldgFreq(s.freq)].filter(Boolean).join(' '))+'</td>';
     for(var m=1;m<=12;m++)h+=ldgCellHtml(i,m,cur);
@@ -909,7 +948,7 @@ function ldgRender(scrollToNow){
   ldgBindEvents();
   if(scrollToNow&&cur){
     var w=document.getElementById('ldgWrap'),th=document.getElementById('ldgM'+Math.max(1,cur-1)),nm=w&&w.querySelector('th.c-nm');
-    if(w&&th&&nm)w.scrollLeft=Math.max(0,th.offsetLeft-nm.offsetWidth);
+    if(w&&th&&nm)w.scrollLeft=Math.max(0,w.scrollLeft+th.getBoundingClientRect().left-nm.getBoundingClientRect().right);
   }
 }
 
@@ -931,6 +970,7 @@ function ldgBindEvents(){
   w.addEventListener('pointerdown',function(e){
     var td=e.target.closest('td[data-i]');if(!td)return;
     target=td;long=false;sx=e.clientX;sy=e.clientY;
+    if(LDG.data&&LDG.data.legacy)return; // 기존 방식엔 메모가 없어서 길게 누르기 없음
     tm=setTimeout(function(){tm=null;if(target&&target.classList.contains('c-m')){long=true;ldgEdit(+target.dataset.i,+target.dataset.m)}},480);
   });
   w.addEventListener('pointermove',function(e){if(target&&(Math.abs(e.clientX-sx)>8||Math.abs(e.clientY-sy)>8))cancel()});
@@ -942,6 +982,11 @@ function ldgBindEvents(){
     var i=+td.dataset.i;
     if(td.dataset.k==='pay'){ldgPickMethod(i);return}
     var m=+td.dataset.m,c=LDG.data.students[i].months[m];
+    if(LDG.data.legacy){
+      if(c&&c.paid)ldgConfirmUnpay(i,m);
+      else ldgSave(i,m,true,ldgToday(),undefined);
+      return;
+    }
     if(c&&(c.paid||c.memo))ldgEdit(i,m);
     else ldgSave(i,m,true,ldgToday(),undefined);
   });
@@ -959,6 +1004,12 @@ function ldgEdit(i,m){
          :'<button class="btn btn-d" onclick="ldgSaveFromEditor('+i+','+m+',false)">메모만 저장</button><button class="btn btn-y" onclick="ldgSaveFromEditor('+i+','+m+',true)">납부로 저장</button>')+
     '</div>');
 }
+function ldgConfirmUnpay(i,m){
+  var s=LDG.data.students[i],c=s.months[m]||{};
+  showModal('<div class="modal-title">'+esc(s.name)+' · '+m+'월</div>'+
+    '<div class="modal-desc">'+(c.date?ldgShortDate(c.date)+'에 납부로 체크돼 있어요.<br>':'')+'납부 체크를 취소할까요?</div>'+
+    '<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">그대로 두기</button><button class="btn btn-y" onclick="closeModal();ldgSave('+i+','+m+',false)">납부 취소</button></div>');
+}
 function ldgSaveFromEditor(i,m,paid){
   var d=(document.getElementById('edDate')||{}).value||ldgToday();
   var memo=(document.getElementById('edMemo')||{}).value||'';
@@ -974,9 +1025,16 @@ function ldgSave(i,m,paid,date,memo){
   if(!next.paid&&!next.memo)delete s.months[m];else s.months[m]=next;
   LDG.saving[key]=true;ldgRefreshCell(i,m);
   if(paid&&memo===undefined)T(s.name+' '+m+'월 납부 ✓');
-  var body={year:LDG.data.year,month:m,name:s.name,paid:!!paid,date:next.date};
-  if(memo!==undefined)body.memo=next.memo;
-  apiPost('savePaymentCell',body).then(function(){
+  var req;
+  if(LDG.data.legacy){
+    // 기존 Apps Script의 togglePayment: 납부일은 서버가 오늘 날짜로 기록
+    req=apiPost('togglePayment',{year:LDG.data.year,month:m,name:s.name,paid:!!paid});
+  }else{
+    var body={year:LDG.data.year,month:m,name:s.name,paid:!!paid,date:next.date};
+    if(memo!==undefined)body.memo=next.memo;
+    req=apiPost('savePaymentCell',body);
+  }
+  req.then(function(){
     delete LDG.saving[key];ldgRefreshCell(i,m);ldgWriteCache();
   }).catch(function(e){
     delete LDG.saving[key];
