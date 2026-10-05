@@ -148,15 +148,28 @@ body{font-family:'Noto Sans KR',sans-serif!important;background:#0a0a0a;color:#f
 <script>
 // ═══ API 설정 ═══
 var API_URL='https://script.google.com/macros/s/AKfycbzW7VPXPRW0Ltf8ws_1xtdLM0rceMsumj7oi6bLD3jSjOCtYG8_WYGAqjd_UyRjPrQ1/exec';
+var IS_TEST=true; // Test 브랜치 전용. main에 머지할 때 반드시 false로
+
+// TEST 모드 표시 (운영 앱과 구분용)
+if(IS_TEST){
+  document.title='[TEST] '+document.title;
+  var _testBadge=document.createElement('div');
+  _testBadge.textContent='TEST';
+  _testBadge.style.cssText='position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:99999;background:#e53935;color:#fff;font:700 11px/1 sans-serif;letter-spacing:.12em;padding:4px 10px;border-radius:999px;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.25)';
+  document.body.appendChild(_testBadge);
+}
 
 function apiGet(action){
-  return fetch(API_URL+'?action='+action)
+  var url=API_URL+'?action='+action;
+  if(IS_TEST)url+='&test=1';
+  return fetch(url)
     .then(function(r){return r.json()})
     .then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
 function apiPost(action,body){
   body.action=action;
-  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)})
+  if(IS_TEST)body.test='1';
+  return fetch(API_URL+(IS_TEST?'?test=1':''),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)})
     .then(function(r){return r.json()})
     .then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
