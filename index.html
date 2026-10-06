@@ -356,7 +356,7 @@ body[data-view=students] .toast{bottom:150px}
 .ldg .tl.pick .pk{font-size:17px;font-weight:700;animation:ckPop .3s cubic-bezier(.3,1.7,.5,1) both}
 .ldg-pad{height:76px}
 /* 원생 탭: 레벨 색 (기초 → 초급 → 중급 → 고급) */
-.lv0{background:#FBF1CB;color:#8C6D14}.lv1{background:#E6F1E9;color:#2F6443}.lv2{background:#FBE1CA;color:#9A4A1F}.lv3{background:#F8D8D4;color:#A23A30}.lv4{background:var(--ink);color:#fff}.lvx{background:var(--field);color:var(--muted)}
+.lv0{background:#FBF1CB;color:#8C6D14}.lv1{background:#E6F1E9;color:#2F6443}.lv2{background:#FBE1CA;color:#9A4A1F}.lv3{background:#F8D8D4;color:#A23A30}.lv4{background:#DCEBF7;color:#2F5F8F}.lvx{background:var(--field);color:var(--muted)}
 .lvbar{display:flex;gap:3px;margin-top:14px;height:10px}
 .lvbar i{display:block;height:100%;border-radius:5px;min-width:8px}
 .lvlg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:11px;font-size:12px;color:var(--sub)}
@@ -1373,7 +1373,7 @@ function stuAdopt(s){if(s.kw)KW[s.row]=s.kw;PrevKW[s.row]=s.prevKw||'';if(s.msg)
 function stuFeeNum(t){var n=parseInt(String(t||'').replace(/,/g,''),10);return isNaN(n)?0:n}
 function stuRefresh(){if(VIEW==='ledger')ldgLoad(true);else if(VIEW==='students')rStudents()}
 // 레벨 색: 기초 → 초급 → 중급 → 고급 (요약 막대와 줄 앞 네모가 같은 색). 그 밖의 레벨은 -1(회색)
-var STU_LV=['기초','초급','중급','고급','입시'],STU_LV_C=['#EBD583','#A3CBB2','#F1BD90','#E9A79F','#4A453E'];
+var STU_LV=['기초','초급','중급','고급','입시'],STU_LV_C=['#EBD583','#A3CBB2','#F1BD90','#E9A79F','#9CC6E8'];
 function stuLv(s){var t=String(s.level||'');for(var i=0;i<STU_LV.length;i++)if(t.indexOf(STU_LV[i])>=0)return i;return -1}
 
 // 맨 위 요약: 인원 + 한 달 수강료(숫자로 적힌 것만 더함) + 레벨별 인원 막대
@@ -1435,7 +1435,7 @@ function stuEdit(name){
   }
   var h='<div class="modal-title">'+(p?esc(String(p.name)):'새 원생')+'</div>'+
     f('이름','stName',p?p.name:'','이름')+
-    '<div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','140,000')+f('결제수단','stMethod',p?p.method:'','고르기','pick')+'</div>'+stuPickHtml(['stMethod'])+
+    '<div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','고르기','pick')+f('결제수단','stMethod',p?p.method:'','고르기','pick')+'</div>'+stuPickHtml(['stFee','stMethod'])+
     '<div class="fld-row">'+f('레벨','stLevel',p?p.level:'','고르기','pick')+f('주 횟수','stFreq',p?p.freq:'','고르기','pick')+'</div>'+stuPickHtml(['stLevel','stFreq']);
   if(!p||!p.partial)h+='<div class="fld-row">'+f('학년','stGrade',p?p.grade:'','초3')+f('성별','stGender',p?p.gender:'','고르기','pick')+'</div>'+stuPickHtml(['stGender'])+
     '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?p.phone:'','010-0000-0000','tel')+'</div>';
@@ -1445,14 +1445,20 @@ function stuEdit(name){
   showModal(h);
   stuPickMark();
 }
-// ── 고르는 칸 (결제수단·레벨·주 횟수·성별) ──
+// 다른 입력칸으로 옮겨 가면 펼쳐져 있던 선택지를 접는다
+function stuPickClose(){[].forEach.call(document.querySelectorAll('.chips.pk.open'),function(p){p.classList.remove('open')})}
+document.getElementById('modalCard').addEventListener('focusin',function(e){
+  var t=e.target;if(t&&t.tagName==='INPUT'&&!(t.readOnly&&t.classList.contains('pick')))stuPickClose();
+});
+// ── 고르는 칸 (수강료·결제수단·레벨·주 횟수·성별) ──
 // 칸을 누르면 그 줄 밑에 선택지가 펼쳐지고, 고르면 접힌다. 연필을 누르면 목록에 없는 값을 직접 적을 수 있다
-var STU_PICK={stMethod:LDG_METHODS,stLevel:STU_LV,stFreq:['1','2','3','4','5'],stGender:['남','여']};
+var STU_PICK={stFee:['110,000','120,000','130,000','140,000','150,000'],stMethod:LDG_METHODS,stLevel:STU_LV,stFreq:['1','2','3','4','5'],stGender:['남','여']};
+function stuPickLabel(id,x){return id==='stFee'?parseInt(x,10)/10+'만':id==='stFreq'?x+'회':x}
 function stuPickHtml(ids){
   return ids.map(function(id){
     return '<div class="chips pk" id="pk_'+id+'">'+STU_PICK[id].map(function(x){
-      return '<button type="button" data-v="'+x+'" onclick="stuPickSet(\''+id+'\',\''+x+'\')">'+x+(id==='stFreq'?'회':'')+'</button>';
-    }).join('')+'<button type="button" class="pen" aria-label="직접 적기" onclick="stuPickType(\''+id+'\')">'+ICON_PEN+'직접</button></div>';
+      return '<button type="button" data-v="'+x+'" onclick="stuPickSet(\''+id+'\',\''+x+'\')">'+stuPickLabel(id,x)+'</button>';
+    }).join('')+(id==='stGender'?'':'<button type="button" class="pen" aria-label="직접 적기" onclick="stuPickType(\''+id+'\')">'+ICON_PEN+'직접</button>')+'</div>'; // 성별은 남·여뿐
   }).join('');
 }
 function stuPickOpen(id){
