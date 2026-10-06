@@ -273,26 +273,38 @@ body[data-view=students] .toast{bottom:150px}
 .ldg{transition:transform .28s cubic-bezier(.2,.8,.2,1)}.ldg.drag{transition:none}
 .ldg{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px;user-select:none;-webkit-user-select:none}
 .ldg th{color:var(--muted);font-size:11.5px;font-weight:600;padding:12px 6px 10px;text-align:left;border-bottom:.5px solid var(--line)}
-.ldg td{padding:6px;height:60px;border-bottom:.5px solid var(--line);color:var(--ink2);vertical-align:middle;overflow:hidden;cursor:pointer;transition:background .18s}
+.ldg td{padding:6px;height:70px;border-bottom:.5px solid var(--line);color:var(--ink2);vertical-align:middle;overflow:hidden;cursor:pointer;transition:background .18s}
 .ldg tr:last-child td{border-bottom:none}
 .ldg td:active{background:var(--field)}
-.ldg .c-nm{width:29%;padding-left:14px}
+.ldg .c-nm{width:50%;padding-left:14px}
 .ldg .nmw{display:flex;align-items:center;gap:9px;min-width:0}
 .ldg .no{width:15px;flex-shrink:0;text-align:right;color:#B9B2A7;font-size:11px;font-weight:500;font-variant-numeric:tabular-nums}
-.ldg .nmc{min-width:0}
+.ldg .nmc{min-width:0;flex:1}
+/* 이름 옆에 결제수단(종이 장부처럼), 밑에 수강료 · 레벨 */
+.ldg .nml{display:flex;align-items:center;gap:6px;min-width:0}
 .ldg .nm{font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
-.ldg .pm{font-size:11px;font-weight:500;color:var(--muted);margin-top:2px;white-space:nowrap}
-.ldg .c-fee{width:18%;text-align:right;font-variant-numeric:tabular-nums;word-break:keep-all;line-height:1.25}
-.ldg .c-lv{width:17%;color:var(--sub);font-size:12px;line-height:1.35;word-break:keep-all;padding-left:10px}
+.ldg .pm{flex-shrink:0;font-size:10.5px;font-weight:600;color:var(--sub);background:var(--field);padding:2px 7px;border-radius:8px;white-space:nowrap}
+.ldg .sb{font-size:11.5px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .ldg th.c-mh{text-align:center;padding:8px 2px}
 /* 월 제목 = 눌리는 버튼 (6개월 펼치기·접기) */
-.mh{display:inline-flex;align-items:center;gap:4px;border:none;background:var(--field);color:inherit;font-size:12px;font-weight:600;padding:7px 10px;border-radius:12px;cursor:pointer;box-shadow:0 1px 2px rgba(38,35,31,.12),inset 0 0 0 .5px rgba(38,35,31,.06);transition:transform .12s,box-shadow .12s,background .12s}
+.mh{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;border:none;background:var(--field);color:inherit;font-size:12px;font-weight:600;padding:7px 10px;border-radius:12px;cursor:pointer;box-shadow:0 1px 2px rgba(38,35,31,.12),inset 0 0 0 .5px rgba(38,35,31,.06);transition:transform .12s,box-shadow .12s,background .12s}
 .mh svg{opacity:.55}
 .mh:active{transform:scale(.92);background:#E9E4DB;box-shadow:inset 0 1px 3px rgba(38,35,31,.16)}
 .ldg.wide .mh{padding:7px 0;width:calc(100% - 6px);justify-content:center}
-.ldg th.c-cur{color:var(--ink)}
-.ldg td.c-m{text-align:center;padding:6px 2px;border-left:.5px solid var(--line);line-height:1.2;white-space:nowrap}
-.ldg td.c-cur{background:#FAF8F4}
+.ldg th.c-cur .mh{background:var(--ink);color:#fff;box-shadow:none}
+.ldg th.c-cur .mh:active{background:var(--ink2)}
+.ldg td.c-m{text-align:center;padding:6px 4px;line-height:1.2;white-space:nowrap}
+.ldg td.c-m:active{background:transparent}
+/* 월 칸 = 둥근 타일. 낸 칸은 연초록, 미납은 날이 지날수록 연노랑 → 연주황 → 연빨강 (ldgDue) */
+.ldg .tl{display:flex;flex-direction:column;align-items:center;justify-content:center;height:52px;border-radius:14px;background:var(--field);overflow:hidden;transition:transform .12s}
+.ldg td.c-m:active .tl{transform:scale(.94)}
+.ldg .tl.paid{background:var(--done-bg)}
+.ldg .tl.d1{background:#FBF1CB;color:#8C6D14}
+.ldg .tl.d2{background:#FBE1CA;color:#9A4A1F}
+.ldg .tl.d3{background:#F8D8D4;color:#A23A30}
+.ldg .tl .due{font-size:11.5px;font-weight:600}
+.ldg .tl .pd{display:block}
+.ldg tr.r-ret .tl{opacity:.6}
 /* 아직 못 받은 해의 칸: 눌리지 않고, 연한 막대가 깜빡인다. 도착하면 내용이 서서히 나타난다 */
 .ldg td.c-wait{cursor:default}.ldg td.c-wait:active{background:transparent}
 .ldg td.c-wait i{display:inline-block;width:22px;height:6px;border-radius:3px;background:#E6E1D8;animation:ldgWait 1s ease-in-out infinite alternate}
@@ -303,15 +315,32 @@ body[data-view=students] .toast{bottom:150px}
 .ldg .ck{display:inline-block;color:var(--done);font-weight:700;margin-right:3px}
 .ldg .ck.pop{animation:ckPop .45s cubic-bezier(.3,1.7,.5,1) both}
 .ldg .dt{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
-.ldg .memo{display:block;font-size:10.5px;color:var(--review);margin-top:3px;overflow:hidden;text-overflow:ellipsis}
+.ldg .memo{display:block;max-width:100%;padding:0 4px;font-size:10.5px;color:var(--review);margin-top:3px;overflow:hidden;text-overflow:ellipsis}
 /* 6개월 펼쳐보기: 이름 + 6달. 칸이 좁아서 ✓와 날짜를 두 줄로 */
 .ldg.wide .c-nm{width:28%;padding-left:10px}
 .ldg.wide .nmw{gap:6px}
 .ldg.wide .nm{font-size:14px}
+.ldg.wide td.c-m{padding:6px 2px}
+.ldg.wide .tl{border-radius:10px}
+.ldg.wide .tl .due{font-size:10px}
 .ldg.wide .ck{display:block;margin:0 0 2px;line-height:1}
 .ldg.wide .dt{font-size:11px}
 .ldg.wide .memo{font-size:9.5px}
 .ldg-cap{font-size:12px;color:var(--muted);text-align:center;padding:14px 20px 0;line-height:1.7}
+.ldg-lg{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 14px;padding:14px 16px 0;font-size:11.5px;color:var(--sub)}
+.ldg-lg i{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+/* 이번 달 요약: 큰 숫자 + 채워지는 막대 */
+.sumc{margin:12px 16px 0;padding:16px 18px;background:var(--card);border-radius:20px;box-shadow:var(--lift)}
+.sumc-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.sumc-l{font-size:12px;font-weight:600;color:var(--sub)}
+.sumc-n{margin-top:2px;font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.15;font-variant-numeric:tabular-nums}
+.sumc-n span{font-size:15px;font-weight:500;color:var(--muted);margin-left:6px;letter-spacing:0}
+.sumc-r{text-align:right}
+.sumc-p{display:inline-block;font-size:12px;font-weight:600;color:var(--review);background:var(--review-bg);padding:4px 10px;border-radius:11px}
+.sumc-p.ok{color:var(--done);background:var(--done-bg)}
+.sumc-w{margin-top:5px;font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.3;font-variant-numeric:tabular-nums}
+.sumc-bar{margin-top:13px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.sumc-bar i{display:block;height:100%;border-radius:4px;background:var(--done-dot);transition:width .6s cubic-bezier(.2,.8,.2,1)}
 @keyframes ldgNext{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
 @keyframes ldgPrev{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
 @keyframes ldgZoom{from{opacity:0;transform:scale(.965)}to{opacity:1;transform:none}}
@@ -335,6 +364,7 @@ body[data-view=students] .toast{bottom:150px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}
 .chips button{border:none;background:var(--field);color:var(--ink2);font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:15px;cursor:pointer;transition:transform .12s,background .15s}
 .chips button:active{transform:scale(.94);background:#ECE7DE}
+.chips button.on{background:var(--ink);color:#fff}
 .pick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 4px}
 .pick-grid .btn{min-height:48px;border-radius:14px}
 .pick-clear{margin-top:8px;width:100%;background:transparent!important;color:var(--sub)!important}
@@ -343,7 +373,7 @@ body[data-view=students] .toast{bottom:150px}
 <body>
 <div class="banner" onclick="goHome()">
   <div class="banner-row">
-    <div><div class="logo">SORIMAEUL STUDIO</div><div class="title">카톡 메시지 관리</div></div>
+    <div><div class="logo">SORI STUDIO</div><div class="title">카톡 메시지 관리</div></div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="help-btn" onclick="event.stopPropagation();showTutorial()">?</div>
       <div class="date" id="dt"></div>
@@ -1013,6 +1043,16 @@ function ldgYears(){var a=[];ldgCols().forEach(function(c){if(a.indexOf(c.y)<0)a
 function ldgStu(y,name){var d=LDG.Y[y];if(!d)return null;for(var i=0;i<d.students.length;i++)if(d.students[i].name===name)return d.students[i];return null}
 function ldgCell(y,m,name){var s=ldgStu(y,name);return s?s.months[m]:null}
 function ldgKey(name,y,m){return name+'|'+y+'|'+m}
+// 미납 색 단계. 그 달 수강료는 보통 전달 말~그 달 초에 받는다 (종이 장부 기준)
+// 그 달 5일까지는 0(색 없음) → 6일부터 1(연노랑) → 16일부터 2(연주황) → 달이 넘어가면 3(연빨강)
+// 앱으로 기록을 시작한 2026년 10월보다 앞선 달은 칠하지 않는다
+var LDG_DUE_FROM=2026*12+10;
+function ldgDue(y,m){
+  var n=new Date(),d=n.getFullYear()*12+n.getMonth()+1-(y*12+m);
+  if(y*12+m<LDG_DUE_FROM||d<0)return 0;
+  if(d>0)return 3;
+  return n.getDate()>15?2:n.getDate()>5?1:0;
+}
 
 function switchTab(t){
   if(t==='ledger'){if(VIEW!=='ledger')ldgOpen()}
@@ -1020,7 +1060,7 @@ function switchTab(t){
   else if(VIEW!=='input')rInput();
 }
 
-function ldgOpen(){setView('ledger');ldgLoad()}
+function ldgOpen(){LDG.pct=0;setView('ledger');ldgLoad()}
 
 // 폰에 저장된 표를 먼저 보여주고, 뒤에서 최신 내용을 받아 바꾼다 (1년치 = 요청 1번)
 // 표는 기다리지 않고 바로 그린다. 아직 못 받은 해의 칸만 "받는 중"으로 두고, 도착하면 채운다.
@@ -1091,7 +1131,7 @@ function ldgToggleWide(){ldgSetWide(!LDG.wide)}
 function ldgHeadHtml(){
   var c=ldgCols(),a=c[0],now=new Date(),isNow=LDG.y===now.getFullYear()&&LDG.m===now.getMonth()+1;
   var label=LDG.wide?(a.y!==LDG.y?a.y+'년 '+a.m+'월 – '+LDG.y+'년 '+LDG.m+'월':LDG.y+'년 '+a.m+' – '+LDG.m+'월'):LDG.y+'년 '+LDG.m+'월';
-  return '<div class="pg-head"><div><div class="pg-kicker">SORIMAEUL STUDIO</div><div class="pg-title">수납 현황</div></div>'+
+  return '<div class="pg-head"><div><div class="pg-kicker">SORI STUDIO</div><div class="pg-title">수납 현황</div></div>'+
     '<div class="seg'+(LDG.wide?' w':'')+'"><i></i><button type="button" onclick="ldgSetWide(false)">2개월</button><button type="button" onclick="ldgSetWide(true)">6개월</button></div></div>'+
     '<div class="mnav"><button type="button" class="mnav-b" aria-label="이전 달" onclick="ldgShift(-1)">'+ICON_PREV+'</button>'+
     '<div class="mnav-t"><span class="'+(LDG.anim?'in-'+LDG.anim:'')+'">'+label+'</span></div>'+
@@ -1106,8 +1146,11 @@ function ldgSummaryHtml(rows){
     if(s.retired)return;total++;
     var c=ldgCell(LDG.y,LDG.m,s.name);if(c&&c.paid){paid++;sum+=Number(s.fee)||0}
   });
-  return '<div class="bar ldg-sum"><span class="bar-info">'+LDG.m+'월 수납 <b>'+paid+'</b>/'+total+'명 · <b>₩'+sum.toLocaleString()+'</b>'+
-    (total-paid>0?' · 미납 <b class="b-o">'+(total-paid)+'</b>명':'')+'</span></div>';
+  // 막대는 직전 값에서 새 값으로 채워진다 (ldgRender가 그린 뒤에 넓힌다)
+  var left=total-paid,pct=total?Math.round(paid/total*100):0,from=LDG.pct||0;LDG.pct=pct;
+  return '<div class="sumc"><div class="sumc-top"><div><div class="sumc-l">'+LDG.m+'월 수납</div><div class="sumc-n">'+paid+'<span>/ '+total+'명</span></div></div>'+
+    '<div class="sumc-r">'+(total?'<span class="sumc-p'+(left?'':' ok')+'">'+(left?'미납 '+left+'명':'모두 납부')+'</span>':'')+'<div class="sumc-w">₩'+sum.toLocaleString()+'</div></div></div>'+
+    '<div class="sumc-bar"><i id="sumBar" data-to="'+pct+'" style="width:'+from+'%"></i></div></div>';
 }
 
 // 보이는 해들의 원생을 합친 줄 목록 (최근 해 순서 우선)
@@ -1128,10 +1171,11 @@ function ldgCellHtml(i,c,isCur){
   if(!LDG.Y[c.y])return '<td class="c-m c-wait'+(isCur?' c-cur':'')+'"><i></i></td>';
   var s=LDG.rows[i],v=ldgCell(c.y,c.m,s.name);
   var cls='c-m'+(isCur?' c-cur':'')+(LDG.fresh===c.y?' c-fresh':'');
-  var inner='';
-  if(v&&v.paid)inner='<span class="ck'+(LDG.pop===ldgKey(s.name,c.y,c.m)?' pop':'')+'">✓</span><span class="dt">'+ldgShortDate(v.date)+'</span>';
+  var paid=!!(v&&v.paid),due=paid||s.retired?0:ldgDue(c.y,c.m),inner='';
+  if(paid)inner='<span class="pd"><span class="ck'+(LDG.pop===ldgKey(s.name,c.y,c.m)?' pop':'')+'">✓</span><span class="dt">'+ldgShortDate(v.date)+'</span></span>';
+  else if(due)inner='<span class="due">미납</span>';
   if(v&&v.memo)inner+='<span class="memo">'+esc(String(v.memo))+'</span>';
-  return '<td class="'+cls+'" onclick="ldgEdit('+i+','+c.y+','+c.m+')">'+inner+'</td>';
+  return '<td class="'+cls+'" onclick="ldgEdit('+i+','+c.y+','+c.m+')"><div class="tl'+(paid?' paid':due?' d'+due:'')+'">'+inner+'</div></td>';
 }
 
 function ldgRender(){
@@ -1139,24 +1183,26 @@ function ldgRender(){
   var rows=LDG.rows=ldgRows();
   if(LDG.err)h+='<div class="bar"><span class="bar-info">불러오기 실패: '+esc(LDG.err)+'</span><button class="btn btn-d" onclick="ldgLoad(true)">다시 시도</button></div>';
   else h+=ldgSummaryHtml(rows);
-  h+='<div class="ldg-wrap'+(LDG.anim?' in-'+LDG.anim:'')+'" id="ldgWrap"><table class="ldg'+(LDG.wide?' wide':'')+'"><thead><tr><th class="c-nm">이름</th>'+
-    (LDG.wide?'':'<th class="c-fee">수강료</th><th class="c-lv">레벨</th>');
+  h+='<div class="ldg-wrap'+(LDG.anim?' in-'+LDG.anim:'')+'" id="ldgWrap"><table class="ldg'+(LDG.wide?' wide':'')+'"><thead><tr><th class="c-nm">이름</th>';
   cols.forEach(function(c){h+='<th class="c-mh'+(c.y===cy&&c.m===cm?' c-cur':'')+'"><button type="button" class="mh" aria-label="'+(LDG.wide?'2개월로 접기':'6개월로 펼치기')+'" onclick="ldgToggleWide()">'+c.m+'월'+(LDG.wide?'':ICON_WIDE)+'</button></th>'});
   h+='</tr></thead><tbody>';
   rows.forEach(function(s,i){
+    // 6개월 보기는 자리가 없어 이름만 보인다
     var ed=' onclick="stuEdit(LDG.rows['+i+'].name)"',pm=s.retired?'퇴원':esc(String(s.method||''));
-    h+='<tr'+(s.retired?' class="r-ret"':'')+'><td class="c-nm"'+ed+'><div class="nmw"><span class="no">'+(i+1)+'</span><div class="nmc"><div class="nm">'+esc(String(s.name))+'</div>'+
-      (pm?'<div class="pm">'+pm+'</div>':'')+'</div></div></td>';
-    if(!LDG.wide)h+='<td class="c-fee"'+ed+'>'+esc(ldgFee(s.feeDisplay))+'</td>'+
-      '<td class="c-lv"'+ed+'>'+esc([s.level,ldgFreq(s.freq)].filter(Boolean).join(' '))+'</td>';
+    var sb=esc([ldgFee(s.feeDisplay),[s.level,ldgFreq(s.freq)].filter(Boolean).join(' ')].filter(Boolean).join(' · '));
+    h+='<tr'+(s.retired?' class="r-ret"':'')+'><td class="c-nm"'+ed+'><div class="nmw"><span class="no">'+(i+1)+'</span><div class="nmc"><div class="nml"><span class="nm">'+esc(String(s.name))+'</span>'+
+      (pm&&!LDG.wide?'<span class="pm">'+pm+'</span>':'')+'</div>'+(sb&&!LDG.wide?'<div class="sb">'+sb+'</div>':'')+'</div></div></td>';
     cols.forEach(function(c){h+=ldgCellHtml(i,c,c.y===cy&&c.m===cm)});
     h+='</tr>';
   });
-  if(!rows.length)h+='<tr><td class="c-empty" colspan="'+(cols.length+(LDG.wide?1:3))+'">원생이 없어요</td></tr>';
+  if(!rows.length)h+='<tr><td class="c-empty" colspan="'+(cols.length+1)+'">원생이 없어요</td></tr>';
   h+='</tbody></table></div>';
+  h+='<div class="ldg-lg"><span>미납</span><span><i style="background:#FBF1CB"></i>6일부터</span><span><i style="background:#FBE1CA"></i>16일부터</span><span><i style="background:#F8D8D4"></i>달 넘김</span></div>';
   h+='<div class="ldg-cap">칸을 누르면 납부일 · 이름을 누르면 원생 정보<br>표를 옆으로 밀거나 ‹ ›를 누르면 '+(LDG.wide?'3개월씩':'한 달씩')+' 넘어가요</div>';
   var st=window.scrollY;Q('app',h);window.scrollTo(0,st);
   LDG.anim='';LDG.pop='';LDG.fresh=0;
+  var sb=document.getElementById('sumBar');
+  if(sb)setTimeout(function(){sb.style.width=sb.getAttribute('data-to')+'%'},30);
 }
 
 // ── 칸: 납부일·메모 ──
@@ -1247,7 +1293,7 @@ function rStudents(){
     return '<div class="card" onclick="'+call+'"><div class="card-body"><div class="card-name">'+esc(String(s.name))+(s.gg?' <span class="inp-gg">'+esc(String(s.gg))+'</span>':'')+'</div>'+
       '<div class="card-kw"><span class="card-kw-text">'+esc(stuSub(s)||'수강료·레벨을 적어주세요')+'</span></div></div><span class="chev">'+ICON_NEXT+'</span></div>';
   }
-  var h='<div class="pg-head"><div><div class="pg-kicker">SORIMAEUL STUDIO</div><div class="pg-title">원생</div></div>'+
+  var h='<div class="pg-head"><div><div class="pg-kicker">SORI STUDIO</div><div class="pg-title">원생</div></div>'+
     '<button type="button" class="icon-btn" aria-label="원생 추가" onclick="stuEdit(\'\')">'+ICON_PLUS+'</button></div>';
   h+='<div class="sec-header"><span class="sec-label">다니는 원생</span><span class="sec-count">'+S.length+'명</span></div>';
   h+=S.length?'<div class="group">'+S.map(function(s,i){return row(s,'stuEdit(S['+i+'].name)')}).join('')+'</div>'
@@ -1275,7 +1321,7 @@ function stuEdit(name){
   var h='<div class="modal-title">'+(p?esc(String(p.name)):'새 원생')+'</div>'+
     f('이름','stName',p?p.name:'','이름')+
     '<div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','140,000')+f('결제수단','stMethod',p?p.method:'','카드')+'</div>'+
-    '<div class="chips">'+LDG_METHODS.map(function(x){return '<button type="button" onclick="document.getElementById(\'stMethod\').value=\''+x+'\'">'+x+'</button>'}).join('')+'</div>'+
+    '<div class="chips" id="stMethods">'+LDG_METHODS.map(function(x){return '<button type="button" onclick="stuMethodToggle(\''+x+'\')">'+x+'</button>'}).join('')+'</div>'+
     '<div class="fld-row">'+f('레벨','stLevel',p?p.level:'','기초')+f('주 횟수','stFreq',p?p.freq:'','2')+'</div>';
   if(!p||!p.partial)h+='<div class="fld-row">'+f('학년','stGrade',p?p.grade:'','초3')+f('성별','stGender',p?p.gender:'','여')+'</div>'+
     '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?p.phone:'','010-0000-0000','tel')+'</div>';
@@ -1283,6 +1329,21 @@ function stuEdit(name){
   if(p)h+=p.retired?'<button type="button" class="sheet-link" onclick="stuRetire(false)">다시 다니는 원생으로 복원</button>'
                    :'<button type="button" class="sheet-link warn" onclick="stuAskRetire()">퇴원 처리</button>';
   showModal(h);
+  var me=document.getElementById('stMethod');if(me)me.oninput=stuMethodMark;
+  stuMethodMark();
+}
+// 결제수단은 여러 개 고를 수 있다 (종이 장부의 "앱/카드"처럼). 누를 때마다 넣었다 뺐다 하고, 시트에는 "/"로 이어 적는다
+function stuMethodList(v){return String(v||'').split(/[\/,\s]+/).filter(Boolean)}
+function stuMethodToggle(x){
+  var el=document.getElementById('stMethod');if(!el)return;
+  var a=stuMethodList(el.value),k=a.indexOf(x);
+  if(k<0)a.push(x);else a.splice(k,1);
+  if(a.join('/').length>10){T('결제수단은 10글자까지 적을 수 있어요');return} // 시트 쪽 한도
+  el.value=a.join('/');stuMethodMark();
+}
+function stuMethodMark(){
+  var el=document.getElementById('stMethod'),a=stuMethodList(el?el.value:'');
+  [].forEach.call(document.querySelectorAll('#stMethods button'),function(b){b.classList.toggle('on',a.indexOf(b.textContent)>=0)});
 }
 
 // 수정은 창을 바로 닫고 뒤에서 저장한다. 새 원생만 서버가 줄 번호를 줄 때까지 기다린다
