@@ -393,10 +393,13 @@ body[data-view=students] .toast{bottom:150px}
 .chips button.on{background:var(--ink);color:#fff}
 /* 고르는 칸: 누르면 그 줄 밑에 선택지가 펼쳐진다 */
 .fld input.pick{cursor:pointer;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238F897F' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
-.chips.pk{max-height:0;opacity:0;margin:0;overflow:hidden;transition:max-height .3s cubic-bezier(.2,.8,.2,1),opacity .22s,margin .3s cubic-bezier(.2,.8,.2,1)}
-.chips.pk.open{max-height:100px;opacity:1;margin:4px 0 10px}
+/* 선택지는 그 줄 바로 밑에 떠서 뜬다 (.pkw 기준). 창 높이를 바꾸지 않아서 버벅이지 않는다 */
+.pkw{position:relative}
+.chips.pk{display:none;position:absolute;left:0;right:0;top:100%;z-index:5;margin:-2px 0 0;padding:10px;background:var(--card);border-radius:18px;box-shadow:0 0 0 .5px rgba(38,35,31,.09),0 10px 30px rgba(38,35,31,.17)}
+.chips.pk.open{display:flex;animation:pkIn .2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes pkIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+.pkw+.modal-btns{margin-top:14px}
 .chips .pen{display:inline-flex;align-items:center;gap:4px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--sub)}
-.chips.pk+.modal-btns{margin-top:14px}
 .pick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 4px}
 .pick-grid .btn{min-height:48px;border-radius:14px}
 .pick-clear{margin-top:8px;width:100%;background:transparent!important;color:var(--sub)!important}
@@ -1435,9 +1438,9 @@ function stuEdit(name){
   }
   var h='<div class="modal-title">'+(p?esc(String(p.name)):'새 원생')+'</div>'+
     f('이름','stName',p?p.name:'','이름')+
-    '<div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','고르기','pick')+f('결제수단','stMethod',p?p.method:'','고르기','pick')+'</div>'+stuPickHtml(['stFee','stMethod'])+
-    '<div class="fld-row">'+f('레벨','stLevel',p?p.level:'','고르기','pick')+f('주 횟수','stFreq',p?p.freq:'','고르기','pick')+'</div>'+stuPickHtml(['stLevel','stFreq']);
-  if(!p||!p.partial)h+='<div class="fld-row">'+f('학년','stGrade',p?p.grade:'','초3')+f('성별','stGender',p?p.gender:'','고르기','pick')+'</div>'+stuPickHtml(['stGender'])+
+    '<div class="pkw"><div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','고르기','pick')+f('결제수단','stMethod',p?p.method:'','고르기','pick')+'</div>'+stuPickHtml(['stFee','stMethod'])+'</div>'+
+    '<div class="pkw"><div class="fld-row">'+f('레벨','stLevel',p?p.level:'','고르기','pick')+f('주 횟수','stFreq',p?p.freq:'','고르기','pick')+'</div>'+stuPickHtml(['stLevel','stFreq'])+'</div>';
+  if(!p||!p.partial)h+='<div class="pkw"><div class="fld-row">'+f('학년','stGrade',p?p.grade:'','초3')+f('성별','stGender',p?p.gender:'','고르기','pick')+'</div>'+stuPickHtml(['stGender'])+'</div>'+
     '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?p.phone:'','010-0000-0000','tel')+'</div>';
   h+='<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" id="stSave" onclick="stuSave()">저장</button></div>';
   if(p)h+=p.retired?'<button type="button" class="sheet-link" onclick="stuRetire(false)">다시 다니는 원생으로 복원</button>'
@@ -1449,6 +1452,10 @@ function stuEdit(name){
 function stuPickClose(){[].forEach.call(document.querySelectorAll('.chips.pk.open'),function(p){p.classList.remove('open')})}
 document.getElementById('modalCard').addEventListener('focusin',function(e){
   var t=e.target;if(t&&t.tagName==='INPUT'&&!(t.readOnly&&t.classList.contains('pick')))stuPickClose();
+});
+// 선택지가 다른 칸 위에 떠 있으므로, 선택지와 고르는 칸이 아닌 곳을 누르면 접는다
+document.getElementById('modalCard').addEventListener('click',function(e){
+  var t=e.target;if(t&&t.closest&&!t.closest('.chips.pk')&&!t.closest('.fld'))stuPickClose();
 });
 // ── 고르는 칸 (수강료·결제수단·레벨·주 횟수·성별) ──
 // 칸을 누르면 그 줄 밑에 선택지가 펼쳐지고, 고르면 접힌다. 연필을 누르면 목록에 없는 값을 직접 적을 수 있다
