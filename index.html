@@ -393,8 +393,10 @@ body[data-view=students] .toast{bottom:150px}
 .chips button.on{background:var(--ink);color:#fff}
 /* 고르는 칸: 누르면 그 줄 밑에 선택지가 펼쳐진다 */
 .fld input.pick{cursor:pointer;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238F897F' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
-.chips.pk{max-height:0;opacity:0;margin:0;overflow:hidden;transition:max-height .3s cubic-bezier(.2,.8,.2,1),opacity .22s,margin .3s cubic-bezier(.2,.8,.2,1)}
-.chips.pk.open{max-height:100px;opacity:1;margin:4px 0 10px}
+/* 높이를 서서히 바꾸면 폰에서 버벅인다 → 자리는 한 번에 잡고, 선택지만 살짝 떠오르게 (접을 때는 바로) */
+.chips.pk{display:none}
+.chips.pk.open{display:flex;margin:4px 0 10px;animation:pkIn .2s ease both}
+@keyframes pkIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
 .chips .pen{display:inline-flex;align-items:center;gap:4px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--sub)}
 .chips.pk+.modal-btns{margin-top:14px}
 .pick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 4px}
