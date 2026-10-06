@@ -279,6 +279,11 @@ body[data-view=students] .toast{bottom:150px}
 .ldg td.c-m{text-align:center;padding:6px 2px;border-left:.5px solid var(--line);line-height:1.2;white-space:nowrap}
 .ldg td.c-cur{background:#FAF8F4}
 .ldg td.c-saving{opacity:.45}
+/* 아직 못 받은 해의 칸: 눌리지 않고, 연한 막대가 깜빡인다. 도착하면 내용이 서서히 나타난다 */
+.ldg td.c-wait{cursor:default}.ldg td.c-wait:active{background:transparent}
+.ldg td.c-wait i{display:inline-block;width:22px;height:6px;border-radius:3px;background:#E6E1D8;animation:ldgWait 1s ease-in-out infinite alternate}
+@keyframes ldgWait{from{opacity:.3}to{opacity:1}}
+.ldg td.c-fresh>*{animation:vOpa .4s ease both}
 .ldg td.c-empty{text-align:center;color:var(--muted);cursor:default}
 .ldg tr.r-ret .nm,.ldg tr.r-ret td{color:var(--muted)}
 .ldg .ck{display:inline-block;color:var(--done);font-weight:700;margin-right:3px}
@@ -973,29 +978,36 @@ function switchTab(t){
 function ldgOpen(){setView('ledger');ldgLoad()}
 
 // 폰에 저장된 표를 먼저 보여주고, 뒤에서 최신 내용을 받아 바꾼다 (1년치 = 요청 1번)
+// 표는 기다리지 않고 바로 그린다. 아직 못 받은 해의 칸만 "받는 중"으로 두고, 도착하면 채운다.
 function ldgLoad(force){
   var ys=ldgYears();
-  ys.forEach(function(y){if(!LDG.Y[y]){var c=ldgReadCache(y);if(c&&c.students)LDG.Y[y]=c}});
+  function cache(y){if(!LDG.Y[y]){var c=ldgReadCache(y);if(c&&c.students)LDG.Y[y]=c}}
+  ys.forEach(cache);
   LDG.err='';
   ldgRender();
-  ys.forEach(function(y){
-    if(LDG.busy[y])return;
-    if(!force&&LDG.at[y]&&Date.now()-LDG.at[y]<60000)return;
-    LDG.busy[y]=true;
-    apiGet('loadPaymentYear',{year:y}).then(function(d){
-      LDG.busy[y]=false;LDG.at[y]=Date.now();
-      var first=!LDG.Y[y];
-      ldgKeepSaving(y,d);
-      LDG.Y[y]=d;ldgWriteCache(y);
-      if(VIEW!=='ledger')return;
-      if(first)viewAnim('v-fade'); // 로딩 표시 → 표가 툭 바뀌지 않게
-      ldgRender();
-    }).catch(function(e){
-      LDG.busy[y]=false;
-      if(VIEW!=='ledger')return;
-      if(!LDG.Y[y]){LDG.err=e.message;ldgRender()}
-      else T('최신 내용을 못 불러왔어요');
-    });
+  ys.forEach(function(y){if(force||!LDG.at[y]||Date.now()-LDG.at[y]>=60000)ldgFetchYear(y)});
+  // 앞뒤 해를 미리 받아 둔다 → 달을 넘기다 해가 바뀌어도 기다리지 않게
+  clearTimeout(LDG.preTm);
+  LDG.preTm=setTimeout(function(){
+    [ys[0]-1,ys[ys.length-1]+1].forEach(function(y){cache(y);if(!LDG.Y[y]&&!LDG.at[y])ldgFetchYear(y)});
+  },1200);
+}
+function ldgFetchYear(y){
+  if(LDG.busy[y])return;
+  LDG.busy[y]=true;
+  apiGet('loadPaymentYear',{year:y}).then(function(d){
+    LDG.busy[y]=false;LDG.at[y]=Date.now();
+    var first=!LDG.Y[y];
+    ldgKeepSaving(y,d);
+    LDG.Y[y]=d;ldgWriteCache(y);
+    if(VIEW!=='ledger'||ldgYears().indexOf(y)<0)return;
+    LDG.err='';if(first)LDG.fresh=y;
+    ldgRender();
+  }).catch(function(e){
+    LDG.busy[y]=false;
+    if(VIEW!=='ledger'||ldgYears().indexOf(y)<0)return;
+    if(!LDG.Y[y]){LDG.err=e.message;ldgRender()}
+    else T('최신 내용을 못 불러왔어요');
   });
 }
 // 저장 중인 칸은 방금 받은 내용 대신 화면 값을 유지
@@ -1039,6 +1051,7 @@ function ldgHeadHtml(){
 }
 
 function ldgSummaryHtml(rows){
+  if(!LDG.Y[LDG.y])return '<div class="bar ldg-sum"><span class="bar-info">'+LDG.m+'월 수납 불러오는 중…</span></div>';
   var paid=0,sum=0,total=0;
   rows.forEach(function(s){
     if(s.retired)return;total++;
@@ -1055,12 +1068,17 @@ function ldgRows(){
     var d=LDG.Y[y];if(!d)return;
     d.students.forEach(function(s){if(!seen[s.name]){seen[s.name]=1;rows.push(s)}});
   });
+  // 아직 받은 해가 하나도 없으면 원생 목록으로 줄부터 그려 둔다
+  if(!rows.length&&!ldgYears().some(function(y){return LDG.Y[y]})){
+    S.forEach(function(s){rows.push({name:s.name,fee:stuFeeNum(s.fee),feeDisplay:s.fee,level:s.level,freq:s.freq,method:s.method||'',retired:false,months:{}})});
+  }
   return rows;
 }
 
 function ldgCellHtml(i,c,isCur){
+  if(!LDG.Y[c.y])return '<td class="c-m c-wait'+(isCur?' c-cur':'')+'"><i></i></td>';
   var s=LDG.rows[i],v=ldgCell(c.y,c.m,s.name);
-  var cls='c-m'+(isCur?' c-cur':'')+(LDG.saving[ldgKey(s.name,c.y,c.m)]?' c-saving':'');
+  var cls='c-m'+(isCur?' c-cur':'')+(LDG.saving[ldgKey(s.name,c.y,c.m)]?' c-saving':'')+(LDG.fresh===c.y?' c-fresh':'');
   var inner='';
   if(v&&v.paid)inner='<span class="ck'+(LDG.pop===ldgKey(s.name,c.y,c.m)?' pop':'')+'">✓</span><span class="dt">'+ldgShortDate(v.date)+'</span>';
   if(v&&v.memo)inner+='<span class="memo">'+esc(String(v.memo))+'</span>';
@@ -1069,13 +1087,9 @@ function ldgCellHtml(i,c,isCur){
 
 function ldgRender(){
   var cols=ldgCols(),now=new Date(),cy=now.getFullYear(),cm=now.getMonth()+1,h=ldgHeadHtml();
-  if(!ldgYears().every(function(y){return LDG.Y[y]})){
-    Q('app',h+(LDG.err?'<div class="bar"><span class="bar-info">불러오기 실패: '+esc(LDG.err)+'</span><button class="btn btn-d" onclick="ldgLoad(true)">다시 시도</button></div>'
-      :'<div class="loading"><div class="spin"></div>수납 현황 불러오는 중...</div>'));
-    return;
-  }
   var rows=LDG.rows=ldgRows();
-  h+=ldgSummaryHtml(rows);
+  if(LDG.err)h+='<div class="bar"><span class="bar-info">불러오기 실패: '+esc(LDG.err)+'</span><button class="btn btn-d" onclick="ldgLoad(true)">다시 시도</button></div>';
+  else h+=ldgSummaryHtml(rows);
   h+='<div class="ldg-wrap'+(LDG.anim?' in-'+LDG.anim:'')+'" id="ldgWrap"><table class="ldg'+(LDG.wide?' wide':'')+'"><thead><tr><th class="c-nm">이름</th>'+
     (LDG.wide?'':'<th class="c-fee">수강료</th><th class="c-lv">레벨</th>');
   cols.forEach(function(c){h+='<th class="c-mh'+(c.y===cy&&c.m===cm?' c-cur':'')+'" onclick="ldgToggleWide()">'+c.m+'월</th>'});
@@ -1093,7 +1107,7 @@ function ldgRender(){
   h+='</tbody></table></div>';
   h+='<div class="ldg-cap">칸을 누르면 납부일을 적어요 · 이름을 누르면 원생 정보</div>';
   var st=window.scrollY;Q('app',h);window.scrollTo(0,st);
-  LDG.anim='';LDG.pop='';
+  LDG.anim='';LDG.pop='';LDG.fresh=0;
 }
 
 // ── 칸: 납부일·메모 ──
