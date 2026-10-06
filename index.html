@@ -166,13 +166,20 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 ::-webkit-scrollbar{width:0}
 
 /* 팝업 */
-.modal-dim{position:fixed;inset:0;background:rgba(38,35,31,.32);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;pointer-events:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.modal-dim{position:fixed;inset:0;background:rgba(38,35,31,.36);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding-bottom:var(--kb,0px);opacity:0;transition:opacity .32s ease;pointer-events:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .modal-dim.on{opacity:1;pointer-events:auto}
-.modal-card{background:var(--card);border-radius:24px;padding:26px 20px 20px;width:calc(100% - 48px);max-width:340px;transform:scale(.96) translateY(8px);transition:transform .25s cubic-bezier(.2,.9,.3,1.1);text-align:center;box-shadow:0 20px 60px rgba(38,35,31,.18)}
-.modal-dim.on .modal-card{transform:scale(1) translateY(0)}
+/* 시트: 아래에서 올라오고, 아래로 끌어내리면 닫힌다. --kb는 키보드 높이(글자 입력 중 가려지지 않게) */
+.modal-card{position:relative;background:var(--card);border-radius:28px 28px 0 0;padding:34px 20px calc(22px + env(safe-area-inset-bottom));width:100%;max-width:500px;max-height:calc(100dvh - 44px - var(--kb,0px));overflow-y:auto;overscroll-behavior:contain;transform:translateY(105%);transition:transform .44s cubic-bezier(.32,.72,0,1);text-align:center;box-shadow:0 -12px 50px rgba(38,35,31,.18)}
+.modal-card::before{content:"";position:absolute;top:10px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:3px;background:#DDD7CD}
+.modal-card.drag{transition:none}
+.modal-dim.on .modal-card{transform:translateY(0)}
+.sheet-link{display:block;width:100%;margin-top:10px;padding:12px;border:none;background:none;color:var(--sub);font-size:14px;font-weight:600;cursor:pointer}
+.sheet-link.warn{color:#B4472E}
+.sheet-link:active{opacity:.5}
 .modal-icon{font-size:28px;margin-bottom:10px}
 .modal-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px}
 .modal-desc{font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:6px}
+.modal-desc+.modal-btns{margin-top:18px}
 .modal-names{font-size:13px;color:var(--ink2);background:var(--field);border-radius:12px;padding:10px 12px;margin:12px 0 18px;line-height:1.5;max-height:84px;overflow-y:auto}
 .modal-btns{display:flex;gap:8px}.modal-btns .btn{flex:1;min-height:48px;border-radius:24px;font-size:14px}
 
@@ -211,65 +218,104 @@ body[data-view=input] .toast,body[data-view=ledger] .toast{bottom:150px}
 body[data-view=ledger] .banner{display:none}
 body[data-view=ledger]{padding-bottom:90px}
 
+/* ═══ 화면 전환: 탭은 서서히 떠오르고, 안쪽 화면은 옆에서 밀려 들어온다 ═══ */
+/* 화면에 고정된 버튼(.fab-wrap)과 그걸 품은 .det-body는 위치가 튀지 않게 투명도만 바꾼다 */
+@keyframes vFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vFwd{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes vBack{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
+@keyframes vOpa{from{opacity:0}to{opacity:1}}
+#app.v-fade>*:not(.fab-wrap):not(.det-body){animation:vFade .42s cubic-bezier(.2,.8,.2,1) both}
+#app.v-fwd>*:not(.fab-wrap):not(.det-body){animation:vFwd .4s cubic-bezier(.2,.8,.2,1) both}
+#app.v-back>*:not(.fab-wrap):not(.det-body){animation:vBack .4s cubic-bezier(.2,.8,.2,1) both}
+#app.v-fade>.fab-wrap,#app.v-fwd>.fab-wrap,#app.v-back>.fab-wrap,#app.v-fade>.det-body,#app.v-fwd>.det-body,#app.v-back>.det-body{animation:vOpa .4s ease both}
+#app.v-fade>*:nth-child(2){animation-delay:.03s}#app.v-fade>*:nth-child(3){animation-delay:.06s}#app.v-fade>*:nth-child(4){animation-delay:.09s}
+#app.v-fade>*:nth-child(5){animation-delay:.12s}#app.v-fade>*:nth-child(n+6){animation-delay:.15s}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+
+/* 탭 화면 공통 제목줄 (수납 현황 · 원생) */
+.pg-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:22px 16px 0 20px}
+.pg-kicker{font-size:12px;letter-spacing:.06em;color:var(--sub);font-weight:500}
+.pg-title{font-size:26px;font-weight:700;letter-spacing:-.025em;margin-top:2px}
+body[data-view=students] .banner{display:none}
+body[data-view=students]{padding-bottom:100px}
+body[data-view=students] .toast{bottom:150px}
+.group.ret .card{opacity:.6}
+.tab{transition:color .2s}.tab svg{transition:transform .28s cubic-bezier(.3,1.5,.5,1)}
+.tab.on svg{transform:translateY(-1px) scale(1.08)}
+
 /* ═══ 수납 현황표 ═══ */
-.ldg-head{display:flex;align-items:flex-end;justify-content:space-between;padding:22px 16px 0 20px}
-.ldg-kicker{font-size:12px;letter-spacing:.06em;color:var(--sub);font-weight:500}
-.ldg-title{font-size:26px;font-weight:700;letter-spacing:-.025em;margin-top:2px}
-.ldg-title.sm{font-size:21px}
-.ldg-tools{display:flex;gap:6px;padding:12px 16px 0 20px}
-.chip,.chips button{border:none;background:var(--card);box-shadow:var(--ring);color:var(--ink2);font-size:12px;font-weight:600;padding:8px 12px;border-radius:15px;cursor:pointer}
-.chip:active,.chips button:active{opacity:.6}
-.ldg-hint{font-size:12px;color:var(--muted);padding:14px 22px 8px}
-.ldg-wrap{margin:0 16px;background:var(--card);border-radius:18px;box-shadow:var(--lift2);overflow:hidden}
+/* 달 넘기기: ‹ 2026년 10월 › 한 덩어리 */
+.mnav{display:flex;align-items:center;margin:16px 16px 0;height:52px;padding:0 6px;background:var(--card);border-radius:26px;box-shadow:var(--lift)}
+.mnav-b{width:42px;height:42px;border-radius:50%;border:none;background:transparent;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s,transform .15s}
+.mnav-b:active{background:var(--field);transform:scale(.9)}
+.mnav-t{flex:1;text-align:center;font-size:17px;font-weight:700;letter-spacing:-.02em;overflow:hidden;white-space:nowrap}
+.mnav-t span{display:inline-block}
+.mnav-now{text-align:center;margin-top:8px;animation:vOpa .3s ease both}
+.mnav-now button{border:none;background:none;color:var(--sub);font-size:13px;font-weight:600;padding:6px 12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#CFC8BC}
+/* 2개월 | 6개월 선택 */
+.seg{position:relative;display:flex;width:136px;height:36px;padding:3px;background:#E9E5DD;border-radius:18px;flex-shrink:0}
+.seg i{position:absolute;top:3px;left:3px;width:65px;height:30px;border-radius:15px;background:var(--card);box-shadow:0 1px 4px rgba(38,35,31,.14);transition:transform .26s cubic-bezier(.3,.8,.2,1)}
+.seg.w i{transform:translateX(65px)}
+.seg button{position:relative;flex:1;border:none;background:none;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;transition:color .2s}
+.seg:not(.w) button:nth-of-type(1),.seg.w button:nth-of-type(2){color:var(--ink)}
+/* 표 */
+.ldg-sum{margin-top:12px}
+.ldg-wrap{margin:12px 16px 0;background:var(--card);border-radius:20px;box-shadow:var(--lift2);overflow:hidden}
 .ldg{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px;user-select:none;-webkit-user-select:none}
-.ldg th{background:var(--field);color:var(--sub);font-size:12px;font-weight:600;padding:10px 6px;text-align:left;border-bottom:.5px solid var(--line)}
-.ldg td{padding:6px;height:54px;border-bottom:.5px solid var(--line);color:var(--ink2);vertical-align:middle;overflow:hidden;cursor:pointer}
+.ldg th{color:var(--muted);font-size:11.5px;font-weight:600;padding:12px 6px 10px;text-align:left;border-bottom:.5px solid var(--line)}
+.ldg td{padding:6px;height:60px;border-bottom:.5px solid var(--line);color:var(--ink2);vertical-align:middle;overflow:hidden;cursor:pointer;transition:background .18s}
 .ldg tr:last-child td{border-bottom:none}
 .ldg td:active{background:var(--field)}
-.ldg .c-nm{width:27%;padding-left:10px}
-.ldg td.c-nm{font-weight:600;color:var(--ink);font-size:14px;white-space:nowrap}
-.ldg .no{display:inline-block;min-width:17px;color:var(--muted);font-size:11px;font-weight:500}
-.ldg .pm{display:block;margin-left:17px;font-size:10.5px;font-weight:500;color:var(--muted);line-height:1.2}
-.ldg .pm:empty{display:none}
-.ldg .c-fee{width:19%;text-align:right;font-variant-numeric:tabular-nums;word-break:keep-all;line-height:1.2}
-.ldg .c-lv{width:18%;color:var(--sub);font-size:12px;line-height:1.3;word-break:keep-all}
+.ldg .c-nm{width:29%;padding-left:14px}
+.ldg .nmw{display:flex;align-items:center;gap:9px;min-width:0}
+.ldg .no{width:15px;flex-shrink:0;text-align:right;color:#B9B2A7;font-size:11px;font-weight:500;font-variant-numeric:tabular-nums}
+.ldg .nmc{min-width:0}
+.ldg .nm{font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.ldg .pm{font-size:11px;font-weight:500;color:var(--muted);margin-top:2px;white-space:nowrap}
+.ldg .c-fee{width:18%;text-align:right;font-variant-numeric:tabular-nums;word-break:keep-all;line-height:1.25}
+.ldg .c-lv{width:17%;color:var(--sub);font-size:12px;line-height:1.35;word-break:keep-all;padding-left:10px}
 .ldg th.c-mh{text-align:center;cursor:pointer}
-.ldg th.c-cur{color:var(--ink);background:#ECE7DE}
-.ldg td.c-m{text-align:center;padding:6px 2px;border-left:.5px solid var(--line);line-height:1.15;white-space:nowrap}
-.ldg td.c-cur{background:#FBF9F5}
+.ldg th.c-cur{color:var(--ink)}
+.ldg td.c-m{text-align:center;padding:6px 2px;border-left:.5px solid var(--line);line-height:1.2;white-space:nowrap}
+.ldg td.c-cur{background:#FAF8F4}
 .ldg td.c-saving{opacity:.45}
 .ldg td.c-empty{text-align:center;color:var(--muted);cursor:default}
-.ldg tr.r-ret td,.ldg tr.r-ret td.c-nm{color:var(--muted)}
-.ldg .ck{color:var(--done);font-weight:700;margin-right:2px}
+.ldg tr.r-ret .nm,.ldg tr.r-ret td{color:var(--muted)}
+.ldg .ck{display:inline-block;color:var(--done);font-weight:700;margin-right:3px}
+.ldg .ck.pop{animation:ckPop .45s cubic-bezier(.3,1.7,.5,1) both}
 .ldg .dt{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
-.ldg .memo{display:block;font-size:10.5px;color:var(--review);margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+.ldg .memo{display:block;font-size:10.5px;color:var(--review);margin-top:3px;overflow:hidden;text-overflow:ellipsis}
 /* 6개월 펼쳐보기: 이름 + 6달. 칸이 좁아서 ✓와 날짜를 두 줄로 */
-.ldg.wide .c-nm{width:26%;padding-left:8px}
-.ldg.wide td.c-nm{font-size:13px}
-.ldg.wide .ck{display:block;margin:0;line-height:1}
+.ldg.wide .c-nm{width:28%;padding-left:10px}
+.ldg.wide .nmw{gap:6px}
+.ldg.wide .nm{font-size:14px}
+.ldg.wide .ck{display:block;margin:0 0 2px;line-height:1}
 .ldg.wide .dt{font-size:11px}
 .ldg.wide .memo{font-size:9.5px}
-.ldg-foot{display:flex;gap:8px;margin:14px 16px 0}
-.ldg-foot .btn{flex:1;min-height:46px;border-radius:23px;background:var(--card);box-shadow:var(--lift)}
+.ldg-cap{font-size:12px;color:var(--muted);text-align:center;padding:14px 20px 0}
+@keyframes ldgNext{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes ldgPrev{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes ldgZoom{from{opacity:0;transform:scale(.965)}to{opacity:1;transform:none}}
+@keyframes ckPop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:none}}
+.ldg-wrap.in-next .ldg,.mnav-t .in-next{animation:ldgNext .34s cubic-bezier(.2,.8,.2,1) both}
+.ldg-wrap.in-prev .ldg,.mnav-t .in-prev{animation:ldgPrev .34s cubic-bezier(.2,.8,.2,1) both}
+.ldg-wrap.in-zoom .ldg{animation:ldgZoom .36s cubic-bezier(.2,.8,.2,1) both}
+.mnav-t .in-zoom{animation:vOpa .3s ease both}
 
-.ldg-sync{display:inline-flex;align-items:center;gap:6px}
-.ldg-sync .spin-s{width:12px;height:12px}
 
 /* 팝업 입력칸 */
 .fld{display:flex;flex-direction:column;gap:6px;text-align:left;margin:12px 0}
 .fld span{font-size:12px;font-weight:600;color:var(--sub)}
-.fld input{height:46px;border:1.5px solid transparent;border-radius:12px;background:var(--field);padding:0 14px;font-size:16px;color:var(--ink);outline:none;width:100%}
+.fld input{height:48px;transition:border-color .15s,background .15s;border:1.5px solid transparent;border-radius:12px;background:var(--field);padding:0 14px;font-size:16px;color:var(--ink);outline:none;width:100%}
 .fld input:focus{border-color:var(--ink);background:#fff}
+.fld input::placeholder{color:#C6C0B5}
 .modal-card .fld+.modal-btns{margin-top:18px}
-.modal-card{max-height:calc(100vh - 40px);overflow-y:auto}
 .fld-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .fld-row .fld{margin:6px 0;min-width:0}
 .fld-row+.modal-btns{margin-top:14px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}
-.chips button{background:var(--field);box-shadow:none}
-.ret-list{max-height:50vh;overflow-y:auto;margin:10px 0 16px}
-.ret-row{display:flex;align-items:center;justify-content:space-between;padding:8px 2px;font-size:15px;font-weight:600;border-bottom:.5px solid var(--line)}
-.ret-row:last-child{border-bottom:none}
+.chips button{border:none;background:var(--field);color:var(--ink2);font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:15px;cursor:pointer;transition:transform .12s,background .15s}
+.chips button:active{transform:scale(.94);background:#ECE7DE}
 .pick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 4px}
 .pick-grid .btn{min-height:48px;border-radius:14px}
 .pick-clear{margin-top:8px;width:100%;background:transparent!important;color:var(--sub)!important}
@@ -289,6 +335,7 @@ body[data-view=ledger]{padding-bottom:90px}
 <nav class="tabbar" id="tabbar" aria-label="화면 전환">
   <button type="button" class="tab on" id="tabMsg" onclick="switchTab('msg')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"></path></svg>메시지</button>
   <button type="button" class="tab" id="tabLdg" onclick="switchTab('ledger')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="9" y1="10" x2="9" y2="20"></line></svg>수납 현황</button>
+  <button type="button" class="tab" id="tabStu" onclick="switchTab('stu')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20.5a8 8 0 0 1 16 0"></path></svg>원생</button>
 </nav>
 <div class="toast" id="toast"></div>
 <div class="modal-dim" id="modal" onclick="if(event.target===this)closeModal()">
@@ -334,7 +381,23 @@ function apiPost(action,body){
 // ═══ State ═══
 var S=[],KW={},PrevKW={},MSG={},SHORT={},DONE=new Set(),REGEN=new Set(),EDITED=new Set(),CI=0,CANCEL=false,EDITMODE=false,VIEW='input',GEN=false,GC=0,GT=0,GEN_TG=[];
 var DET_FROM='list'; // 상세 화면에 들어온 곳: 'input'(첫 화면) 또는 'list'(목록)
-function setView(v){VIEW=v;document.body.setAttribute('data-view',v);var a=document.getElementById('tabMsg'),b=document.getElementById('tabLdg');if(a&&b){a.classList.toggle('on',v!=='ledger');b.classList.toggle('on',v==='ledger')}} // 화면별 스타일(상단 제목 숨김 등)용
+// 화면 깊이: 탭 화면(0) → 목록(1) → 상세(2). 깊어지면 오른쪽에서, 돌아오면 왼쪽에서 들어온다
+var V_DEPTH={input:0,ledger:0,students:0,list:1,detail:2},V_TM=null;
+function setView(v){
+  var prev=VIEW;VIEW=v;document.body.setAttribute('data-view',v);
+  var on={tabMsg:v!=='ledger'&&v!=='students',tabLdg:v==='ledger',tabStu:v==='students'};
+  for(var k in on){var el=document.getElementById(k);if(el)el.classList.toggle('on',on[k])}
+  if(prev!==v){
+    viewAnim(V_DEPTH[v]>V_DEPTH[prev]?'v-fwd':V_DEPTH[v]<V_DEPTH[prev]?'v-back':'v-fade');
+    if(V_DEPTH[v]===0&&V_DEPTH[prev]===0)window.scrollTo(0,0);
+  }
+}
+// #app에 잠깐 붙였다 떼는 표시. 이 사이에 그려지는 화면이 애니메이션과 함께 들어온다
+function viewAnim(c){
+  var a=document.getElementById('app');
+  a.classList.remove('v-fade','v-fwd','v-back');void a.offsetWidth;a.classList.add(c);
+  clearTimeout(V_TM);V_TM=setTimeout(function(){a.classList.remove(c)},620);
+}
 
 function init(){
   var d=new Date();
@@ -349,6 +412,7 @@ function init(){
     S=data.filter(function(s){return!s.retired});
     RET=data.filter(function(s){return s.retired});
     S.forEach(stuAdopt);
+    viewAnim('v-fade');
     rInput();
     checkFirstRun();
   }).catch(function(e){
@@ -361,8 +425,29 @@ function hasMsg(){return S.some(function(s){return MSG[s.row]})}
 function isReview(s){return!DONE.has(s.row)&&MSG[s.row]&&MSG[s.row].trim()}
 function isUngen(s){return!DONE.has(s.row)&&(!MSG[s.row]||!MSG[s.row].trim())}
 
-function showModal(html){document.getElementById('modalCard').innerHTML=html;document.getElementById('modal').classList.add('on')}
-function closeModal(){document.getElementById('modal').classList.remove('on')}
+function showModal(html){var c=document.getElementById('modalCard');c.innerHTML=html;c.scrollTop=0;document.getElementById('modal').classList.add('on')}
+function closeModal(){
+  var a=document.activeElement;if(a&&a.blur&&document.getElementById('modalCard').contains(a))a.blur(); // 키보드 내리기
+  document.getElementById('modal').classList.remove('on');
+}
+// 시트를 아래로 끌어내리면 닫힘 (입력칸·버튼 위에서 시작한 건 무시)
+(function(){
+  var card=document.getElementById('modalCard'),sy=0,dy=0,on=false;
+  card.addEventListener('touchstart',function(e){on=card.scrollTop<=0&&!/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName);sy=e.touches[0].clientY;dy=0},{passive:true});
+  card.addEventListener('touchmove',function(e){
+    if(!on)return;dy=e.touches[0].clientY-sy;
+    if(dy<=0){dy=0;card.style.transform='';return}
+    card.classList.add('drag');card.style.transform='translateY('+dy+'px)';
+  },{passive:true});
+  card.addEventListener('touchend',function(){
+    if(!on)return;on=false;card.classList.remove('drag');card.style.transform='';
+    if(dy>90)closeModal();
+  });
+  // 키보드가 올라오면 시트를 그만큼 위로 (--kb)
+  var vv=window.visualViewport;if(!vv)return;
+  function kb(){document.documentElement.style.setProperty('--kb',Math.max(0,Math.round(window.innerHeight-vv.height-vv.offsetTop))+'px')}
+  vv.addEventListener('resize',kb);vv.addEventListener('scroll',kb);
+})();
 
 // ═══ Main Screen ═══
 function rInput(){
@@ -724,6 +809,7 @@ var ICON_BACK=_ic('<polyline points="15 5 8 12 15 19"></polyline>');
 var ICON_PREV=_ic('<polyline points="15 5 8 12 15 19"></polyline>',17);
 var ICON_NEXT=_ic('<polyline points="9 6 15 12 9 18"></polyline>',17);
 var ICON_REGEN=_ic('<path d="M20 11a8 8 0 1 0-2.3 5.7"></path><polyline points="20 4 20 11 13 11"></polyline>',14);
+var ICON_PLUS=_ic('<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>');
 var ICON_COPY=_ic('<rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path>',17);
 
 function enterEdit(row){
@@ -858,7 +944,7 @@ function checkFirstRun(){
 // ═══ 수납 현황표 (종이 양식) ═══
 // 기본은 전월·이번 달 두 칸. 월 제목(또는 "6개월 보기")을 누르면 6개월로 펼쳐진다.
 // 칸을 누르면 납부일·메모 창이 뜨고, 저장을 눌러야 기록된다. 이름 줄을 누르면 원생 정보 수정.
-var LDG={y:new Date().getFullYear(),m:new Date().getMonth()+1,wide:false,Y:{},at:{},busy:{},rows:[],saving:{},lastDate:'',err:''};
+var LDG={y:new Date().getFullYear(),m:new Date().getMonth()+1,wide:false,Y:{},at:{},busy:{},rows:[],saving:{},lastDate:'',err:'',anim:'',pop:''};
 var RET=[]; // 퇴원 원생 (복원용)
 var LDG_METHODS=['카드','현금','앱','현영','계좌'];
 
@@ -880,6 +966,7 @@ function ldgKey(name,y,m){return name+'|'+y+'|'+m}
 
 function switchTab(t){
   if(t==='ledger'){if(VIEW!=='ledger')ldgOpen()}
+  else if(t==='stu'){if(VIEW!=='students')rStudents()}
   else if(VIEW!=='input')rInput();
 }
 
@@ -897,9 +984,12 @@ function ldgLoad(force){
     LDG.busy[y]=true;
     apiGet('loadPaymentYear',{year:y}).then(function(d){
       LDG.busy[y]=false;LDG.at[y]=Date.now();
+      var first=!LDG.Y[y];
       ldgKeepSaving(y,d);
       LDG.Y[y]=d;ldgWriteCache(y);
-      if(VIEW==='ledger')ldgRender();
+      if(VIEW!=='ledger')return;
+      if(first)viewAnim('v-fade'); // 로딩 표시 → 표가 툭 바뀌지 않게
+      ldgRender();
     }).catch(function(e){
       LDG.busy[y]=false;
       if(VIEW!=='ledger')return;
@@ -919,21 +1009,33 @@ function ldgKeepSaving(y,d){
   });
 }
 
+// LDG.anim: 다음 번 그릴 때 표가 들어오는 방향 (next/prev/zoom). 한 번 쓰고 지운다
 function ldgShift(d){
   for(var k=0,n=LDG.wide?6:1;k<n;k++){var c=d<0?ldgPrev(LDG.y,LDG.m):ldgNext(LDG.y,LDG.m);LDG.y=c.y;LDG.m=c.m}
-  ldgLoad();
+  LDG.anim=d<0?'prev':'next';ldgLoad();
 }
-function ldgGoNow(){var n=new Date();LDG.y=n.getFullYear();LDG.m=n.getMonth()+1;ldgLoad()}
-function ldgToggleWide(){LDG.wide=!LDG.wide;ldgLoad()}
+function ldgGoNow(){
+  var n=new Date(),y=n.getFullYear(),m=n.getMonth()+1;
+  if(LDG.y===y&&LDG.m===m)return;
+  LDG.anim=(y*12+m)<(LDG.y*12+LDG.m)?'prev':'next';LDG.y=y;LDG.m=m;ldgLoad();
+}
+function ldgSetWide(w){
+  if(LDG.wide===!!w)return;
+  // 선택 표시가 먼저 미끄러진 뒤 표가 바뀐다
+  var seg=document.querySelector('.seg');if(seg)seg.classList.toggle('w',!!w);
+  setTimeout(function(){LDG.wide=!!w;LDG.anim='zoom';if(VIEW==='ledger')ldgLoad()},seg?170:0);
+}
+function ldgToggleWide(){ldgSetWide(!LDG.wide)}
 
 function ldgHeadHtml(){
   var c=ldgCols(),a=c[0],now=new Date(),isNow=LDG.y===now.getFullYear()&&LDG.m===now.getMonth()+1;
-  var title=LDG.wide?(a.y!==LDG.y?a.y+'년 '+a.m+'월~'+LDG.m+'월':LDG.y+'년 '+a.m+'~'+LDG.m+'월'):LDG.y+'년 '+LDG.m+'월';
-  return '<div class="ldg-head"><div><div class="ldg-kicker">수납 현황표</div><div class="ldg-title'+(LDG.wide?' sm':'')+'">'+title+'</div></div>'+
-    '<div class="det-nav"><button type="button" class="nav-b" aria-label="이전" onclick="ldgShift(-1)">'+ICON_PREV+'</button>'+
-    '<button type="button" class="nav-b" aria-label="다음" onclick="ldgShift(1)">'+ICON_NEXT+'</button></div></div>'+
-    '<div class="ldg-tools"><button type="button" class="chip" onclick="ldgToggleWide()">'+(LDG.wide?'2개월 보기':'6개월 보기')+'</button>'+
-    (isNow?'':'<button type="button" class="chip" onclick="ldgGoNow()">이번 달로</button>')+'</div>';
+  var label=LDG.wide?(a.y!==LDG.y?a.y+'년 '+a.m+'월 – '+LDG.y+'년 '+LDG.m+'월':LDG.y+'년 '+a.m+' – '+LDG.m+'월'):LDG.y+'년 '+LDG.m+'월';
+  return '<div class="pg-head"><div><div class="pg-kicker">SORI STUDIO</div><div class="pg-title">수납 현황</div></div>'+
+    '<div class="seg'+(LDG.wide?' w':'')+'"><i></i><button type="button" onclick="ldgSetWide(false)">2개월</button><button type="button" onclick="ldgSetWide(true)">6개월</button></div></div>'+
+    '<div class="mnav"><button type="button" class="mnav-b" aria-label="이전 달" onclick="ldgShift(-1)">'+ICON_PREV+'</button>'+
+    '<div class="mnav-t"><span class="'+(LDG.anim?'in-'+LDG.anim:'')+'">'+label+'</span></div>'+
+    '<button type="button" class="mnav-b" aria-label="다음 달" onclick="ldgShift(1)">'+ICON_NEXT+'</button></div>'+
+    (isNow?'':'<div class="mnav-now"><button type="button" onclick="ldgGoNow()">이번 달로 돌아가기</button></div>');
 }
 
 function ldgSummaryHtml(rows){
@@ -960,7 +1062,7 @@ function ldgCellHtml(i,c,isCur){
   var s=LDG.rows[i],v=ldgCell(c.y,c.m,s.name);
   var cls='c-m'+(isCur?' c-cur':'')+(LDG.saving[ldgKey(s.name,c.y,c.m)]?' c-saving':'');
   var inner='';
-  if(v&&v.paid)inner='<span class="ck">✓</span><span class="dt">'+ldgShortDate(v.date)+'</span>';
+  if(v&&v.paid)inner='<span class="ck'+(LDG.pop===ldgKey(s.name,c.y,c.m)?' pop':'')+'">✓</span><span class="dt">'+ldgShortDate(v.date)+'</span>';
   if(v&&v.memo)inner+='<span class="memo">'+esc(String(v.memo))+'</span>';
   return '<td class="'+cls+'" onclick="ldgEdit('+i+','+c.y+','+c.m+')">'+inner+'</td>';
 }
@@ -974,24 +1076,24 @@ function ldgRender(){
   }
   var rows=LDG.rows=ldgRows();
   h+=ldgSummaryHtml(rows);
-  h+='<div class="ldg-hint">칸을 누르면 납부일·메모 입력 · 이름을 누르면 원생 정보 수정</div>';
-  h+='<div class="ldg-wrap" id="ldgWrap"><table class="ldg'+(LDG.wide?' wide':'')+'"><thead><tr><th class="c-nm">이름</th>'+
-    (LDG.wide?'':'<th class="c-fee">수강료</th><th class="c-lv">레벨·횟수</th>');
+  h+='<div class="ldg-wrap'+(LDG.anim?' in-'+LDG.anim:'')+'" id="ldgWrap"><table class="ldg'+(LDG.wide?' wide':'')+'"><thead><tr><th class="c-nm">이름</th>'+
+    (LDG.wide?'':'<th class="c-fee">수강료</th><th class="c-lv">레벨</th>');
   cols.forEach(function(c){h+='<th class="c-mh'+(c.y===cy&&c.m===cm?' c-cur':'')+'" onclick="ldgToggleWide()">'+c.m+'월</th>'});
   h+='</tr></thead><tbody>';
   rows.forEach(function(s,i){
-    h+='<tr'+(s.retired?' class="r-ret"':'')+'><td class="c-nm" onclick="ldgStuEdit('+i+')"><span class="no">'+(i+1)+'</span><span class="nm">'+esc(String(s.name))+'</span>'+
-      '<span class="pm">'+(s.retired?'퇴원':esc(String(s.method||'')))+'</span></td>';
-    if(!LDG.wide)h+='<td class="c-fee" onclick="ldgStuEdit('+i+')">'+esc(ldgFee(s.feeDisplay))+'</td>'+
-      '<td class="c-lv" onclick="ldgStuEdit('+i+')">'+esc([s.level,ldgFreq(s.freq)].filter(Boolean).join(' '))+'</td>';
+    var ed=' onclick="stuEdit(LDG.rows['+i+'].name)"',pm=s.retired?'퇴원':esc(String(s.method||''));
+    h+='<tr'+(s.retired?' class="r-ret"':'')+'><td class="c-nm"'+ed+'><div class="nmw"><span class="no">'+(i+1)+'</span><div class="nmc"><div class="nm">'+esc(String(s.name))+'</div>'+
+      (pm?'<div class="pm">'+pm+'</div>':'')+'</div></div></td>';
+    if(!LDG.wide)h+='<td class="c-fee"'+ed+'>'+esc(ldgFee(s.feeDisplay))+'</td>'+
+      '<td class="c-lv"'+ed+'>'+esc([s.level,ldgFreq(s.freq)].filter(Boolean).join(' '))+'</td>';
     cols.forEach(function(c){h+=ldgCellHtml(i,c,c.y===cy&&c.m===cm)});
     h+='</tr>';
   });
   if(!rows.length)h+='<tr><td class="c-empty" colspan="'+(cols.length+(LDG.wide?1:3))+'">원생이 없어요</td></tr>';
   h+='</tbody></table></div>';
-  h+='<div class="ldg-foot"><button type="button" class="btn btn-d" onclick="ldgStuEdit(-1)">+ 원생 추가</button>'+
-    (RET.length?'<button type="button" class="btn btn-d" onclick="ldgShowRetired()">퇴원 원생 '+RET.length+'명</button>':'')+'</div>';
+  h+='<div class="ldg-cap">칸을 누르면 납부일을 적어요 · 이름을 누르면 원생 정보</div>';
   var st=window.scrollY;Q('app',h);window.scrollTo(0,st);
+  LDG.anim='';LDG.pop='';
 }
 
 // ── 칸: 납부일·메모 ──
@@ -1028,7 +1130,7 @@ function ldgSave(name,y,m,paid,date,memo){
   var prev=s.months[m]?JSON.parse(JSON.stringify(s.months[m])):null;
   var next={paid:!!paid,date:paid?(date||ldgToday()):'',memo:String(memo||'').trim()};
   if(!next.paid&&!next.memo){if(!prev)return;delete s.months[m]}else s.months[m]=next;
-  if(next.paid)LDG.lastDate=next.date;
+  if(next.paid){LDG.lastDate=next.date;if(!prev||!prev.paid)LDG.pop=key}
   LDG.saving[key]={name:name,y:y,m:m};ldgRender();
   apiPost('savePaymentCell',{year:y,month:m,name:name,paid:next.paid,date:next.date,memo:next.memo}).then(function(){
     delete LDG.saving[key];ldgWriteCache(y);
@@ -1042,47 +1144,78 @@ function ldgSave(name,y,m,paid,date,memo){
   });
 }
 
-// ── 원생 정보: 추가(i=-1) / 수정 / 퇴원 / 복원 ──
+// ═══ 원생 탭 ═══
+// 원생 추가·수정·퇴원·복원은 여기가 본진. 수납 현황표에서 이름을 눌러도 같은 수정 창이 뜬다.
+var STU_ED=''; // 수정 창이 열려 있는 원생 이름 ('' = 새로 추가)
 function stuInfo(name){for(var i=0;i<S.length;i++)if(S[i].name===name)return S[i];return null}
+function stuFind(name){
+  var p=stuInfo(name);if(p)return p;
+  for(var i=0;i<RET.length;i++)if(RET[i].name===name)return RET[i];
+  return null;
+}
 function stuAdopt(s){if(s.kw)KW[s.row]=s.kw;PrevKW[s.row]=s.prevKw||'';if(s.msg)MSG[s.row]=s.msg;if(s.done)DONE.add(s.row)}
 function stuFeeNum(t){var n=parseInt(String(t||'').replace(/,/g,''),10);return isNaN(n)?0:n}
+function stuSub(s){return [s.level,ldgFreq(s.freq),ldgFee(s.fee),s.method].filter(Boolean).join(' · ')}
+function stuRefresh(){if(VIEW==='ledger')ldgLoad(true);else if(VIEW==='students')rStudents()}
 
-function ldgStuEdit(i){
-  var s=i>=0?LDG.rows[i]:null,info=s?stuInfo(s.name):null;
-  if(i>=0&&!s)return;
-  function f(label,id,val,ph,mode){
-    return '<label class="fld"><span>'+label+'</span><input type="'+(mode==='tel'?'tel':'text')+'" id="'+id+'" maxlength="40" value="'+esc(String(val==null?'':val))+'" placeholder="'+esc(ph||'')+'"'+(mode?' inputmode="'+mode+'"':'')+'></label>';
+function rStudents(){
+  setView('students');
+  function row(s,call){
+    return '<div class="card" onclick="'+call+'"><div class="card-body"><div class="card-name">'+esc(String(s.name))+(s.gg?' <span class="inp-gg">'+esc(String(s.gg))+'</span>':'')+'</div>'+
+      '<div class="card-kw"><span class="card-kw-text">'+esc(stuSub(s)||'수강료·레벨을 적어주세요')+'</span></div></div><span class="chev">'+ICON_NEXT+'</span></div>';
   }
-  var h='<div class="modal-title">'+(s?'원생 정보 수정':'원생 추가')+'</div>'+
-    f('이름','stName',s?s.name:'','')+
-    '<div class="fld-row">'+f('수강료','stFee',s?ldgFee(s.feeDisplay):'','140,000')+f('결제수단','stMethod',s?s.method:'','카드')+'</div>'+
+  var h='<div class="pg-head"><div><div class="pg-kicker">SORI STUDIO</div><div class="pg-title">원생</div></div>'+
+    '<button type="button" class="icon-btn" aria-label="원생 추가" onclick="stuEdit(\'\')">'+ICON_PLUS+'</button></div>';
+  h+='<div class="sec-header"><span class="sec-label">다니는 원생</span><span class="sec-count">'+S.length+'명</span></div>';
+  h+=S.length?'<div class="group">'+S.map(function(s,i){return row(s,'stuEdit(S['+i+'].name)')}).join('')+'</div>'
+             :'<div class="empty"><p>아직 원생이 없어요</p><button type="button" class="btn btn-y" onclick="stuEdit(\'\')">원생 추가</button></div>';
+  if(RET.length){
+    h+='<div class="sec-header"><span class="sec-label">퇴원</span><span class="sec-count">'+RET.length+'명</span></div>'+
+      '<div class="group ret">'+RET.map(function(s,i){return row(s,'stuEdit(RET['+i+'].name)')}).join('')+'</div>';
+  }
+  var st=window.scrollY;Q('app',h);window.scrollTo(0,st);
+}
+
+// 수정 창. name이 ''이면 새 원생
+function stuEdit(name){
+  var p=name?stuFind(name):null;
+  if(name&&!p){
+    // 목록을 받은 뒤 시트에 새로 생긴 원생: 수납 현황표에 있는 정보만으로 연다
+    var r=null;LDG.rows.forEach(function(x){if(x.name===name)r=x});
+    if(!r)return;
+    p={name:r.name,fee:r.feeDisplay,level:r.level,freq:r.freq,method:r.method,retired:r.retired,partial:true};
+  }
+  STU_ED=name||'';
+  function f(label,id,val,ph,mode){
+    return '<label class="fld"><span>'+label+'</span><input type="'+(mode==='tel'?'tel':'text')+'" id="'+id+'" maxlength="40" autocomplete="off" value="'+esc(String(val==null?'':val))+'" placeholder="'+esc(ph||'')+'"'+(mode?' inputmode="'+mode+'"':'')+'></label>';
+  }
+  var h='<div class="modal-title">'+(p?esc(String(p.name)):'새 원생')+'</div>'+
+    f('이름','stName',p?p.name:'','이름')+
+    '<div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','140,000')+f('결제수단','stMethod',p?p.method:'','카드')+'</div>'+
     '<div class="chips">'+LDG_METHODS.map(function(x){return '<button type="button" onclick="document.getElementById(\'stMethod\').value=\''+x+'\'">'+x+'</button>'}).join('')+'</div>'+
-    '<div class="fld-row">'+f('레벨','stLevel',s?s.level:'','기초')+f('주 횟수','stFreq',s?s.freq:'','2')+'</div>';
-  // 학년·성별·연락처는 메시지 쪽 정보. 퇴원 원생은 이 정보가 없어서 건드리지 않는다
-  if(!s||info)h+='<div class="fld-row">'+f('학년','stGrade',info?info.grade:'','초3')+f('성별','stGender',info?info.gender:'','여')+'</div>'+
-    '<div class="fld-row">'+f('학부모명','stParent',info?info.parentName:'','')+f('연락처','stPhone',info?info.phone:'','010-0000-0000','tel')+'</div>';
-  h+='<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">닫기</button><button class="btn btn-y" id="stSave" onclick="ldgStuSave('+i+')">저장</button></div>';
-  if(s)h+=s.retired?'<button class="btn btn-d pick-clear" onclick="ldgSetRetired('+i+',false)">다시 다니는 원생으로 복원</button>'
-                   :'<button class="btn btn-d pick-clear" onclick="ldgAskRetire('+i+')">퇴원 처리</button>';
+    '<div class="fld-row">'+f('레벨','stLevel',p?p.level:'','기초')+f('주 횟수','stFreq',p?p.freq:'','2')+'</div>';
+  if(!p||!p.partial)h+='<div class="fld-row">'+f('학년','stGrade',p?p.grade:'','초3')+f('성별','stGender',p?p.gender:'','여')+'</div>'+
+    '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?p.phone:'','010-0000-0000','tel')+'</div>';
+  h+='<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" id="stSave" onclick="stuSave()">저장</button></div>';
+  if(p)h+=p.retired?'<button type="button" class="sheet-link" onclick="stuRetire(false)">다시 다니는 원생으로 복원</button>'
+                   :'<button type="button" class="sheet-link warn" onclick="stuAskRetire()">퇴원 처리</button>';
   showModal(h);
 }
 
-function ldgStuSave(i){
+function stuSave(){
   function g(id){var el=document.getElementById(id);return el?el.value.trim():undefined}
-  var s=i>=0?LDG.rows[i]:null,name=g('stName');
+  var orig=STU_ED,p=orig?stuFind(orig):null,name=g('stName');
   if(!name){T('이름을 적어주세요');return}
   var body={name:name,fee:g('stFee'),method:g('stMethod'),level:g('stLevel'),freq:g('stFreq'),grade:g('stGrade'),gender:g('stGender'),parentName:g('stParent'),phone:g('stPhone')};
-  var info=s?stuInfo(s.name):null,orig=s?s.name:'';
   var btn=document.getElementById('stSave');if(btn){btn.disabled=true;btn.textContent='저장 중...'}
-  if(s){body.origName=orig;if(info)body.row=info.row}
-  apiPost(s?'studentUpdate':'studentAdd',body).then(function(r){
+  if(orig){body.origName=orig;if(p)body.row=p.row}
+  apiPost(orig?'studentUpdate':'studentAdd',body).then(function(r){
     closeModal();
-    if(s){
-      if(info){
-        info.name=name;info.fee=body.fee;info.level=body.level;info.freq=body.freq;info.method=body.method;
-        if(body.grade!==undefined){info.grade=body.grade;info.gender=body.gender;info.gg=[body.grade,body.gender].filter(Boolean).join(' ');info.parentName=body.parentName;info.phone=body.phone}
+    if(orig){
+      if(p){
+        p.name=name;p.fee=body.fee;p.level=body.level;p.freq=body.freq;p.method=body.method;
+        if(body.grade!==undefined){p.grade=body.grade;p.gender=body.gender;p.gg=[body.grade,body.gender].filter(Boolean).join(' ');p.parentName=body.parentName;p.phone=body.phone}
       }
-      RET.forEach(function(x){if(x.name===orig)x.name=name});
       Object.keys(LDG.Y).forEach(function(y){
         var o=ldgStu(y,orig);if(!o)return;
         o.name=name;o.feeDisplay=body.fee;o.fee=stuFeeNum(body.fee);o.level=body.level;o.freq=body.freq;o.method=body.method;
@@ -1098,37 +1231,31 @@ function ldgStuSave(i){
       });
       T(name+' 원생을 추가했어요');
     }
-    if(VIEW==='ledger')ldgLoad(true);
+    stuRefresh();
   }).catch(function(e){
     if(btn){btn.disabled=false;btn.textContent='저장'}
     T('저장 실패: '+e.message);
   });
 }
 
-function ldgAskRetire(i){
-  var s=LDG.rows[i];if(!s)return;
-  showModal('<div class="modal-title">'+esc(String(s.name))+' 퇴원 처리</div>'+
-    '<div class="modal-desc">메시지 목록과 수납 현황에서 숨겨요.<br>기록은 지워지지 않고, 언제든 복원할 수 있어요.</div>'+
-    '<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="ldgSetRetired('+i+',true)">퇴원 처리</button></div>');
+function stuAskRetire(){
+  var name=STU_ED;if(!name)return;
+  showModal('<div class="modal-title">'+esc(name)+' 퇴원 처리</div>'+
+    '<div class="modal-desc">메시지 목록과 수납 현황에서 숨겨요.<br>기록은 지워지지 않고, 원생 탭에서 언제든 복원할 수 있어요.</div>'+
+    '<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" onclick="stuRetire(true)">퇴원 처리</button></div>');
 }
-function ldgSetRetired(i,retired){var s=LDG.rows[i];closeModal();if(s)stuSetRetired(s.name,retired)}
-function ldgRestore(j){var s=RET[j];closeModal();if(s)stuSetRetired(s.name,false)}
+function stuRetire(retired){var name=STU_ED;closeModal();if(name)stuSetRetired(name,retired)}
 function stuSetRetired(name,retired){
   apiPost('studentSetStatus',{name:name,retired:retired}).then(function(){
     var from=retired?S:RET,to=retired?RET:S;
     for(var k=from.length-1;k>=0;k--){
       if(from[k].name===name){var x=from.splice(k,1)[0];x.retired=retired;to.push(x);if(!retired)stuAdopt(x)}
     }
-    S.sort(function(a,b){return a.row-b.row});
+    S.sort(function(a,b){return a.row-b.row});RET.sort(function(a,b){return a.row-b.row});
     Object.keys(LDG.Y).forEach(function(y){var o=ldgStu(y,name);if(o)o.retired=retired});
     T(name+(retired?' 퇴원 처리했어요':' 복원했어요'));
-    if(VIEW==='ledger')ldgLoad(true);
+    stuRefresh();
   }).catch(function(e){T('저장 실패: '+e.message)});
-}
-function ldgShowRetired(){
-  showModal('<div class="modal-title">퇴원 원생</div><div class="ret-list">'+
-    RET.map(function(s,j){return '<div class="ret-row"><span>'+esc(String(s.name))+'</span><button class="btn btn-d" onclick="ldgRestore('+j+')">복원</button></div>'}).join('')+
-    '</div><div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">닫기</button></div>');
 }
 
 // ═══ Android Back Button ═══
@@ -1141,6 +1268,7 @@ function handleBack(){
   if(ta){exitEdit(S[CI].row);return true}
   if(VIEW==='detail'){goBackFromDet();return true}
   if(VIEW==='ledger'){if(LDG.wide)ldgToggleWide();else rInput();return true}
+  if(VIEW==='students'){rInput();return true}
   if(VIEW==='list'){rInput();return true}
   // 메인화면 → false 리턴 → MainActivity에서 종료 팝업
   return false;
@@ -1154,7 +1282,7 @@ function handleBack(){
   },{passive:true});
   document.addEventListener('touchend',function(e){
     if(!fromEdge)return;fromEdge=false;
-    if(VIEW==='input'||VIEW==='ledger')return;
+    if(V_DEPTH[VIEW]===0)return;
     if(document.getElementById('tut').classList.contains('on'))return;
     var t=e.changedTouches[0],dx=t.clientX-sx,dy=Math.abs(t.clientY-sy);
     if(dx>70&&dy<60)handleBack();
