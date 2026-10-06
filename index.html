@@ -369,9 +369,9 @@ body[data-view=students] .toast{bottom:150px}
 
 <script>
 // ═══ API 설정 ═══
-// 테스트용 배포 주소(버전 42). main에 머지할 때 반드시 운영 주소(AKfycbzW7VPX…)로 되돌릴 것
-var API_URL='https://script.google.com/macros/s/AKfycbxAyh5wKml5EPVFUIqSFDNKT4rsAMUlyV0i1615TzsbWWBQjL8Pm_t7rKPjofbirYXW/exec';
-var IS_TEST=true; // Test 브랜치 전용. main에 머지할 때 반드시 false로
+// 운영 배포 주소. Test 브랜치는 테스트용 주소(AKfycbxAyh5w…)와 IS_TEST=true를 쓴다
+var API_URL='https://script.google.com/macros/s/AKfycbzW7VPXPRW0Ltf8ws_1xtdLM0rceMsumj7oi6bLD3jSjOCtYG8_WYGAqjd_UyRjPrQ1/exec';
+var IS_TEST=false; // 운영(main)은 false. Test 브랜치만 true
 // 아이폰·아이패드에는 뒤로가기 버튼이 없다 → 아래 "폰 뒤로가기" 장치를 쓰지 않는다 (운영 버전과 똑같이 동작)
 var IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 
