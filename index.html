@@ -872,7 +872,7 @@ function ldgFetch(y,first){
 }
 
 // 기존 Apps Script 기능만 쓰는 방식: 달마다 loadPaymentStatus를 불러 합친다 (메모·결제수단 없음)
-// 빠르게 하려고: 이번 달부터 먼저 → 표 바로 표시 → 나머지 달은 뒤에서 하나씩 채움
+// 빠르게 하려고: 이번 달부터 먼저 → 표 바로 표시 → 나머지 달은 뒤에서 4달씩 동시에 채움
 //               지난 달은 한 번 받으면 폰에 저장해두고, 다음부터는 이번 달·지난달만 다시 확인
 function ldgFetchLegacy(y,first){
   var now=new Date(),cy=now.getFullYear(),cm=now.getMonth()+1,last=y<cy?12:(y===cy?cm:0);
@@ -895,16 +895,17 @@ function ldgFetchLegacy(y,first){
     if(d.fetched.indexOf(m)<0||(y===cy&&m>=cm-1))need.push(m);
   }
   if(!need.length){LDG.loading=false;return}
-  var done=0,total=need.length,failed=false;
+  var done=0,total=need.length,failed=false,active=0;
   ldgSetHint(total);
-  (function next(){
+  function next(){
     if(VIEW!=='ledger'||LDG.year!==y||LDG.data!==d){LDG.loading=false;return}
     if(!need.length){
+      if(active)return; // 아직 받는 중인 달이 있으면 기다림
       LDG.loading=false;ldgSetHint(0);
       if(failed)T('일부 달을 못 불러왔어요');
       return;
     }
-    var m=need.shift();
+    var m=need.shift();active++;
     apiGet('loadPaymentStatus',{year:y,month:m}).then(function(res){
       if(LDG.data!==d)return;
       var grew=false;
@@ -922,9 +923,11 @@ function ldgFetchLegacy(y,first){
         else ldgRefreshMonth(m);
       }
     }).catch(function(){failed=true}).then(function(){
-      done++;ldgSetHint(total-done);next();
+      active--;done++;ldgSetHint(total-done);next();
     });
-  })();
+  }
+  // 한 번에 4달씩 동시에 요청 (하나 끝나면 바로 다음 달을 이어서)
+  for(var k=0;k<4&&need.length;k++)next();
 }
 
 function ldgRefreshMonth(m){
