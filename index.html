@@ -4,12 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#F4F2EE">
-<title>소리 스튜디오</title>
+<title>소리마을 스튜디오</title>
+<!-- 홈 화면에 추가했을 때: 아이콘·이름·주소창 없는 전체 화면 (아이폰은 apple-* 줄을 읽는다) -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="소리마을 스튜디오">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ═══ 소리 스튜디오 — C 테마 (미색 배경 + 떠 있는 흰 카드) ═══ */
+/* ═══ 소리마을 스튜디오 — C 테마 (미색 배경 + 떠 있는 흰 카드) ═══ */
 :root{
   --bg:#F4F2EE;--card:#FFFFFF;--field:#F6F4F0;--line:#ECE8E1;
   --ink:#26231F;--ink2:#4A453E;--sub:#6E685F;--muted:#8F897F;
@@ -21,6 +28,8 @@
   --float:0 6px 24px rgba(38,35,31,.22),0 1px 3px rgba(38,35,31,.12);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* 아이폰: 버튼을 빠르게 연달아 눌러도 화면이 확대되지 않게. 입력칸 글자는 16px 이상(그보다 작으면 누를 때 확대됨) */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 body{font-family:'Noto Sans KR',-apple-system,sans-serif!important;background:var(--bg);color:var(--ink);max-width:500px;margin:0 auto;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;padding-bottom:120px}
 *{font-family:'Noto Sans KR',-apple-system,sans-serif!important}
 button{font-family:inherit}
@@ -95,7 +104,7 @@ body[data-view=list] .page-head,body[data-view=detail] .det-head{padding-top:22p
 .card-st{font-size:13px;font-weight:500;flex-shrink:0}
 .st-review{color:var(--review)}.st-done{color:var(--done)}.st-ungen{color:var(--muted)}
 .chev{color:#B3ADA3;display:flex;flex-shrink:0}
-.card-kw-input{width:100%;height:38px;padding:0 12px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:15px;outline:none;margin-top:6px}
+.card-kw-input{width:100%;height:38px;padding:0 12px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:16px;outline:none;margin-top:6px}
 .card-kw-input:focus{border-color:var(--ink);background:#fff}
 .empty{padding:48px 20px;text-align:center}
 .empty p{color:var(--sub);font-size:14px;margin-bottom:16px}
@@ -115,7 +124,7 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 .inp-label{display:flex;align-items:center;gap:8px;margin:0 0 9px;min-height:26px}
 .inp-num{display:none}
 .inp-name{font-size:16px;font-weight:600}.inp-gg{font-size:13px;color:var(--sub)}
-.inp-wrap input{width:100%;height:42px;padding:0 13px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:15px;outline:none;transition:border-color .15s,background .15s}
+.inp-wrap input{width:100%;height:42px;padding:0 13px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:16px;outline:none;transition:border-color .15s,background .15s}
 .inp-wrap input:focus{border-color:var(--ink);background:#fff}
 .inp-wrap input::placeholder{color:var(--muted)}
 .inp-wrap input.review-input{border-color:var(--review-dot);color:var(--review);pointer-events:none}
@@ -327,6 +336,9 @@ body[data-view=students] .toast{bottom:150px}
 .fld span{font-size:12px;font-weight:600;color:var(--sub)}
 .fld input{height:48px;transition:border-color .15s,background .15s;border:1.5px solid transparent;border-radius:12px;background:var(--field);padding:0 14px;font-size:16px;color:var(--ink);outline:none;width:100%}
 .fld input:focus{border-color:var(--ink);background:#fff}
+/* 아이폰의 날짜 칸: 기본 모양을 끄지 않으면 폭이 삐져나오고 글자가 가운데로 몰린다 */
+.fld input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;text-align:left}
+.fld input[type=date]::-webkit-date-and-time-value{text-align:left}
 .fld input::placeholder{color:#C6C0B5}
 .modal-card .fld+.modal-btns{margin-top:18px}
 .fld-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -343,7 +355,7 @@ body[data-view=students] .toast{bottom:150px}
 <body>
 <div class="banner" onclick="goHome()">
   <div class="banner-row">
-    <div><div class="logo">SORI STUDIO</div><div class="title">카톡 메시지 관리</div></div>
+    <div><div class="logo">SORIMAEUL STUDIO</div><div class="title">카톡 메시지 관리</div></div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="help-btn" onclick="event.stopPropagation();showTutorial()">?</div>
       <div class="date" id="dt"></div>
@@ -372,6 +384,8 @@ body[data-view=students] .toast{bottom:150px}
 // 테스트용 배포 주소(버전 42). main에 머지할 때 반드시 운영 주소(AKfycbzW7VPX…)로 되돌릴 것
 var API_URL='https://script.google.com/macros/s/AKfycbxAyh5wKml5EPVFUIqSFDNKT4rsAMUlyV0i1615TzsbWWBQjL8Pm_t7rKPjofbirYXW/exec';
 var IS_TEST=true; // Test 브랜치 전용. main에 머지할 때 반드시 false로
+// 아이폰·아이패드: 뒤로가기 버튼이 없고, 화면 왼쪽 끝을 밀면 브라우저가 "뒤로"를 한다
+var IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 
 // TEST 모드 표시 (운영 앱과 구분용)
 if(IS_TEST){
@@ -1089,7 +1103,7 @@ function ldgToggleWide(){ldgSetWide(!LDG.wide)}
 function ldgHeadHtml(){
   var c=ldgCols(),a=c[0],now=new Date(),isNow=LDG.y===now.getFullYear()&&LDG.m===now.getMonth()+1;
   var label=LDG.wide?(a.y!==LDG.y?a.y+'년 '+a.m+'월 – '+LDG.y+'년 '+LDG.m+'월':LDG.y+'년 '+a.m+' – '+LDG.m+'월'):LDG.y+'년 '+LDG.m+'월';
-  return '<div class="pg-head"><div><div class="pg-kicker">SORI STUDIO</div><div class="pg-title">수납 현황</div></div>'+
+  return '<div class="pg-head"><div><div class="pg-kicker">SORIMAEUL STUDIO</div><div class="pg-title">수납 현황</div></div>'+
     '<div class="seg'+(LDG.wide?' w':'')+'"><i></i><button type="button" onclick="ldgSetWide(false)">2개월</button><button type="button" onclick="ldgSetWide(true)">6개월</button></div></div>'+
     '<div class="mnav"><button type="button" class="mnav-b" aria-label="이전 달" onclick="ldgShift(-1)">'+ICON_PREV+'</button>'+
     '<div class="mnav-t"><span class="'+(LDG.anim?'in-'+LDG.anim:'')+'">'+label+'</span></div>'+
@@ -1245,7 +1259,7 @@ function rStudents(){
     return '<div class="card" onclick="'+call+'"><div class="card-body"><div class="card-name">'+esc(String(s.name))+(s.gg?' <span class="inp-gg">'+esc(String(s.gg))+'</span>':'')+'</div>'+
       '<div class="card-kw"><span class="card-kw-text">'+esc(stuSub(s)||'수강료·레벨을 적어주세요')+'</span></div></div><span class="chev">'+ICON_NEXT+'</span></div>';
   }
-  var h='<div class="pg-head"><div><div class="pg-kicker">SORI STUDIO</div><div class="pg-title">원생</div></div>'+
+  var h='<div class="pg-head"><div><div class="pg-kicker">SORIMAEUL STUDIO</div><div class="pg-title">원생</div></div>'+
     '<button type="button" class="icon-btn" aria-label="원생 추가" onclick="stuEdit(\'\')">'+ICON_PLUS+'</button></div>';
   h+='<div class="sec-header"><span class="sec-label">다니는 원생</span><span class="sec-count">'+S.length+'명</span></div>';
   h+=S.length?'<div class="group">'+S.map(function(s,i){return row(s,'stuEdit(S['+i+'].name)')}).join('')+'</div>'
@@ -1403,9 +1417,11 @@ function stuSetRetired(name,retired,undoable){
 // 화면이 깊어질 때마다(목록·상세·창 열기…) 브라우저 기록을 한 칸씩 쌓아 둔다.
 // 그러면 폰의 뒤로가기가 앱을 끄지 않고 handleBack으로 들어와 한 단계만 돌아간다.
 // HN = 지금 쌓아 둔 칸 수. 화면이 얕아지면(‹ 버튼, 창 닫기 등) 남는 칸을 걷어낸다.
-var HN=(history.state&&history.state.sori)||0,H_SKIP=false;
+// 아이폰은 탭(수납 현황·원생·6개월 보기)을 칸으로 치지 않는다: 표를 밀다가 왼쪽 끝에 닿았다고 메시지 탭으로 튕기면 안 되므로
+var HN=(history.state&&history.state.sori)||0,H_SKIP=false,H_POP=0,H_SWIPE=0;
 function histNeed(){
-  var n=VIEW==='detail'?(DET_FROM==='input'?1:2):VIEW==='list'?1:VIEW==='ledger'?(LDG.wide?2:1):VIEW==='students'?1:0;
+  var tab=IS_IOS?0:1;
+  var n=VIEW==='detail'?(DET_FROM==='input'?1:2):VIEW==='list'?1:VIEW==='ledger'?(LDG.wide?2:1)*tab:VIEW==='students'?tab:0;
   if(document.getElementById('msgbox'))n++;
   if(document.getElementById('modal').classList.contains('on'))n++;
   if(document.getElementById('tut').classList.contains('on'))n++;
@@ -1422,6 +1438,9 @@ function histSync(){
 window.addEventListener('popstate',function(){
   if(H_SKIP){H_SKIP=false;histSync();return} // 우리가 걷어낸 것
   HN=Math.max(0,HN-1);
+  // 아이폰: 앱의 왼쪽 끝 밀기가 방금 뒤로 보냈는데 브라우저의 밀기도 같이 먹은 경우 → 한 번만 돌아가게 칸만 다시 맞춘다
+  if(Date.now()-H_SWIPE<800){H_SWIPE=0;histSync();return}
+  H_POP=Date.now();
   handleBack();
   histSync();
 });
@@ -1468,6 +1487,11 @@ function handleBack(){
   document.addEventListener('touchcancel',end,{passive:true});
 })();
 
+// 앱으로 돌아왔을 때 수납 현황이 열려 있으면 새 내용을 받는다 (아이폰은 앱이 뒤에서 며칠씩 살아 있어 옛 표가 남는다)
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden&&VIEW==='ledger'&&!document.getElementById('modal').classList.contains('on'))ldgLoad();
+});
+
 // ═══ 화면 왼쪽 끝에서 오른쪽으로 밀면 뒤로가기 ═══
 (function(){
   var sx=0,sy=0,fromEdge=false;
@@ -1479,7 +1503,10 @@ function handleBack(){
     if(V_DEPTH[VIEW]===0)return;
     if(document.getElementById('tut').classList.contains('on'))return;
     var t=e.changedTouches[0],dx=t.clientX-sx,dy=Math.abs(t.clientY-sy);
-    if(dx>70&&dy<60)handleBack();
+    if(dx>70&&dy<60){
+      if(Date.now()-H_POP<800)return; // 브라우저의 밀기가 이미 뒤로 보냄
+      H_SWIPE=Date.now();handleBack();
+    }
   },{passive:true});
 })();
 
