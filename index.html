@@ -279,7 +279,8 @@ body[data-view=ledger]{padding-bottom:90px}
 
 <script>
 // ═══ API 설정 ═══
-var API_URL='https://script.google.com/macros/s/AKfycbzW7VPXPRW0Ltf8ws_1xtdLM0rceMsumj7oi6bLD3jSjOCtYG8_WYGAqjd_UyRjPrQ1/exec';
+// 테스트용 배포 주소(버전 42). main에 머지할 때 반드시 운영 주소(AKfycbzW7VPX…)로 되돌릴 것
+var API_URL='https://script.google.com/macros/s/AKfycbxAyh5wKml5EPVFUIqSFDNKT4rsAMUlyV0i1615TzsbWWBQjL8Pm_t7rKPjofbirYXW/exec';
 var IS_TEST=true; // Test 브랜치 전용. main에 머지할 때 반드시 false로
 
 // TEST 모드 표시 (운영 앱과 구분용)
@@ -457,7 +458,8 @@ function runGen(idx){
 // ═══ AI 생성: 중간에 끊긴 글이면 자동으로 다시 요청 ═══
 // 제미나이가 글을 문장 중간에 끊어서 보내는 경우가 있어서, 끝이 문장으로 안 끝나면 최대 3번까지 다시 받음.
 // 3번 다 끊기면 마지막 결과를 쓰고 '짧음' 경고를 띄움.
-var GEN_MAX_TRY=3;
+// 새 Apps Script 기능(generateKakao2)은 "한도 때문에 잘렸는지"를 직접 알려줘서 추측하지 않아도 됨. 없으면 예전 방식으로.
+var GEN_MAX_TRY=3,GEN_V2=true;
 function looksCut(m){
   var t=(m||'').replace(/\s+$/,'');
   if(!t)return true;
@@ -469,13 +471,20 @@ function looksCut(m){
 }
 function genKakao(s,kw,isCancelled){
   function attempt(n){
-    return apiPost('generateKakao',{name:s.name,gg:s.gg,kw:kw,hist:s.hist}).then(function(m){
-      var short=false;
-      if(m.indexOf('[SHORT]')===0){short=true;m=m.substring(7)}
-      var cut=looksCut(m);
+    return apiPost(GEN_V2?'generateKakao2':'generateKakao',{name:s.name,gg:s.gg,kw:kw,hist:s.hist}).then(function(d){
+      var m,short=false,cut;
+      if(typeof d==='string'){
+        m=d;
+        if(m.indexOf('[SHORT]')===0){short=true;m=m.substring(7)}
+        cut=looksCut(m);
+      }else{
+        m=d.text||'';short=!!d.short;
+        cut=d.reason==='MAX_TOKENS'||!m;
+      }
       if(cut&&n<GEN_MAX_TRY&&!(isCancelled&&isCancelled()))return attempt(n+1);
       return {text:m,short:short||cut};
     },function(e){
+      if(GEN_V2&&/Unknown action/.test(e.message)){GEN_V2=false;return attempt(n)}
       if(n<GEN_MAX_TRY&&!(isCancelled&&isCancelled())){
         return new Promise(function(res){setTimeout(res,800*n)}).then(function(){return attempt(n+1)});
       }
@@ -845,8 +854,9 @@ function ldgOpen(){
 }
 
 // 새 Apps Script 기능(loadPaymentYear)이 없다는 걸 기억해두고 하루 동안은 다시 안 물어봄 (요청 1번 = 1초 절약)
-function ldgNoYearApi(){try{return Date.now()-Number(localStorage.getItem('sori_ldg_noyear')||0)<86400000}catch(e){return false}}
-function ldgSetNoYearApi(){try{localStorage.setItem('sori_ldg_noyear',String(Date.now()))}catch(e){}}
+// 주소가 바뀌면(새 배포) 기억을 버리고 다시 물어봄
+function ldgNoYearApi(){try{var v=(localStorage.getItem('sori_ldg_noyear')||'').split('|');return v[1]===API_URL&&Date.now()-Number(v[0]||0)<86400000}catch(e){return false}}
+function ldgSetNoYearApi(){try{localStorage.setItem('sori_ldg_noyear',Date.now()+'|'+API_URL)}catch(e){}}
 
 function ldgFetch(y,first){
   if(ldgNoYearApi()){ldgFetchLegacy(y,first);return}
