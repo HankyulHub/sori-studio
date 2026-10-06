@@ -161,6 +161,13 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 @keyframes sp{to{transform:rotate(360deg)}}
 .toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;opacity:0;transition:.25s;z-index:99;pointer-events:none;box-shadow:var(--float);white-space:nowrap}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.act{pointer-events:auto;padding:6px 6px 6px 18px;display:flex;align-items:center;gap:12px}
+.toast button{border:none;background:rgba(255,255,255,.16);color:#fff;font-size:13.5px;font-weight:700;padding:9px 14px;border-radius:15px;cursor:pointer;transition:transform .12s,background .12s}
+.toast button:active{transform:scale(.94);background:rgba(255,255,255,.28)}
+/* 저장 중 표시: 서버로 보내는 동안만 오른쪽 위에 작게 */
+.sync{position:fixed;top:8px;right:12px;z-index:98;display:flex;align-items:center;gap:6px;padding:6px 11px 6px 9px;border-radius:14px;background:var(--card);box-shadow:var(--lift);color:var(--sub);font-size:11.5px;font-weight:600;opacity:0;transform:translateY(-6px);transition:opacity .25s,transform .25s;pointer-events:none}
+.sync.on{opacity:1;transform:none;transition-delay:.35s}
+.sync i{width:10px;height:10px;border:1.6px solid #E4DFD6;border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite}
 @keyframes slideL{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
 .slide{animation:slideL .3s ease}
 ::-webkit-scrollbar{width:0}
@@ -278,7 +285,6 @@ body[data-view=students] .toast{bottom:150px}
 .ldg th.c-cur{color:var(--ink)}
 .ldg td.c-m{text-align:center;padding:6px 2px;border-left:.5px solid var(--line);line-height:1.2;white-space:nowrap}
 .ldg td.c-cur{background:#FAF8F4}
-.ldg td.c-saving{opacity:.45}
 /* 아직 못 받은 해의 칸: 눌리지 않고, 연한 막대가 깜빡인다. 도착하면 내용이 서서히 나타난다 */
 .ldg td.c-wait{cursor:default}.ldg td.c-wait:active{background:transparent}
 .ldg td.c-wait i{display:inline-block;width:22px;height:6px;border-radius:3px;background:#E6E1D8;animation:ldgWait 1s ease-in-out infinite alternate}
@@ -343,6 +349,7 @@ body[data-view=students] .toast{bottom:150px}
   <button type="button" class="tab" id="tabStu" onclick="switchTab('stu')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20.5a8 8 0 0 1 16 0"></path></svg>원생</button>
 </nav>
 <div class="toast" id="toast"></div>
+<div class="sync" id="sync"><i></i>저장 중</div>
 <div class="modal-dim" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card" id="modalCard"></div>
 </div>
@@ -375,10 +382,11 @@ function apiGet(action,params){
     .then(function(r){return r.json()})
     .then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
-function apiPost(action,body){
+function apiPost(action,body,keep){
   body.action=action;
   if(IS_TEST)body.test='1';
-  return fetch(API_URL+(IS_TEST?'?test=1':''),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)})
+  // keep: 앱을 닫아도 보내던 저장이 끝까지 가게 (수납·원생 저장용)
+  return fetch(API_URL+(IS_TEST?'?test=1':''),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body),keepalive:!!keep})
     .then(function(r){return r.json()})
     .then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
 }
@@ -887,7 +895,29 @@ function undo(row){
 
 function Q(id,h){document.getElementById(id).innerHTML=h}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function T(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2500)}
+// 아래에 잠깐 뜨는 알림. undo(함수)를 주면 "되돌리기" 버튼이 붙고 조금 더 오래 떠 있는다
+var T_TM=null,T_UNDO=null;
+function T(m,undo){
+  var t=document.getElementById('toast');
+  T_UNDO=undo||null;
+  t.innerHTML=esc(String(m))+(undo?'<button type="button" onclick="tUndo()">되돌리기</button>':'');
+  t.classList.toggle('act',!!undo);t.classList.add('on');
+  clearTimeout(T_TM);T_TM=setTimeout(function(){t.classList.remove('on','act');T_UNDO=null},undo?6000:2500);
+}
+function tUndo(){var f=T_UNDO;T_UNDO=null;clearTimeout(T_TM);document.getElementById('toast').classList.remove('on','act');if(f)f()}
+
+// ═══ 저장 줄 세우기 ═══
+// 화면은 누르는 즉시 바뀌고, 서버에는 뒤에서 보낸다. 같은 원생에 대한 저장은 누른 순서대로 하나씩 간다
+var WQ={},WQ_N=0;
+function wq(name,fn){
+  WQ_N++;wqShow();
+  var p=(WQ[name]||Promise.resolve()).then(fn);
+  WQ[name]=p.catch(function(){});
+  function done(){WQ_N--;wqShow()}
+  p.then(done,done);
+  return p;
+}
+function wqShow(){var el=document.getElementById('sync');if(el)el.classList.toggle('on',WQ_N>0)}
 
 // ═══ Tutorial ═══
 var TUT_STEP=0;
@@ -949,7 +979,7 @@ function checkFirstRun(){
 // ═══ 수납 현황표 (종이 양식) ═══
 // 기본은 전월·이번 달 두 칸. 월 제목(또는 "6개월 보기")을 누르면 6개월로 펼쳐진다.
 // 칸을 누르면 납부일·메모 창이 뜨고, 저장을 눌러야 기록된다. 이름 줄을 누르면 원생 정보 수정.
-var LDG={y:new Date().getFullYear(),m:new Date().getMonth()+1,wide:false,Y:{},at:{},busy:{},rows:[],saving:{},lastDate:'',err:'',anim:'',pop:''};
+var LDG={y:new Date().getFullYear(),m:new Date().getMonth()+1,wide:false,Y:{},at:{},busy:{},rows:[],saving:{},ver:{},lastDate:'',err:'',anim:'',pop:''};
 var RET=[]; // 퇴원 원생 (복원용)
 var LDG_METHODS=['카드','현금','앱','현영','계좌'];
 
@@ -995,8 +1025,12 @@ function ldgLoad(force){
 function ldgFetchYear(y){
   if(LDG.busy[y])return;
   LDG.busy[y]=true;
+  var gen=STU_GEN;
   apiGet('loadPaymentYear',{year:y}).then(function(d){
-    LDG.busy[y]=false;LDG.at[y]=Date.now();
+    LDG.busy[y]=false;
+    // 받는 사이에 원생 정보를 고쳤으면 옛 내용일 수 있다 → 버리고, 저장이 끝난 뒤 다시 받는다
+    if(STU_BUSY||gen!==STU_GEN){if(!STU_BUSY&&VIEW==='ledger')ldgFetchYear(y);return}
+    LDG.at[y]=Date.now();
     var first=!LDG.Y[y];
     ldgKeepSaving(y,d);
     LDG.Y[y]=d;ldgWriteCache(y);
@@ -1078,7 +1112,7 @@ function ldgRows(){
 function ldgCellHtml(i,c,isCur){
   if(!LDG.Y[c.y])return '<td class="c-m c-wait'+(isCur?' c-cur':'')+'"><i></i></td>';
   var s=LDG.rows[i],v=ldgCell(c.y,c.m,s.name);
-  var cls='c-m'+(isCur?' c-cur':'')+(LDG.saving[ldgKey(s.name,c.y,c.m)]?' c-saving':'')+(LDG.fresh===c.y?' c-fresh':'');
+  var cls='c-m'+(isCur?' c-cur':'')+(LDG.fresh===c.y?' c-fresh':'');
   var inner='';
   if(v&&v.paid)inner='<span class="ck'+(LDG.pop===ldgKey(s.name,c.y,c.m)?' pop':'')+'">✓</span><span class="dt">'+ldgShortDate(v.date)+'</span>';
   if(v&&v.memo)inner+='<span class="memo">'+esc(String(v.memo))+'</span>';
@@ -1113,27 +1147,35 @@ function ldgRender(){
 // ── 칸: 납부일·메모 ──
 // 납부일은 직전에 저장한 날짜로 열린다 (같은 날 낸 사람들을 연달아 적기 편하게). 앱을 새로 켜면 오늘.
 function ldgEdit(i,y,m){
-  var s=LDG.rows[i];if(!s||LDG.saving[ldgKey(s.name,y,m)])return;
+  var s=LDG.rows[i];if(!s||!LDG.Y[y])return;
   var c=ldgCell(y,m,s.name)||{},paid=!!c.paid,a='('+i+','+y+','+m+',';
   showModal('<div class="modal-title">'+esc(String(s.name))+' · '+m+'월</div>'+
     '<label class="fld"><span>납부일</span><input type="date" id="edDate" value="'+esc(c.date||LDG.lastDate||ldgToday())+'"></label>'+
+    '<div class="chips"><button type="button" onclick="ldgPickDate(0)">오늘</button><button type="button" onclick="ldgPickDate(-1)">어제</button></div>'+
     '<label class="fld"><span>메모</span><input type="text" id="edMemo" maxlength="40" placeholder="예: 11만 주2회" value="'+esc(String(c.memo||''))+'"></label>'+
     '<div class="modal-btns">'+
     (paid?'<button class="btn btn-d" onclick="ldgSaveFromEditor'+a+'false)">납부 취소</button><button class="btn btn-y" onclick="ldgSaveFromEditor'+a+'true)">저장</button>'
          :'<button class="btn btn-d" onclick="ldgSaveFromEditor'+a+'false)">메모만 저장</button><button class="btn btn-y" onclick="ldgSaveFromEditor'+a+'true)">납부 저장</button>')+
     '</div>');
 }
+function ldgPickDate(off){
+  var d=new Date();d.setDate(d.getDate()+off);
+  var el=document.getElementById('edDate');
+  if(el)el.value=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
 function ldgSaveFromEditor(i,y,m,paid){
   var s=LDG.rows[i];
   var d=(document.getElementById('edDate')||{}).value||ldgToday();
   var memo=(document.getElementById('edMemo')||{}).value||'';
   closeModal();
-  if(s)ldgSave(s.name,y,m,paid,d,memo);
+  if(s)ldgSave(s.name,y,m,paid,d,memo,true);
 }
 
-function ldgSave(name,y,m,paid,date,memo){
+// 화면에 바로 반영하고 서버에는 뒤에서 보낸다. 저장 중에도 같은 칸을 또 고칠 수 있다 (wq가 순서를 지킨다)
+// undoable이면 "되돌리기"가 붙은 알림을 띄운다
+function ldgSave(name,y,m,paid,date,memo,undoable){
   var key=ldgKey(name,y,m);
-  if(LDG.saving[key]||!LDG.Y[y])return;
+  if(!LDG.Y[y])return;
   var s=ldgStu(y,name);
   if(!s){
     // 그 해 표에 없는 원생(다른 해에서 온 줄)이면 줄을 만들어 둔다
@@ -1143,18 +1185,30 @@ function ldgSave(name,y,m,paid,date,memo){
   }
   var prev=s.months[m]?JSON.parse(JSON.stringify(s.months[m])):null;
   var next={paid:!!paid,date:paid?(date||ldgToday()):'',memo:String(memo||'').trim()};
-  if(!next.paid&&!next.memo){if(!prev)return;delete s.months[m]}else s.months[m]=next;
-  if(next.paid){LDG.lastDate=next.date;if(!prev||!prev.paid)LDG.pop=key}
-  LDG.saving[key]={name:name,y:y,m:m};ldgRender();
-  apiPost('savePaymentCell',{year:y,month:m,name:name,paid:next.paid,date:next.date,memo:next.memo}).then(function(){
+  var was={paid:!!(prev&&prev.paid),date:prev&&prev.paid?String(prev.date||''):'',memo:prev?String(prev.memo||'').trim():''};
+  if(was.paid===next.paid&&was.date===next.date&&was.memo===next.memo)return; // 바뀐 게 없음
+  if(!next.paid&&!next.memo)delete s.months[m];else s.months[m]=next;
+  if(next.paid){if(undoable)LDG.lastDate=next.date;if(!was.paid)LDG.pop=key}
+  var ver=LDG.ver[key]=(LDG.ver[key]||0)+1;
+  LDG.saving[key]={name:name,y:y,m:m};
+  if(VIEW==='ledger')ldgRender();
+  if(undoable){
+    T(name+' '+m+'월 '+(next.paid?(was.paid?'수정':'납부 저장'):(was.paid?'납부 취소':'메모 저장')),function(){
+      ldgSave(name,y,m,was.paid,was.date,was.memo);T('되돌렸어요');
+    });
+  }
+  wq(name,function(){
+    return apiPost('savePaymentCell',{year:y,month:m,name:name,paid:next.paid,date:next.date,memo:next.memo},true);
+  }).then(function(){
+    if(LDG.ver[key]!==ver)return; // 그 사이 같은 칸을 또 고쳤음 → 마지막 저장이 정리한다
     delete LDG.saving[key];ldgWriteCache(y);
-    if(VIEW==='ledger')ldgRender();
   }).catch(function(e){
+    T('저장 실패: '+e.message);
+    if(LDG.ver[key]!==ver)return;
     delete LDG.saving[key];
     var s2=ldgStu(y,name);
     if(s2){if(prev)s2.months[m]=prev;else delete s2.months[m]}
     if(VIEW==='ledger')ldgRender();
-    T('저장 실패: '+e.message);
   });
 }
 
@@ -1216,40 +1270,92 @@ function stuEdit(name){
   showModal(h);
 }
 
+// 수정은 창을 바로 닫고 뒤에서 저장한다. 새 원생만 서버가 줄 번호를 줄 때까지 기다린다
 function stuSave(){
   function g(id){var el=document.getElementById(id);return el?el.value.trim():undefined}
-  var orig=STU_ED,p=orig?stuFind(orig):null,name=g('stName');
+  var orig=STU_ED,name=g('stName');
   if(!name){T('이름을 적어주세요');return}
+  if(name!==orig&&stuFind(name)){T('같은 이름의 원생이 이미 있어요');return}
   var body={name:name,fee:g('stFee'),method:g('stMethod'),level:g('stLevel'),freq:g('stFreq'),grade:g('stGrade'),gender:g('stGender'),parentName:g('stParent'),phone:g('stPhone')};
-  var btn=document.getElementById('stSave');if(btn){btn.disabled=true;btn.textContent='저장 중...'}
-  if(orig){body.origName=orig;if(p)body.row=p.row}
-  apiPost(orig?'studentUpdate':'studentAdd',body).then(function(r){
+  if(orig){
+    var before=stuSnap(orig),same=true;
+    for(var k in body)if(body[k]!==undefined&&body[k]!==String(before[k]==null?'':before[k]).trim())same=false;
     closeModal();
-    if(orig){
-      if(p){
-        p.name=name;p.fee=body.fee;p.level=body.level;p.freq=body.freq;p.method=body.method;
-        if(body.grade!==undefined){p.grade=body.grade;p.gender=body.gender;p.gg=[body.grade,body.gender].filter(Boolean).join(' ');p.parentName=body.parentName;p.phone=body.phone}
-      }
-      Object.keys(LDG.Y).forEach(function(y){
-        var o=ldgStu(y,orig);if(!o)return;
-        o.name=name;o.feeDisplay=body.fee;o.fee=stuFeeNum(body.fee);o.level=body.level;o.freq=body.freq;o.method=body.method;
-        ldgWriteCache(y);
-      });
-      T(name+' 정보를 저장했어요');
-    }else{
-      var n={row:r.row,name:name,grade:body.grade||'',gender:body.gender||'',gg:[body.grade,body.gender].filter(Boolean).join(' '),
-        kw:'',prevKw:'',msg:'',hist:'',done:false,phone:body.phone||'',parentName:body.parentName||'',level:body.level||'',freq:body.freq||'',fee:body.fee||'',method:body.method||'',retired:false};
-      S.push(n);stuAdopt(n);
-      Object.keys(LDG.Y).forEach(function(y){
-        LDG.Y[y].students.push({name:name,fee:stuFeeNum(body.fee),feeDisplay:body.fee||'',level:body.level||'',freq:body.freq||'',method:body.method||'',retired:false,months:{}});
-      });
-      T(name+' 원생을 추가했어요');
-    }
+    if(same)return;
+    stuCommit(orig,body);
+    T(name+' 정보를 저장했어요',function(){stuCommit(name,before);T('되돌렸어요')});
+    return;
+  }
+  var btn=document.getElementById('stSave');if(btn){btn.disabled=true;btn.textContent='저장 중...'}
+  apiPost('studentAdd',body).then(function(r){
+    closeModal();
+    var n={row:r.row,name:name,grade:body.grade||'',gender:body.gender||'',gg:[body.grade,body.gender].filter(Boolean).join(' '),
+      kw:'',prevKw:'',msg:'',hist:'',done:false,phone:body.phone||'',parentName:body.parentName||'',level:body.level||'',freq:body.freq||'',fee:body.fee||'',method:body.method||'',retired:false};
+    S.push(n);stuAdopt(n);
+    Object.keys(LDG.Y).forEach(function(y){
+      LDG.Y[y].students.push({name:name,fee:stuFeeNum(body.fee),feeDisplay:body.fee||'',level:body.level||'',freq:body.freq||'',method:body.method||'',retired:false,months:{}});
+    });
+    T(name+' 원생을 추가했어요');
     stuRefresh();
   }).catch(function(e){
     if(btn){btn.disabled=false;btn.textContent='저장'}
     T('저장 실패: '+e.message);
   });
+}
+
+// 지금 화면에 있는 원생 정보 (되돌리기·실패 복구용). 수납 현황표에만 있는 원생은 표의 항목만
+function stuSnap(name){
+  var p=stuFind(name);
+  if(p)return {name:p.name,fee:p.fee,method:p.method,level:p.level,freq:p.freq,grade:p.grade,gender:p.gender,parentName:p.parentName,phone:p.phone};
+  var r=null;Object.keys(LDG.Y).forEach(function(y){r=r||ldgStu(y,name)});
+  return r?{name:r.name,fee:r.feeDisplay,method:r.method,level:r.level,freq:r.freq}:{name:name};
+}
+// 화면 쪽 정보만 바꾼다 (f에 없는 항목은 그대로)
+function stuApply(orig,f){
+  var p=stuFind(orig);
+  function v(k){return f[k]==null?'':f[k]}
+  if(p){
+    p.name=f.name;p.fee=v('fee');p.level=v('level');p.freq=v('freq');p.method=v('method');
+    if(f.grade!==undefined){p.grade=v('grade');p.gender=v('gender');p.gg=[p.grade,p.gender].filter(Boolean).join(' ');p.parentName=v('parentName');p.phone=v('phone')}
+  }
+  Object.keys(LDG.Y).forEach(function(y){
+    var o=ldgStu(y,orig);if(!o)return;
+    o.name=f.name;o.feeDisplay=v('fee');o.fee=stuFeeNum(f.fee);o.level=v('level');o.freq=v('freq');o.method=v('method');
+    ldgWriteCache(y);
+  });
+}
+function stuRedraw(){if(VIEW==='ledger')ldgRender();else if(VIEW==='students')rStudents()}
+// 서버로 가는 중인 원생 저장 개수. 다 끝나면 수납 현황표를 새로 받는다. 실패가 있었으면 원생 목록도 다시 받는다
+var STU_BUSY=0,STU_GEN=0,STU_FAIL=false;
+function stuBusy(d){
+  STU_BUSY+=d;if(STU_BUSY>0)return;
+  LDG.at={};
+  if(STU_FAIL){STU_FAIL=false;stuResync()}
+  else if(VIEW==='ledger')ldgLoad(true);
+}
+function stuResync(){
+  apiGet('loadStudents2').then(function(data){
+    if(STU_BUSY)return;
+    data=data||[];
+    S=data.filter(function(s){return!s.retired});RET=data.filter(function(s){return s.retired});
+    stuRefresh();
+  }).catch(function(){});
+}
+// 원생 정보 저장: 화면 먼저, 서버는 뒤에서. 실패하면 원래대로 돌린다
+function stuCommit(orig,f){
+  var p=stuFind(orig),before=stuSnap(orig);
+  var body={origName:orig,name:f.name,fee:f.fee,method:f.method,level:f.level,freq:f.freq,grade:f.grade,gender:f.gender,parentName:f.parentName,phone:f.phone};
+  if(p)body.row=p.row;
+  stuApply(orig,f);
+  STU_BUSY++;STU_GEN++;
+  var q=wq(orig,function(){return apiPost('studentUpdate',body,true)});
+  if(f.name!==orig)WQ[f.name]=WQ[orig]; // 이름이 바뀌어도 뒤따르는 저장이 이 저장 다음에 가게
+  q.then(function(){stuBusy(-1)},function(e){
+    T('저장 실패: '+e.message);
+    if(STU_BUSY===1){stuApply(f.name,before);stuRedraw()}
+    STU_FAIL=true;stuBusy(-1);
+  });
+  stuRedraw();
 }
 
 function stuAskRetire(){
@@ -1258,18 +1364,26 @@ function stuAskRetire(){
     '<div class="modal-desc">메시지 목록과 수납 현황에서 숨겨요.<br>기록은 지워지지 않고, 원생 탭에서 언제든 복원할 수 있어요.</div>'+
     '<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" onclick="stuRetire(true)">퇴원 처리</button></div>');
 }
-function stuRetire(retired){var name=STU_ED;closeModal();if(name)stuSetRetired(name,retired)}
-function stuSetRetired(name,retired){
-  apiPost('studentSetStatus',{name:name,retired:retired}).then(function(){
-    var from=retired?S:RET,to=retired?RET:S;
-    for(var k=from.length-1;k>=0;k--){
-      if(from[k].name===name){var x=from.splice(k,1)[0];x.retired=retired;to.push(x);if(!retired)stuAdopt(x)}
-    }
-    S.sort(function(a,b){return a.row-b.row});RET.sort(function(a,b){return a.row-b.row});
-    Object.keys(LDG.Y).forEach(function(y){var o=ldgStu(y,name);if(o)o.retired=retired});
-    T(name+(retired?' 퇴원 처리했어요':' 복원했어요'));
-    stuRefresh();
-  }).catch(function(e){T('저장 실패: '+e.message)});
+function stuRetire(retired){var name=STU_ED;closeModal();if(name)stuSetRetired(name,retired,true)}
+function stuMove(name,retired){
+  var from=retired?S:RET,to=retired?RET:S;
+  for(var k=from.length-1;k>=0;k--){
+    if(from[k].name===name){var x=from.splice(k,1)[0];x.retired=retired;to.push(x);if(!retired)stuAdopt(x)}
+  }
+  S.sort(function(a,b){return a.row-b.row});RET.sort(function(a,b){return a.row-b.row});
+  Object.keys(LDG.Y).forEach(function(y){var o=ldgStu(y,name);if(o){o.retired=retired;ldgWriteCache(y)}});
+}
+function stuSetRetired(name,retired,undoable){
+  var p=stuFind(name);
+  stuMove(name,retired);
+  STU_BUSY++;STU_GEN++;
+  wq(name,function(){return apiPost('studentSetStatus',{name:name,retired:retired,row:p?p.row:undefined},true)}).then(function(){stuBusy(-1)},function(e){
+    T('저장 실패: '+e.message);
+    if(STU_BUSY===1){stuMove(name,!retired);stuRedraw()}
+    STU_FAIL=true;stuBusy(-1);
+  });
+  stuRedraw();
+  if(undoable)T(name+(retired?' 퇴원 처리했어요':' 복원했어요'),function(){stuSetRetired(name,!retired);T('되돌렸어요')});
 }
 
 // ═══ Android Back Button ═══
