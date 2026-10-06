@@ -287,10 +287,10 @@ body[data-view=students] .toast{bottom:150px}
 .ldg .sb{font-size:11.5px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .ldg th.c-mh{text-align:center;padding:8px 2px}
 /* 월 제목 = 눌리는 버튼 (6개월 펼치기·접기) */
-.mh{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;border:none;background:var(--field);color:inherit;font-size:12px;font-weight:600;padding:7px 10px;border-radius:12px;cursor:pointer;box-shadow:0 1px 2px rgba(38,35,31,.12),inset 0 0 0 .5px rgba(38,35,31,.06);transition:transform .12s,box-shadow .12s,background .12s}
-.mh svg{opacity:.55}
-.mh:active{transform:scale(.92);background:#E9E4DB;box-shadow:inset 0 1px 3px rgba(38,35,31,.16)}
-.ldg.wide .mh{padding:7px 0;width:calc(100% - 6px);justify-content:center}
+.mh,.bt{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;border:none;background:var(--field);color:inherit;font-size:12px;font-weight:600;padding:7px 10px;border-radius:12px;cursor:pointer;box-shadow:0 1px 2px rgba(38,35,31,.12),inset 0 0 0 .5px rgba(38,35,31,.06);transition:transform .12s,box-shadow .12s,background .12s}
+.mh svg,.bt svg{opacity:.55}
+.mh:active,.bt:active{transform:scale(.92);background:#E9E4DB;box-shadow:inset 0 1px 3px rgba(38,35,31,.16)}
+.ldg.wide .mh,.ldg.wide .bt{padding:7px 0;width:calc(100% - 6px);justify-content:center}
 .ldg th.c-cur .mh{background:var(--ink);color:#fff;box-shadow:none}
 .ldg th.c-cur .mh:active{background:var(--ink2)}
 .ldg td.c-m{text-align:center;padding:6px 4px;line-height:1.2;white-space:nowrap}
@@ -347,21 +347,18 @@ body[data-view=students] .toast{bottom:150px}
 .sumc-st{display:flex;justify-content:flex-end;gap:6px;margin-top:11px}
 .sumc-st span{font-size:10.5px;font-weight:600;color:#B9B2A7;background:var(--field);padding:3px 9px;border-radius:9px}
 .sumc-st .t1{color:#2F6443;background:#E6F1E9}.sumc-st .t2{color:#2F5F8F;background:#E3ECF6}.sumc-st .t3{color:#5E4A9E;background:#EBE6F6}
-/* 일괄 수납: 고르기 모드에서는 칸에 테두리가 생기고, 고른 칸은 먹색 */
-.ldg-tools{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:14px 18px 0;min-height:36px}
-.ldg-tools span{flex:1;font-size:13px;font-weight:500;color:var(--sub)}
-.tool-b{display:inline-flex;align-items:center;gap:6px;border:none;background:var(--card);box-shadow:var(--lift);color:var(--ink);font-size:13px;font-weight:600;padding:9px 15px;border-radius:18px;cursor:pointer;transition:transform .12s}
-.tool-b:active{transform:scale(.95)}
-.ldg-tools+.ldg-wrap{margin-top:10px}
+/* 일괄 수납: 버튼은 표 제목줄 왼쪽. 고르기 모드에서는 칸에 테두리가 생기고, 고른 칸은 먹색 */
+.ldg th.c-nm{padding:8px 6px 8px 12px}
+.bt.on{background:var(--ink);color:#fff;box-shadow:none}
 .ldg.sel .tl{box-shadow:inset 0 0 0 1.5px rgba(38,35,31,.13)}
 .ldg.sel .tl.paid{opacity:.4;box-shadow:none}
 .ldg .tl.pick{background:var(--ink);color:#fff;box-shadow:none}
 .ldg .tl.pick .pk{font-size:17px;font-weight:700;animation:ckPop .3s cubic-bezier(.3,1.7,.5,1) both}
 .ldg-pad{height:76px}
 /* 원생 탭: 레벨 색 (기초 → 초급 → 중급 → 고급) */
-.lv0{background:#EFE9DD;color:#6E5F45}.lv1{background:#E6F1E9;color:#2F6443}.lv2{background:#E3ECF6;color:#2F5F8F}.lv3{background:#EBE6F6;color:#5E4A9E}.lvx{background:var(--field);color:var(--muted)}
-.lvbar{display:flex;gap:3px;margin-top:14px;height:8px}
-.lvbar i{display:block;height:100%;border-radius:4px;min-width:8px}
+.lv0{background:#FBF1CB;color:#8C6D14}.lv1{background:#E6F1E9;color:#2F6443}.lv2{background:#FBE1CA;color:#9A4A1F}.lv3{background:#F8D8D4;color:#A23A30}.lv4{background:#DCEBF7;color:#2F5F8F}.lvx{background:var(--field);color:var(--muted)}
+.lvbar{display:flex;gap:3px;margin-top:14px;height:10px}
+.lvbar i{display:block;height:100%;border-radius:5px;min-width:8px}
 .lvlg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:11px;font-size:12px;color:var(--sub)}
 .lvlg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
 .lvlg b{color:var(--ink);font-weight:700;margin-left:4px}
@@ -394,6 +391,12 @@ body[data-view=students] .toast{bottom:150px}
 .chips button{border:none;background:var(--field);color:var(--ink2);font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:15px;cursor:pointer;transition:transform .12s,background .15s}
 .chips button:active{transform:scale(.94);background:#ECE7DE}
 .chips button.on{background:var(--ink);color:#fff}
+/* 고르는 칸: 누르면 그 줄 밑에 선택지가 펼쳐진다 */
+.fld input.pick{cursor:pointer;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238F897F' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.chips.pk{max-height:0;opacity:0;margin:0;overflow:hidden;transition:max-height .3s cubic-bezier(.2,.8,.2,1),opacity .22s,margin .3s cubic-bezier(.2,.8,.2,1)}
+.chips.pk.open{max-height:100px;opacity:1;margin:4px 0 10px}
+.chips .pen{display:inline-flex;align-items:center;gap:4px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--sub)}
+.chips.pk+.modal-btns{margin-top:14px}
 .pick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 4px}
 .pick-grid .btn{min-height:48px;border-radius:14px}
 .pick-clear{margin-top:8px;width:100%;background:transparent!important;color:var(--sub)!important}
@@ -895,6 +898,7 @@ var ICON_NEXT=_ic('<polyline points="9 6 15 12 9 18"></polyline>',17);
 var ICON_REGEN=_ic('<path d="M20 11a8 8 0 1 0-2.3 5.7"></path><polyline points="20 4 20 11 13 11"></polyline>',14);
 var ICON_WIDE=_ic('<polyline points="14 4 20 4 20 10"></polyline><polyline points="10 20 4 20 4 14"></polyline><line x1="20" y1="4" x2="13.5" y2="10.5"></line><line x1="4" y1="20" x2="10.5" y2="13.5"></line>',11);
 var ICON_PICK=_ic('<rect x="4" y="4" width="16" height="16" rx="5"></rect><polyline points="8.5 12.5 11 15 15.5 9.5"></polyline>',16);
+var ICON_PEN=_ic('<path d="M4 20h4L19 9l-4-4L4 16v4z"></path><line x1="13.5" y1="6.5" x2="17.5" y2="10.5"></line>',13);
 var ICON_PLUS=_ic('<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>');
 var ICON_COPY=_ic('<rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path>',17);
 
@@ -1218,8 +1222,8 @@ function ldgRender(){
   if(LDG.err)h+='<div class="bar"><span class="bar-info">불러오기 실패: '+esc(LDG.err)+'</span><button class="btn btn-d" onclick="ldgLoad(true)">다시 시도</button></div>';
   else h+=ldgSummaryHtml(rows);
   var nsel=LDG.sel?Object.keys(LDG.sel).length:0;
-  h+='<div class="ldg-tools">'+(LDG.sel?'<span>납부 처리할 칸을 눌러 골라주세요</span>':'<button type="button" class="tool-b" onclick="ldgSelOn()">'+ICON_PICK+'일괄 수납</button>')+'</div>';
-  h+='<div class="ldg-wrap'+(LDG.anim?' in-'+LDG.anim:'')+'" id="ldgWrap"><table class="ldg'+(LDG.wide?' wide':'')+(LDG.sel?' sel':'')+'"><thead><tr><th class="c-nm">이름</th>';
+  h+='<div class="ldg-wrap'+(LDG.anim?' in-'+LDG.anim:'')+'" id="ldgWrap"><table class="ldg'+(LDG.wide?' wide':'')+(LDG.sel?' sel':'')+'"><thead><tr><th class="c-nm">'+
+    (LDG.sel?'<button type="button" class="bt on" onclick="ldgSelOff()">고르기 취소</button>':'<button type="button" class="bt" onclick="ldgSelOn()">'+(LDG.wide?'':ICON_PICK)+'일괄 수납</button>')+'</th>';
   cols.forEach(function(c){h+='<th class="c-mh'+(c.y===cy&&c.m===cm?' c-cur':'')+'"><button type="button" class="mh" aria-label="'+(LDG.wide?'2개월로 접기':'6개월로 펼치기')+'" onclick="ldgToggleWide()">'+c.m+'월'+(LDG.wide?'':ICON_WIDE)+'</button></th>'});
   h+='</tr></thead><tbody>';
   rows.forEach(function(s,i){
@@ -1369,12 +1373,12 @@ function stuAdopt(s){if(s.kw)KW[s.row]=s.kw;PrevKW[s.row]=s.prevKw||'';if(s.msg)
 function stuFeeNum(t){var n=parseInt(String(t||'').replace(/,/g,''),10);return isNaN(n)?0:n}
 function stuRefresh(){if(VIEW==='ledger')ldgLoad(true);else if(VIEW==='students')rStudents()}
 // 레벨 색: 기초 → 초급 → 중급 → 고급 (요약 막대와 줄 앞 네모가 같은 색). 그 밖의 레벨은 -1(회색)
-var STU_LV=['기초','초급','중급','고급'],STU_LV_C=['#C9BBA0','#7FB394','#7FA6CF','#A190D0'];
+var STU_LV=['기초','초급','중급','고급','입시'],STU_LV_C=['#EBD583','#A3CBB2','#F1BD90','#E9A79F','#9CC6E8'];
 function stuLv(s){var t=String(s.level||'');for(var i=0;i<STU_LV.length;i++)if(t.indexOf(STU_LV[i])>=0)return i;return -1}
 
 // 맨 위 요약: 인원 + 한 달 수강료(숫자로 적힌 것만 더함) + 레벨별 인원 막대
 function stuSummaryHtml(){
-  var n=[0,0,0,0],etc=0,sum=0,fees=0;
+  var n=STU_LV.map(function(){return 0}),etc=0,sum=0,fees=0;
   S.forEach(function(s){
     var k=stuLv(s);if(k<0)etc++;else n[k]++;
     if(/^[\d,]+$/.test(String(s.fee||'').trim())){sum+=stuFeeNum(s.fee);fees++}
@@ -1423,22 +1427,64 @@ function stuEdit(name){
     p={name:r.name,fee:r.feeDisplay,level:r.level,freq:r.freq,method:r.method,retired:r.retired,partial:true};
   }
   STU_ED=name||'';
+  // mode가 'pick'이면 고르는 칸: 누르면 그 줄 밑에 선택지가 펼쳐진다 (stuPickOpen)
   function f(label,id,val,ph,mode){
-    return '<label class="fld"><span>'+label+'</span><input type="'+(mode==='tel'?'tel':'text')+'" id="'+id+'" maxlength="40" autocomplete="off" value="'+esc(String(val==null?'':val))+'" placeholder="'+esc(ph||'')+'"'+(mode?' inputmode="'+mode+'"':'')+'></label>';
+    var pick=mode==='pick';
+    return '<label class="fld"><span>'+label+'</span><input type="'+(mode==='tel'?'tel':'text')+'" id="'+id+'" maxlength="40" autocomplete="off" value="'+esc(String(val==null?'':val))+'" placeholder="'+esc(ph||'')+'"'+
+      (pick?' class="pick" readonly onclick="stuPickOpen(\''+id+'\')"':mode?' inputmode="'+mode+'"':'')+'></label>';
   }
   var h='<div class="modal-title">'+(p?esc(String(p.name)):'새 원생')+'</div>'+
     f('이름','stName',p?p.name:'','이름')+
-    '<div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','140,000')+f('결제수단','stMethod',p?p.method:'','카드')+'</div>'+
-    '<div class="chips" id="stMethods">'+LDG_METHODS.map(function(x){return '<button type="button" onclick="stuMethodToggle(\''+x+'\')">'+x+'</button>'}).join('')+'</div>'+
-    '<div class="fld-row">'+f('레벨','stLevel',p?p.level:'','기초')+f('주 횟수','stFreq',p?p.freq:'','2')+'</div>';
-  if(!p||!p.partial)h+='<div class="fld-row">'+f('학년','stGrade',p?p.grade:'','초3')+f('성별','stGender',p?p.gender:'','여')+'</div>'+
+    '<div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','고르기','pick')+f('결제수단','stMethod',p?p.method:'','고르기','pick')+'</div>'+stuPickHtml(['stFee','stMethod'])+
+    '<div class="fld-row">'+f('레벨','stLevel',p?p.level:'','고르기','pick')+f('주 횟수','stFreq',p?p.freq:'','고르기','pick')+'</div>'+stuPickHtml(['stLevel','stFreq']);
+  if(!p||!p.partial)h+='<div class="fld-row">'+f('학년','stGrade',p?p.grade:'','초3')+f('성별','stGender',p?p.gender:'','고르기','pick')+'</div>'+stuPickHtml(['stGender'])+
     '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?p.phone:'','010-0000-0000','tel')+'</div>';
   h+='<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" id="stSave" onclick="stuSave()">저장</button></div>';
   if(p)h+=p.retired?'<button type="button" class="sheet-link" onclick="stuRetire(false)">다시 다니는 원생으로 복원</button>'
                    :'<button type="button" class="sheet-link warn" onclick="stuAskRetire()">퇴원 처리</button>';
   showModal(h);
-  var me=document.getElementById('stMethod');if(me)me.oninput=stuMethodMark;
-  stuMethodMark();
+  stuPickMark();
+}
+// 다른 입력칸으로 옮겨 가면 펼쳐져 있던 선택지를 접는다
+function stuPickClose(){[].forEach.call(document.querySelectorAll('.chips.pk.open'),function(p){p.classList.remove('open')})}
+document.getElementById('modalCard').addEventListener('focusin',function(e){
+  var t=e.target;if(t&&t.tagName==='INPUT'&&!(t.readOnly&&t.classList.contains('pick')))stuPickClose();
+});
+// ── 고르는 칸 (수강료·결제수단·레벨·주 횟수·성별) ──
+// 칸을 누르면 그 줄 밑에 선택지가 펼쳐지고, 고르면 접힌다. 연필을 누르면 목록에 없는 값을 직접 적을 수 있다
+var STU_PICK={stFee:['110,000','120,000','130,000','140,000','150,000'],stMethod:LDG_METHODS,stLevel:STU_LV,stFreq:['1','2','3','4','5'],stGender:['남','여']};
+function stuPickLabel(id,x){return id==='stFee'?parseInt(x,10)/10+'만':id==='stFreq'?x+'회':x}
+function stuPickHtml(ids){
+  return ids.map(function(id){
+    return '<div class="chips pk" id="pk_'+id+'">'+STU_PICK[id].map(function(x){
+      return '<button type="button" data-v="'+x+'" onclick="stuPickSet(\''+id+'\',\''+x+'\')">'+stuPickLabel(id,x)+'</button>';
+    }).join('')+(id==='stGender'?'':'<button type="button" class="pen" aria-label="직접 적기" onclick="stuPickType(\''+id+'\')">'+ICON_PEN+'직접</button>')+'</div>'; // 성별은 남·여뿐
+  }).join('');
+}
+function stuPickOpen(id){
+  var el=document.getElementById(id);if(!el||!el.readOnly)return; // 직접 적는 중이면 그냥 입력칸
+  [].forEach.call(document.querySelectorAll('.chips.pk'),function(p){p.classList.toggle('open',p.id==='pk_'+id&&!p.classList.contains('open'))});
+  stuPickMark();
+}
+function stuPickSet(id,x){
+  if(id==='stMethod'){stuMethodToggle(x);return} // 결제수단만 여러 개
+  var el=document.getElementById(id);if(!el)return;
+  el.value=el.value.trim()===x?'':x;
+  stuPickMark();
+  document.getElementById('pk_'+id).classList.remove('open');
+}
+function stuPickType(id){
+  var el=document.getElementById(id);if(!el)return;
+  el.readOnly=false;el.classList.remove('pick');el.placeholder='';
+  document.getElementById('pk_'+id).classList.remove('open');
+  el.focus();
+}
+function stuPickMark(){
+  Object.keys(STU_PICK).forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    var v=el.value.trim(),a=id==='stMethod'?stuMethodList(v):[v];
+    [].forEach.call(document.querySelectorAll('#pk_'+id+' button[data-v]'),function(b){b.classList.toggle('on',a.indexOf(b.getAttribute('data-v'))>=0)});
+  });
 }
 // 결제수단은 여러 개 고를 수 있다 (종이 장부의 "앱/카드"처럼). 누를 때마다 넣었다 뺐다 하고, 시트에는 "/"로 이어 적는다
 function stuMethodList(v){return String(v||'').split(/[\/,\s]+/).filter(Boolean)}
@@ -1447,11 +1493,7 @@ function stuMethodToggle(x){
   var a=stuMethodList(el.value),k=a.indexOf(x);
   if(k<0)a.push(x);else a.splice(k,1);
   if(a.join('/').length>10){T('결제수단은 10글자까지 적을 수 있어요');return} // 시트 쪽 한도
-  el.value=a.join('/');stuMethodMark();
-}
-function stuMethodMark(){
-  var el=document.getElementById('stMethod'),a=stuMethodList(el?el.value:'');
-  [].forEach.call(document.querySelectorAll('#stMethods button'),function(b){b.classList.toggle('on',a.indexOf(b.textContent)>=0)});
+  el.value=a.join('/');stuPickMark();
 }
 
 // 수정은 창을 바로 닫고 뒤에서 저장한다. 새 원생만 서버가 줄 번호를 줄 때까지 기다린다
