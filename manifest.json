@@ -1,6 +1,6 @@
 {
-  "name": "소리마을 스튜디오",
-  "short_name": "소리마을 스튜디오",
+  "name": "소리마을",
+  "short_name": "소리마을",
   "description": "소리마을 음악교습소 카톡 메시지 관리",
   "start_url": "./index.html",
   "display": "standalone",
