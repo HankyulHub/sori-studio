@@ -189,6 +189,8 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 .modal-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px}
 .modal-desc{font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:6px}
 .modal-desc+.modal-btns{margin-top:18px}
+/* 원생 창: 연락처 밑의 전화·문자·번호 복사 */
+.tel-row{display:flex;gap:8px;margin:2px 0 2px}.tel-row:empty{display:none}.tel-row+.modal-btns{margin-top:14px}.tel-row .btn{flex:1;min-height:38px;padding:8px 6px;font-size:13px;text-decoration:none}
 /* 수납 창: 얼마로 적히는지 */
 .modal-fee{font-size:14px;color:var(--sub);text-align:center;margin:-2px 0 6px}.modal-fee b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .modal-names{font-size:13px;color:var(--ink2);background:var(--field);border-radius:12px;padding:10px 12px;margin:12px 0 18px;line-height:1.5;max-height:84px;overflow-y:auto}
@@ -1388,26 +1390,25 @@ function ldgSelAsk(){
     '<div class="chips"><button type="button" onclick="ldgPickDate(0)">오늘</button><button type="button" onclick="ldgPickDate(-1)">어제</button></div>'+
     '<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" onclick="ldgSelSave()">납부 저장</button></div>');
 }
-// 고른 칸을 세 줄로 나눠 차례로 보낸다 (전부 한꺼번에 보내면 서버에서 서로 기다리다 실패할 수 있다). 적어 둔 메모는 그대로 둔다
+// 고른 칸을 한 번에 저장한다 (ldgSaveMany). 적어 둔 메모는 그대로 둔다
 function ldgSelSave(){
-  var d=(document.getElementById('edDate')||{}).value||ldgToday(),a=ldgSelList(),was=[],gate=[];
+  var d=(document.getElementById('edDate')||{}).value||ldgToday(),a=ldgSelList(),now=[],was=[];
   LDG.sel=null;closeModal();
-  a.forEach(function(v,i){
+  a.forEach(function(v){
     var memo=String((ldgCell(v.y,v.m,v.name)||{}).memo||'');
-    was.push({v:v,memo:memo});
-    gate[i%3]=ldgSave(v.name,v.y,v.m,true,d,memo,false,gate[i%3])||gate[i%3];
+    now.push({name:v.name,y:v.y,m:v.m,paid:true,date:d,memo:memo});
+    was.push({name:v.name,y:v.y,m:v.m,paid:false,date:'',memo:memo});
   });
+  ldgSaveMany(now);
   LDG.lastDate=d;
   if(VIEW==='ledger')ldgRender();
-  T(a.length+'칸 납부 저장',function(){
-    var g=[];was.forEach(function(w,i){g[i%3]=ldgSave(w.v.name,w.v.y,w.v.m,false,'',w.memo,false,g[i%3])||g[i%3]});
-    T('되돌렸어요');
-  });
+  T(a.length+'칸 납부 저장',function(){ldgSaveMany(was);T('되돌렸어요')});
 }
 
 // 화면에 바로 반영하고 서버에는 뒤에서 보낸다. 저장 중에도 같은 칸을 또 고칠 수 있다 (wq가 순서를 지킨다)
 // undoable이면 "되돌리기"가 붙은 알림을 띄운다. after(앞선 저장)를 주면 그 저장이 끝난 뒤에 보낸다
-function ldgSave(name,y,m,paid,date,memo,undoable,after){
+// 한 칸을 화면에 먼저 반영하고, 서버에 보낼 거리를 돌려준다 (바뀐 게 없으면 아무것도 안 돌려줌)
+function ldgApply(name,y,m,paid,date,memo,undoable){
   var key=ldgKey(name,y,m);
   if(!LDG.Y[y])return;
   var s=ldgStu(y,name);
@@ -1431,19 +1432,59 @@ function ldgSave(name,y,m,paid,date,memo,undoable,after){
       ldgSave(name,y,m,was.paid,was.date,was.memo);T('되돌렸어요');
     });
   }
+  return {key:key,ver:ver,prev:prev,next:next,name:name,y:y,m:m};
+}
+function ldgCellBody(c){return {year:c.y,month:c.m,name:c.name,paid:c.next.paid,date:c.next.date,memo:c.next.memo}}
+// 저장 실패: 그 칸을 저장 전 모습으로 (그 사이 같은 칸을 또 고쳤으면 건드리지 않는다 → 마지막 저장이 정리한다)
+function ldgRevert(c){
+  if(LDG.ver[c.key]!==c.ver)return;
+  delete LDG.saving[c.key];
+  var s2=ldgStu(c.y,c.name);
+  if(s2){if(c.prev)s2.months[c.m]=c.prev;else delete s2.months[c.m]}
+}
+function ldgSave(name,y,m,paid,date,memo,undoable){
+  var c=ldgApply(name,y,m,paid,date,memo,undoable);if(!c)return;
   return wq(name,function(){
-    return (after||Promise.resolve()).then(function(){
-      return apiPost('savePaymentCell',{year:y,month:m,name:name,paid:next.paid,date:next.date,memo:next.memo},true);
-    });
+    return apiPost('savePaymentCell',ldgCellBody(c),true);
   }).then(function(){
-    if(LDG.ver[key]!==ver)return; // 그 사이 같은 칸을 또 고쳤음 → 마지막 저장이 정리한다
-    delete LDG.saving[key];ldgWriteCache(y);
+    if(LDG.ver[c.key]!==c.ver)return;
+    delete LDG.saving[c.key];ldgWriteCache(y);
   }).catch(function(e){
     T('저장 실패: '+errKo(e));
-    if(LDG.ver[key]!==ver)return;
-    delete LDG.saving[key];
-    var s2=ldgStu(y,name);
-    if(s2){if(prev)s2.months[m]=prev;else delete s2.months[m]}
+    if(LDG.ver[c.key]!==c.ver)return;
+    ldgRevert(c);
+    if(VIEW==='ledger')ldgRender();
+  });
+}
+// 여러 칸을 한 번에 저장 (일괄 수납). 화면은 바로 바뀌고 서버에는 요청 하나로 보낸다.
+// 그 원생들의 앞선 저장이 끝난 뒤에 가고, 뒤따르는 저장은 이것이 끝난 뒤에 간다. 예전 서버(이 기능이 없음)면 한 칸씩 보낸다
+function ldgSaveMany(cells){
+  var cs=[],names=[];
+  cells.forEach(function(v){var c=ldgApply(v.name,v.y,v.m,v.paid,v.date,v.memo);if(c){cs.push(c);if(names.indexOf(c.name)<0)names.push(c.name)}});
+  if(!cs.length)return;
+  function settle(){
+    var ys=[];
+    cs.forEach(function(c){if(LDG.ver[c.key]===c.ver){delete LDG.saving[c.key];if(ys.indexOf(c.y)<0)ys.push(c.y)}});
+    ys.forEach(function(y){ldgWriteCache(y)});
+  }
+  function oneByOne(){ // 세 줄로 나눠 차례로. 실패한 칸만 되돌린다
+    var g=[],bad=0;
+    cs.forEach(function(c,i){
+      g[i%3]=(g[i%3]||Promise.resolve()).then(function(){return apiPost('savePaymentCell',ldgCellBody(c),true)}).catch(function(){bad++;ldgRevert(c)});
+    });
+    return Promise.all(g).then(function(){if(bad){T(bad+'칸 저장 실패');if(VIEW==='ledger')ldgRender()}});
+  }
+  var send=Promise.all(names.map(function(n){return WQ[n]||Promise.resolve()})).then(function(){
+    if(LDG.noBatch)return oneByOne();
+    return apiPost('savePaymentCells',{cells:cs.map(ldgCellBody)},true).catch(function(e){
+      if(!/Unknown action/.test(e.message))throw e;
+      LDG.noBatch=true;return oneByOne();
+    });
+  });
+  names.forEach(function(n){wq(n,function(){return send}).catch(function(){})});
+  send.then(settle).catch(function(e){
+    T('저장 실패: '+errKo(e));
+    cs.forEach(ldgRevert);
     if(VIEW==='ledger')ldgRender();
   });
 }
@@ -1526,12 +1567,12 @@ function stuEdit(name){
     '<div class="pkw"><div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','고르기','pick')+f('결제수단','stMethod',p?p.method:'','고르기','pick')+'</div>'+stuPickHtml(['stFee','stMethod'])+'</div>'+
     '<div class="pkw"><div class="fld-row">'+f('레벨','stLevel',p?p.level:'','고르기','pick')+f('주 횟수','stFreq',p?p.freq:'','고르기','pick')+'</div>'+stuPickHtml(['stLevel','stFreq'])+'</div>';
   if(!p||!p.partial)h+='<div class="pkw"><div class="fld-row">'+f('학년','stGrade',p?p.grade:'','고르기','pick')+f('성별','stGender',p?p.gender:'','고르기','pick')+'</div>'+stuPickHtml(['stGrade','stGender'])+'</div>'+
-    '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?telFmt(p.phone):'','010-0000-0000','tel')+'</div>';
+    '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?telFmt(p.phone):'','010-0000-0000','tel')+'</div><div class="tel-row" id="telRow"></div>';
   h+='<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" id="stSave" onclick="stuSave()">저장</button></div>';
   if(p)h+=p.retired?'<button type="button" class="sheet-link" onclick="stuRetire(false)">다시 다니는 원생으로 복원</button>'
                    :'<button type="button" class="sheet-link warn" onclick="stuAskRetire()">퇴원 처리</button>';
   showModal(h);
-  stuPickMark();
+  stuPickMark();telSync();
 }
 // 전화번호를 010-1234-5678 모양으로. 0으로 시작하는 9~11자리일 때만 (그 밖의 값은 적힌 그대로)
 function telFmt(v){
@@ -1540,7 +1581,19 @@ function telFmt(v){
   var a=d.slice(0,2)==='02'?2:3,r=d.slice(a);
   return d.slice(0,a)+'-'+r.slice(0,r.length-4)+'-'+r.slice(-4);
 }
-document.getElementById('modalCard').addEventListener('focusout',function(e){var t=e.target;if(t&&t.id==='stPhone')t.value=telFmt(t.value)});
+// 연락처 밑의 전화·문자·번호 복사. 전화·문자는 새 앱(이름표 SoriApp/2)이나 일반 브라우저에서만 보인다 (옛 앱은 tel: 주소를 못 연다)
+var CAN_TEL=/SoriApp\/2/.test(navigator.userAgent)||!/; wv\)/.test(navigator.userAgent);
+function telSync(){
+  var r=document.getElementById('telRow'),i=document.getElementById('stPhone');if(!r||!i)return;
+  var d=i.value.replace(/\D/g,'');
+  r.innerHTML=d.length<8?'':(CAN_TEL?'<a class="btn btn-d" href="tel:'+d+'">전화</a><a class="btn btn-d" href="sms:'+d+'">문자</a>':'')+'<button type="button" class="btn btn-d" onclick="telCopy()">번호 복사</button>';
+}
+function telCopy(){
+  var i=document.getElementById('stPhone');if(!i)return;
+  try{navigator.clipboard.writeText(i.value.trim())}catch(e){}
+  T('번호를 복사했어요');
+}
+document.getElementById('modalCard').addEventListener('focusout',function(e){var t=e.target;if(t&&t.id==='stPhone'){t.value=telFmt(t.value);telSync()}});
 // 다른 입력칸으로 옮겨 가면 펼쳐져 있던 선택지를 접는다
 function stuPickClose(){[].forEach.call(document.querySelectorAll('.chips.pk.open'),function(p){p.classList.remove('open')})}
 document.getElementById('modalCard').addEventListener('focusin',function(e){
