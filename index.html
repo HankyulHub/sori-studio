@@ -404,9 +404,15 @@ body[data-view=students] .toast{bottom:150px}
 .pick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 4px}
 .pick-grid .btn{min-height:48px;border-radius:14px}
 .pick-clear{margin-top:8px;width:100%;background:transparent!important;color:var(--sub)!important}
+/* 켤 때 첫 화면: 학생 목록이 올 때까지 덮고 있다가 서서히 걷힌다 */
+#splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:100000;background:#FFE990;display:flex;align-items:center;justify-content:center;transition:opacity .45s ease}
+#splash img{width:100%;max-width:420px;height:auto;opacity:0;transition:opacity .3s ease}
+#splash img.on{opacity:1}
+#splash.off{opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
+<div id="splash"><img src="splash.png" alt="" onload="this.classList.add('on')"></div>
 <div class="banner" onclick="goHome()">
   <div class="banner-row">
     <div><div class="logo">SORI STUDIO</div><div class="title">카톡 메시지 관리</div></div>
@@ -489,6 +495,12 @@ function viewAnim(c){
   clearTimeout(V_TM);V_TM=setTimeout(function(){a.classList.remove(c)},620);
 }
 
+// 첫 화면 걷기 (처음 한 번만)
+function splashOff(){
+  var s=document.getElementById('splash');if(!s)return;
+  s.classList.add('off');setTimeout(function(){s.remove()},500);
+}
+
 function init(){
   var d=new Date();
   document.getElementById('dt').textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월';
@@ -504,8 +516,10 @@ function init(){
     S.forEach(stuAdopt);
     viewAnim('v-fade');
     rInput();
+    splashOff();
     checkFirstRun();
   }).catch(function(e){
+    splashOff();
     Q('app','<div style="padding:20px;color:#f87171;font-size:13px;">연결 실패: '+e.message+'</div>');
   });
 }
