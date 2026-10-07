@@ -1169,6 +1169,11 @@ function ldgKey(name,y,m){return name+'|'+y+'|'+m}
 // 그 달 5일까지는 0(색 없음) → 6일부터 1(연노랑) → 16일부터 2(연주황) → 달이 넘어가면 3(연빨강)
 // 앱으로 기록을 시작한 2026년 10월보다 앞선 달은 칠하지 않는다
 var LDG_DUE_FROM=2026*12+10;
+// 그 원생이 들어오기 전 달인지 (등록월 since = 'yyyy-MM'. 앱에서 새로 추가한 원생에게만 있다)
+function ldgBefore(s,y,m){
+  var t=/^(\d{4})-(\d{1,2})/.exec(String((s&&s.since)||''));
+  return !!t&&y*12+m<Number(t[1])*12+Number(t[2]);
+}
 function ldgDue(y,m){
   var n=new Date(),d=n.getFullYear()*12+n.getMonth()+1-(y*12+m);
   if(y*12+m<LDG_DUE_FROM||d<0)return 0;
@@ -1265,8 +1270,9 @@ function ldgSummaryHtml(rows){
   if(!LDG.Y[LDG.y])return '<div class="bar ldg-sum"><span class="bar-info">'+LDG.m+'월 수납 불러오는 중…</span></div>';
   var paid=0,sum=0,total=0;
   rows.forEach(function(s){
-    if(s.retired)return;total++;
-    var c=ldgCell(LDG.y,LDG.m,s.name);if(c&&c.paid){paid++;sum+=Number(s.fee)||0}
+    var c=ldgCell(LDG.y,LDG.m,s.name),pd=!!(c&&c.paid);
+    if(s.retired||(!pd&&ldgBefore(s,LDG.y,LDG.m)))return; // 퇴원했거나 아직 안 들어온 달이면 세지 않는다
+    total++;if(pd){paid++;sum+=Number(s.fee)||0}
   });
   // 막대는 직전 값에서 새 값으로 채워진다 (ldgRender가 그린 뒤에 넓힌다)
   var left=total-paid,pct=total?Math.round(paid/total*100):0,from=LDG.pct||0;LDG.pct=pct;
@@ -1295,7 +1301,7 @@ function ldgCellHtml(i,c,isCur){
   if(!LDG.Y[c.y])return '<td class="c-m c-wait'+(isCur?' c-cur':'')+'"><i></i></td>';
   var s=LDG.rows[i],v=ldgCell(c.y,c.m,s.name);
   var cls='c-m'+(isCur?' c-cur':'')+(LDG.fresh===c.y?' c-fresh':'');
-  var paid=!!(v&&v.paid),due=paid||s.retired?0:ldgDue(c.y,c.m),inner='';
+  var paid=!!(v&&v.paid),due=paid||s.retired||ldgBefore(s,c.y,c.m)?0:ldgDue(c.y,c.m),inner='';
   var pick=!!(LDG.sel&&LDG.sel[ldgKey(s.name,c.y,c.m)]);
   if(pick)return '<td class="'+cls+'" onclick="ldgEdit('+i+','+c.y+','+c.m+')"><div class="tl pick"><span class="pk">✓</span></div></td>';
   if(paid)inner='<span class="pd"><span class="ck'+(LDG.pop===ldgKey(s.name,c.y,c.m)?' pop':'')+'">✓</span><span class="dt">'+ldgShortDate(v.date)+'</span></span>';
@@ -1667,7 +1673,7 @@ function stuSave(){
       kw:'',prevKw:'',msg:'',hist:'',done:false,phone:body.phone||'',parentName:body.parentName||'',level:body.level||'',freq:body.freq||'',fee:body.fee||'',method:body.method||'',retired:false};
     S.push(n);stuAdopt(n);
     Object.keys(LDG.Y).forEach(function(y){
-      LDG.Y[y].students.push({name:name,fee:stuFeeNum(body.fee),feeDisplay:body.fee||'',level:body.level||'',freq:body.freq||'',method:body.method||'',retired:false,months:{}});
+      LDG.Y[y].students.push({name:name,fee:stuFeeNum(body.fee),feeDisplay:body.fee||'',level:body.level||'',freq:body.freq||'',method:body.method||'',retired:false,since:(r&&r.since)||'',months:{}});
     });
     T(name+' 원생을 추가했어요');
     stuRefresh();
