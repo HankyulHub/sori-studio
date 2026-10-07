@@ -46,7 +46,7 @@ body[data-view=list] .page-head,body[data-view=detail] .det-head{padding-top:22p
 
 /* 요약 카드 */
 .bar{margin:14px 16px 0;padding:14px 16px;background:var(--card);border-radius:18px;box-shadow:var(--lift);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.bar-info{font-size:14px;color:var(--sub);line-height:1.5}
+.bar-info{flex:1 1 150px;min-width:0;font-size:14px;color:var(--sub);line-height:1.5}.bar-info .nb{white-space:nowrap}
 .bar-info b{color:var(--ink);font-weight:700}.bar-info .b-g{color:var(--done)}.bar-info .b-o{color:var(--review)}
 
 /* 버튼 */
@@ -594,6 +594,8 @@ function init(){
   });
 }
 
+// 요약 글: 덩어리("1명 복사완료")가 중간에서 끊기지 않게 하고, 가운뎃점은 앞 덩어리 끝에 붙인다
+function barInfo(a){return a.map(function(t,i){return '<span class="nb">'+t+(i<a.length-1?' ·':'')+'</span>'}).join(' ')}
 function goHome(){CANCEL=true;GEN=false;EDITMODE=false;rInput()}
 function hasMsg(){return S.some(function(s){return MSG[s.row]})}
 function isReview(s){return!DONE.has(s.row)&&MSG[s.row]&&MSG[s.row].trim()}
@@ -637,7 +639,7 @@ function rInput(){
   if(kwCount>0||pending.filter(function(s){return isUngen(s)}).length>0) infoParts.push('원생 <b>'+kwCount+'</b>/'+pending.filter(function(s){return isUngen(s)}).length+'명 입력');
   if(reviewCount>0) infoParts.push('<b class="b-o">'+reviewCount+'</b>명 검수대기');
   if(dc>0) infoParts.push('<b class="b-g">'+dc+'</b>명 복사완료');
-  h+=infoParts.join(' · ')+'</span><div style="display:flex;gap:6px">';
+  h+=barInfo(infoParts)+'</span><div style="display:flex;gap:6px">';
   if(hasMsg())h+='<button class="btn btn-d" onclick="rList()">목록 보기</button>';
   var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()}).length;
   h+='</div></div>';
@@ -835,7 +837,7 @@ function rList(){
   if(doneList.length>0)infoParts.push('복사완료 <b class="b-g">'+doneList.length+'</b>명');
 
   var h='<div class="page-head"><button type="button" class="icon-btn" aria-label="뒤로" onclick="rInput()">'+ICON_BACK+'</button><span class="page-title">메시지</span></div>';
-  h+='<div class="bar"><span class="bar-info">'+infoParts.join(' · ')+'</span>';
+  h+='<div class="bar"><span class="bar-info">'+barInfo(infoParts)+'</span>';
   if(reviewList.length>0)h+='<button class="btn btn-d" id="editBtn" onclick="toggleEdit()">키워드 수정</button>';
   h+='</div><div class="progress"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
     '<div class="gen-bar" id="genBar" style="display:none"></div>'+
