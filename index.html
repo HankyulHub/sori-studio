@@ -634,8 +634,8 @@ function rInput(){
 
   var h='<div class="bar"><span class="bar-info">';
   var infoParts=[];
-  if(kwCount>0||pending.filter(function(s){return isUngen(s)}).length>0) infoParts.push('키워드 <b>'+kwCount+'</b>/'+pending.filter(function(s){return isUngen(s)}).length+'명 입력');
-  if(reviewCount>0) infoParts.push('검수대기 <b class="b-o">'+reviewCount+'</b>명');
+  if(kwCount>0||pending.filter(function(s){return isUngen(s)}).length>0) infoParts.push('원생 <b>'+kwCount+'</b>/'+pending.filter(function(s){return isUngen(s)}).length+'명 입력');
+  if(reviewCount>0) infoParts.push('<b class="b-o">'+reviewCount+'</b>명 검수대기');
   if(dc>0) infoParts.push('<b class="b-g">'+dc+'</b>명 복사완료');
   h+=infoParts.join(' · ')+'</span><div style="display:flex;gap:6px">';
   if(hasMsg())h+='<button class="btn btn-d" onclick="rList()">목록 보기</button>';
