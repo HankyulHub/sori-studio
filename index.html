@@ -418,6 +418,7 @@ body[data-view=students] .toast{bottom:150px}
 .lock-card input{width:100%;height:48px;padding:0 14px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:16px;outline:none;transition:border-color .15s,background .15s}
 .lock-card input:focus{border-color:var(--ink);background:#fff}
 .lock-msg{min-height:20px;margin:8px 2px 12px;font-size:13px;color:#f87171}
+.lock-alt{display:none;width:100%;margin-top:6px;padding:12px;background:none;border:none;color:var(--sub);font-size:14px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -428,6 +429,7 @@ body[data-view=students] .toast{bottom:150px}
   <input id="lockPw" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="비밀번호">
   <div class="lock-msg" id="lockMsg"></div>
   <button type="submit" class="btn-fab" id="lockBtn">확인</button>
+  <button type="button" class="lock-alt" id="lockAlt" onclick="lockHave()">이미 비밀번호가 있어요</button>
 </form></div>
 <div class="banner" onclick="goHome()">
   <div class="banner-row">
@@ -483,6 +485,7 @@ function lockShow(set){
   document.getElementById('lockD').textContent=set?'앞으로 이 앱을 열 때 쓸 비밀번호예요. 6자 이상으로 정해 주세요. 다른 폰에서도 이 비밀번호를 한 번 넣어야 열려요':'처음 한 번만 넣으면 이 폰이 기억해요';
   var i=document.getElementById('lockPw');i.type=set?'text':'password';i.value='';
   document.getElementById('lockBtn').textContent=set?'이 비밀번호로 정하기':'확인';
+  document.getElementById('lockAlt').style.display=set?'block':'none';
   document.getElementById('lockMsg').textContent=(!set&&PW)?'비밀번호가 맞지 않아요':'';
   l.classList.add('on');
 }
@@ -502,6 +505,8 @@ function lockSave(){
     document.getElementById('lockMsg').textContent='방금 다른 폰에서 먼저 정했어요. 그 비밀번호를 넣어 주세요';
   });
 }
+// 정하는 화면에서 '이미 비밀번호가 있어요' → 넣는 화면으로 (관리자 비밀번호를 가진 사람용)
+function lockHave(){document.getElementById('lock').classList.remove('on');lockShow(false);document.getElementById('lockMsg').textContent=''}
 function apiFail(j){if(j.error==='LOCKED')lockShow();throw new Error(j.error)}
 
 function apiGet(action,params){
