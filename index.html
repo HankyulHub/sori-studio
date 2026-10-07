@@ -405,14 +405,30 @@ body[data-view=students] .toast{bottom:150px}
 .pick-grid .btn{min-height:48px;border-radius:14px}
 .pick-clear{margin-top:8px;width:100%;background:transparent!important;color:var(--sub)!important}
 /* 켤 때 첫 화면: 학생 목록이 올 때까지 덮고 있다가 서서히 걷힌다 */
-#splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:100000;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .45s ease}
+#splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:100000;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .45s ease;will-change:opacity}
 #splash img{width:100%;max-width:420px;height:auto;opacity:0;transition:opacity .3s ease}
 #splash img.on{opacity:1}
 #splash.off{opacity:0;pointer-events:none}
+/* 비밀번호 화면: 서버가 잠겨 있을 때만 뜬다 */
+#lock{position:fixed;top:0;left:0;right:0;bottom:0;z-index:300;background:var(--bg);display:none;justify-content:center;align-items:flex-start;padding:22vh 24px 0}
+#lock.on{display:flex;animation:vOpa .3s ease both}
+.lock-card{width:100%;max-width:360px;background:var(--card);border-radius:22px;box-shadow:var(--lift);padding:26px 20px 20px}
+.lock-t{font-size:20px;font-weight:700}
+.lock-d{font-size:13px;color:var(--sub);margin:6px 0 18px}
+.lock-card input{width:100%;height:48px;padding:0 14px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:16px;outline:none;transition:border-color .15s,background .15s}
+.lock-card input:focus{border-color:var(--ink);background:#fff}
+.lock-msg{min-height:20px;margin:8px 2px 12px;font-size:13px;color:#f87171}
 </style>
 </head>
 <body>
 <div id="splash"><img src="splash.png" alt="" onload="this.classList.add('on')"></div>
+<div id="lock"><form class="lock-card" onsubmit="lockSave();return false">
+  <div class="lock-t">비밀번호</div>
+  <div class="lock-d">처음 한 번만 넣으면 이 폰이 기억해요</div>
+  <input id="lockPw" type="password" autocomplete="off" autocapitalize="off" placeholder="비밀번호">
+  <div class="lock-msg" id="lockMsg"></div>
+  <button type="submit" class="btn-fab">확인</button>
+</form></div>
 <div class="banner" onclick="goHome()">
   <div class="banner-row">
     <div><div class="logo">SORI STUDIO</div><div class="title">카톡 메시지 관리</div></div>
@@ -456,21 +472,38 @@ if(IS_TEST){
   document.body.appendChild(_testBadge);
 }
 
+// 비밀번호: 서버가 잠겨 있으면('LOCKED') 한 번 묻고 폰에 기억한다. 요청마다 같이 보낸다
+var PW='';try{PW=localStorage.getItem('sori_pw')||''}catch(e){}
+function lockShow(){
+  var l=document.getElementById('lock');if(l.classList.contains('on'))return;
+  splashOff();
+  document.getElementById('lockMsg').textContent=PW?'비밀번호가 맞지 않아요':'';
+  l.classList.add('on');
+}
+function lockSave(){
+  var v=document.getElementById('lockPw').value.trim();if(!v)return;
+  try{localStorage.setItem('sori_pw',v)}catch(e){}
+  location.reload();
+}
+function apiFail(j){if(j.error==='LOCKED')lockShow();throw new Error(j.error)}
+
 function apiGet(action,params){
   var url=API_URL+'?action='+action;
   if(IS_TEST)url+='&test=1';
+  if(PW)url+='&pw='+encodeURIComponent(PW);
   if(params)for(var k in params){if(params[k]!=null)url+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k])}
   return fetch(url)
     .then(function(r){return r.json()})
-    .then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
+    .then(function(j){if(!j.ok)apiFail(j);return j.data});
 }
 function apiPost(action,body,keep){
   body.action=action;
   if(IS_TEST)body.test='1';
+  if(PW)body.pw=PW;
   // keep: 앱을 닫아도 보내던 저장이 끝까지 가게 (수납·원생 저장용)
   return fetch(API_URL+(IS_TEST?'?test=1':''),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body),keepalive:!!keep})
     .then(function(r){return r.json()})
-    .then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
+    .then(function(j){if(!j.ok)apiFail(j);return j.data});
 }
 
 // ═══ State ═══
@@ -497,8 +530,10 @@ function viewAnim(c){
 
 // 첫 화면 걷기 (처음 한 번만)
 function splashOff(){
-  var s=document.getElementById('splash');if(!s)return;
-  s.classList.add('off');setTimeout(function(){s.remove()},500);
+  var s=document.getElementById('splash');if(!s||s.classList.contains('off'))return;
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    s.classList.add('off');setTimeout(function(){s.remove()},500);
+  })});
 }
 
 function init(){
@@ -514,7 +549,7 @@ function init(){
     S=data.filter(function(s){return!s.retired});
     RET=data.filter(function(s){return s.retired});
     S.forEach(stuAdopt);
-    viewAnim('v-fade');
+    if(!document.getElementById('splash'))viewAnim('v-fade');
     rInput();
     splashOff();
     checkFirstRun();
