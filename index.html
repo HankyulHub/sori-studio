@@ -189,6 +189,8 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 .modal-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px}
 .modal-desc{font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:6px}
 .modal-desc+.modal-btns{margin-top:18px}
+/* 수납 창: 얼마로 적히는지 */
+.modal-fee{font-size:14px;color:var(--sub);text-align:center;margin:-2px 0 6px}.modal-fee b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .modal-names{font-size:13px;color:var(--ink2);background:var(--field);border-radius:12px;padding:10px 12px;margin:12px 0 18px;line-height:1.5;max-height:84px;overflow-y:auto}
 .modal-btns{display:flex;gap:8px}.modal-btns .btn{flex:1;min-height:48px;border-radius:24px;font-size:14px}
 
@@ -269,10 +271,10 @@ body[data-view=students] .toast{bottom:150px}
 .seg:not(.w) button:nth-of-type(1),.seg.w button:nth-of-type(2){color:var(--ink)}
 /* 표 */
 .ldg-sum{margin-top:12px}
-.ldg-wrap{margin:12px 16px 0;background:var(--card);border-radius:20px;box-shadow:var(--lift2);overflow:hidden;touch-action:pan-y}
+.ldg-wrap{margin:12px 16px 0;padding-right:8px;background:var(--card);border-radius:20px;box-shadow:var(--lift2);overflow:hidden;touch-action:pan-y}
 .ldg{transition:transform .28s cubic-bezier(.2,.8,.2,1)}.ldg.drag{transition:none}
 .ldg{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px;user-select:none;-webkit-user-select:none}
-.ldg th{color:var(--muted);font-size:11.5px;font-weight:600;padding:12px 6px 10px;text-align:left;border-bottom:.5px solid var(--line)}
+.ldg th{color:var(--sub);font-size:12px;font-weight:600;padding:12px 6px 10px;text-align:left;border-bottom:.5px solid var(--line)}
 .ldg td{padding:6px;height:70px;border-bottom:.5px solid var(--line);color:var(--ink2);vertical-align:middle;overflow:hidden;cursor:pointer;transition:background .18s}
 .ldg tr:last-child td{border-bottom:none}
 .ldg td:active{background:var(--field)}
@@ -284,7 +286,7 @@ body[data-view=students] .toast{bottom:150px}
 .ldg .nml{display:flex;align-items:center;gap:6px;min-width:0}
 .ldg .nm{font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
 .ldg .pm{flex-shrink:0;font-size:10.5px;font-weight:600;color:var(--sub);background:var(--field);padding:2px 7px;border-radius:8px;white-space:nowrap}
-.ldg .sb{font-size:11.5px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.ldg .sb{font-size:12.5px;color:var(--sub);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .ldg th.c-mh{text-align:center;padding:8px 2px}
 /* 월 제목 = 눌리는 버튼 (6개월 펼치기·접기) */
 .mh,.bt{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;border:none;background:var(--field);color:inherit;font-size:12px;font-weight:600;padding:7px 10px;border-radius:12px;cursor:pointer;box-shadow:0 1px 2px rgba(38,35,31,.12),inset 0 0 0 .5px rgba(38,35,31,.06);transition:transform .12s,box-shadow .12s,background .12s}
@@ -302,7 +304,7 @@ body[data-view=students] .toast{bottom:150px}
 .ldg .tl.d1{background:#FBF1CB;color:#8C6D14}
 .ldg .tl.d2{background:#FBE1CA;color:#9A4A1F}
 .ldg .tl.d3{background:#F8D8D4;color:#A23A30}
-.ldg .tl .due{font-size:11.5px;font-weight:600}
+.ldg .tl .due{font-size:12.5px;font-weight:600}
 .ldg .tl .pd{display:block}
 .ldg tr.r-ret .tl{opacity:.6}
 /* 아직 못 받은 해의 칸: 눌리지 않고, 연한 막대가 깜빡인다. 도착하면 내용이 서서히 나타난다 */
@@ -345,8 +347,10 @@ body[data-view=students] .toast{bottom:150px}
 .sumc-w{transition:color .4s}
 .sumc-w.t1{color:#2F6443}.sumc-w.t2{color:#2F5F8F}.sumc-w.t3{color:#5E4A9E}
 .sumc-st{display:flex;justify-content:flex-end;gap:6px;margin-top:11px}
-.sumc-st span{font-size:10.5px;font-weight:600;color:#B9B2A7;background:var(--field);padding:3px 9px;border-radius:9px}
-.sumc-st .t1{color:#2F6443;background:#E6F1E9}.sumc-st .t2{color:#2F5F8F;background:#E3ECF6}.sumc-st .t3{color:#5E4A9E;background:#EBE6F6}
+.sumc-st{gap:12px}
+.sumc-st span{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:#B9B2A7}
+.sumc-st span::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
+.sumc-st .t1{color:#2F6443}.sumc-st .t2{color:#2F5F8F}.sumc-st .t3{color:#5E4A9E}.sumc-st .t1::before,.sumc-st .t2::before,.sumc-st .t3::before{opacity:1}
 /* 일괄 수납: 버튼은 표 제목줄 왼쪽. 고르기 모드에서는 칸에 테두리가 생기고, 고른 칸은 먹색 */
 .ldg th.c-nm{padding:8px 6px 8px 12px}
 .bt.on{background:var(--ink);color:#fff;box-shadow:none}
@@ -499,7 +503,7 @@ function lockSave(){
     document.getElementById('lock').classList.remove('on');T('비밀번호를 정했어요');
   }).catch(function(e){
     b.disabled=false;
-    if(e.message!=='LOCKED'){m.textContent=e.message;return}
+    if(e.message!=='LOCKED'){m.textContent=errKo(e);return}
     // 그 사이에 다른 폰에서 먼저 정함 → 넣는 화면으로
     document.getElementById('lock').classList.remove('on');lockShow(false);
     document.getElementById('lockMsg').textContent='방금 다른 폰에서 먼저 정했어요. 그 비밀번호를 넣어 주세요';
@@ -507,6 +511,13 @@ function lockSave(){
 }
 // 정하는 화면에서 '이미 비밀번호가 있어요' → 넣는 화면으로 (관리자 비밀번호를 가진 사람용)
 function lockHave(){document.getElementById('lock').classList.remove('on');lockShow(false);document.getElementById('lockMsg').textContent=''}
+// 사람이 읽는 오류 말. 인터넷이 끊겼을 때 브라우저가 주는 영어('Failed to fetch')를 그대로 보이지 않는다
+function errKo(e){
+  var m=String((e&&e.message)||e||'');
+  if(/Failed to fetch|NetworkError|Load failed|network/i.test(m))return '인터넷 연결을 확인해 주세요';
+  if(m==='LOCKED')return '비밀번호가 필요해요';
+  return m;
+}
 function apiFail(j){if(j.error==='LOCKED')lockShow();throw new Error(j.error)}
 
 function apiGet(action,params){
@@ -577,7 +588,7 @@ function init(){
     checkFirstRun();
   }).catch(function(e){
     splashOff();
-    Q('app','<div style="padding:20px;color:#f87171;font-size:13px;">연결 실패: '+e.message+'</div>');
+    Q('app','<div class="loading"><div>'+esc(errKo(e))+'</div><button type="button" class="btn btn-d" onclick="init()">다시 시도</button></div>');
   });
 }
 
@@ -621,8 +632,8 @@ function rInput(){
 
   var h='<div class="bar"><span class="bar-info">';
   var infoParts=[];
-  if(kwCount>0||pending.filter(function(s){return isUngen(s)}).length>0) infoParts.push('원생 <b>'+kwCount+'</b>/'+pending.filter(function(s){return isUngen(s)}).length+'명 입력');
-  if(reviewCount>0) infoParts.push('<b class="b-o">'+reviewCount+'</b>명 검수대기');
+  if(kwCount>0||pending.filter(function(s){return isUngen(s)}).length>0) infoParts.push('키워드 <b>'+kwCount+'</b>/'+pending.filter(function(s){return isUngen(s)}).length+'명 입력');
+  if(reviewCount>0) infoParts.push('검수대기 <b class="b-o">'+reviewCount+'</b>명');
   if(dc>0) infoParts.push('<b class="b-g">'+dc+'</b>명 복사완료');
   h+=infoParts.join(' · ')+'</span><div style="display:flex;gap:6px">';
   if(hasMsg())h+='<button class="btn btn-d" onclick="rList()">목록 보기</button>';
@@ -1039,7 +1050,7 @@ function doRegen(row){
     var m=r.text;SHORT[row]=r.short;
     MSG[row]=m;apiPost('saveMessage',{row:row,text:m});
     if(VIEW==='detail'&&S[CI].row===row)rDet(false);
-  }).catch(function(e){REGEN.delete(row);T('실패: '+e.message);rDet(false)});
+  }).catch(function(e){REGEN.delete(row);T('실패: '+errKo(e));rDet(false)});
 }
 
 function undo(row){
@@ -1204,7 +1215,7 @@ function ldgFetchYear(y){
   }).catch(function(e){
     LDG.busy[y]=false;
     if(VIEW!=='ledger'||ldgYears().indexOf(y)<0)return;
-    if(!LDG.Y[y]){LDG.err=e.message;ldgRender()}
+    if(!LDG.Y[y]){LDG.err=errKo(e);ldgRender()}
     else T('최신 내용을 못 불러왔어요');
   });
 }
@@ -1329,6 +1340,7 @@ function ldgEdit(i,y,m){
   if(LDG.sel){ldgSelToggle(s.name,y,m);return}
   var c=ldgCell(y,m,s.name)||{},paid=!!c.paid,a='('+i+','+y+','+m+',';
   showModal('<div class="modal-title">'+esc(String(s.name))+' · '+m+'월</div>'+
+    '<div class="modal-fee">'+(Number(s.fee)?'수강료 <b>'+Number(s.fee).toLocaleString()+'원</b>':'수강료가 아직 안 적혀 있어요')+'</div>'+
     '<label class="fld"><span>납부일</span><input type="date" id="edDate" value="'+esc(c.date||LDG.lastDate||ldgToday())+'"></label>'+
     '<div class="chips"><button type="button" onclick="ldgPickDate(0)">오늘</button><button type="button" onclick="ldgPickDate(-1)">어제</button></div>'+
     '<label class="fld"><span>메모</span><input type="text" id="edMemo" maxlength="40" placeholder="예: 11만 주2회" value="'+esc(String(c.memo||''))+'"></label>'+
@@ -1371,6 +1383,7 @@ function ldgSelAsk(){
   var a=ldgSelList();if(!a.length)return;
   showModal('<div class="modal-title">'+a.length+'칸 납부 처리</div>'+
     '<div class="modal-desc">'+a.map(function(v){return esc(String(v.name))+' '+v.m+'월'}).join(' · ')+'</div>'+
+    '<div class="modal-fee">합계 <b>'+a.reduce(function(t,v){var r=null;LDG.rows.forEach(function(x){if(x.name===v.name)r=x});return t+(r?Number(r.fee)||0:0)},0).toLocaleString()+'원</b></div>'+
     '<label class="fld"><span>납부일</span><input type="date" id="edDate" value="'+esc(LDG.lastDate||ldgToday())+'"></label>'+
     '<div class="chips"><button type="button" onclick="ldgPickDate(0)">오늘</button><button type="button" onclick="ldgPickDate(-1)">어제</button></div>'+
     '<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" onclick="ldgSelSave()">납부 저장</button></div>');
@@ -1426,7 +1439,7 @@ function ldgSave(name,y,m,paid,date,memo,undoable,after){
     if(LDG.ver[key]!==ver)return; // 그 사이 같은 칸을 또 고쳤음 → 마지막 저장이 정리한다
     delete LDG.saving[key];ldgWriteCache(y);
   }).catch(function(e){
-    T('저장 실패: '+e.message);
+    T('저장 실패: '+errKo(e));
     if(LDG.ver[key]!==ver)return;
     delete LDG.saving[key];
     var s2=ldgStu(y,name);
@@ -1513,13 +1526,21 @@ function stuEdit(name){
     '<div class="pkw"><div class="fld-row">'+f('수강료','stFee',p?ldgFee(p.fee):'','고르기','pick')+f('결제수단','stMethod',p?p.method:'','고르기','pick')+'</div>'+stuPickHtml(['stFee','stMethod'])+'</div>'+
     '<div class="pkw"><div class="fld-row">'+f('레벨','stLevel',p?p.level:'','고르기','pick')+f('주 횟수','stFreq',p?p.freq:'','고르기','pick')+'</div>'+stuPickHtml(['stLevel','stFreq'])+'</div>';
   if(!p||!p.partial)h+='<div class="pkw"><div class="fld-row">'+f('학년','stGrade',p?p.grade:'','고르기','pick')+f('성별','stGender',p?p.gender:'','고르기','pick')+'</div>'+stuPickHtml(['stGrade','stGender'])+'</div>'+
-    '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?p.phone:'','010-0000-0000','tel')+'</div>';
+    '<div class="fld-row">'+f('학부모명','stParent',p?p.parentName:'','')+f('연락처','stPhone',p?telFmt(p.phone):'','010-0000-0000','tel')+'</div>';
   h+='<div class="modal-btns"><button type="button" class="btn btn-d" onclick="closeModal()">취소</button><button type="button" class="btn btn-y" id="stSave" onclick="stuSave()">저장</button></div>';
   if(p)h+=p.retired?'<button type="button" class="sheet-link" onclick="stuRetire(false)">다시 다니는 원생으로 복원</button>'
                    :'<button type="button" class="sheet-link warn" onclick="stuAskRetire()">퇴원 처리</button>';
   showModal(h);
   stuPickMark();
 }
+// 전화번호를 010-1234-5678 모양으로. 0으로 시작하는 9~11자리일 때만 (그 밖의 값은 적힌 그대로)
+function telFmt(v){
+  var t=String(v==null?'':v).trim(),d=t.replace(/\D/g,'');
+  if(!/^0\d{8,10}$/.test(d)||/[^\d\s-]/.test(t))return t;
+  var a=d.slice(0,2)==='02'?2:3,r=d.slice(a);
+  return d.slice(0,a)+'-'+r.slice(0,r.length-4)+'-'+r.slice(-4);
+}
+document.getElementById('modalCard').addEventListener('focusout',function(e){var t=e.target;if(t&&t.id==='stPhone')t.value=telFmt(t.value)});
 // 다른 입력칸으로 옮겨 가면 펼쳐져 있던 선택지를 접는다
 function stuPickClose(){[].forEach.call(document.querySelectorAll('.chips.pk.open'),function(p){p.classList.remove('open')})}
 document.getElementById('modalCard').addEventListener('focusin',function(e){
@@ -1577,6 +1598,8 @@ function stuSave(){
   var body={name:name,fee:g('stFee'),method:g('stMethod'),level:g('stLevel'),freq:g('stFreq'),grade:g('stGrade'),gender:g('stGender'),parentName:g('stParent'),phone:g('stPhone')};
   if(orig){
     var before=stuSnap(orig),same=true;
+    // 연락처: 숫자가 그대로면 시트에 적힌 모양 그대로 둔다 (보여줄 때만 줄표를 넣었으므로)
+    if(body.phone!==undefined&&body.phone.replace(/\D/g,'')===String(before.phone==null?'':before.phone).replace(/\D/g,''))body.phone=String(before.phone==null?'':before.phone).trim();
     for(var k in body)if(body[k]!==undefined&&body[k]!==String(before[k]==null?'':before[k]).trim())same=false;
     closeModal();
     if(same)return;
@@ -1597,7 +1620,7 @@ function stuSave(){
     stuRefresh();
   }).catch(function(e){
     if(btn){btn.disabled=false;btn.textContent='저장'}
-    T('저장 실패: '+e.message);
+    T('저장 실패: '+errKo(e));
   });
 }
 
@@ -1649,7 +1672,7 @@ function stuCommit(orig,f){
   var q=wq(orig,function(){return apiPost('studentUpdate',body,true)});
   if(f.name!==orig)WQ[f.name]=WQ[orig]; // 이름이 바뀌어도 뒤따르는 저장이 이 저장 다음에 가게
   q.then(function(){stuBusy(-1)},function(e){
-    T('저장 실패: '+e.message);
+    T('저장 실패: '+errKo(e));
     if(STU_BUSY===1){stuApply(f.name,before);stuRedraw()}
     STU_FAIL=true;stuBusy(-1);
   });
@@ -1676,7 +1699,7 @@ function stuSetRetired(name,retired,undoable){
   stuMove(name,retired);
   STU_BUSY++;STU_GEN++;
   wq(name,function(){return apiPost('studentSetStatus',{name:name,retired:retired,row:p?p.row:undefined},true)}).then(function(){stuBusy(-1)},function(e){
-    T('저장 실패: '+e.message);
+    T('저장 실패: '+errKo(e));
     if(STU_BUSY===1){stuMove(name,!retired);stuRedraw()}
     STU_FAIL=true;stuBusy(-1);
   });
