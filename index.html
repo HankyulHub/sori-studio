@@ -414,7 +414,7 @@ body[data-view=students] .toast{bottom:150px}
 #lock.on{display:flex;animation:vOpa .3s ease both}
 .lock-card{width:100%;max-width:360px;background:var(--card);border-radius:22px;box-shadow:var(--lift);padding:26px 20px 20px}
 .lock-t{font-size:20px;font-weight:700}
-.lock-d{font-size:13px;color:var(--sub);margin:6px 0 18px}
+.lock-d{font-size:13px;line-height:1.55;color:var(--sub);margin:6px 0 18px}
 .lock-card input{width:100%;height:48px;padding:0 14px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:16px;outline:none;transition:border-color .15s,background .15s}
 .lock-card input:focus{border-color:var(--ink);background:#fff}
 .lock-msg{min-height:20px;margin:8px 2px 12px;font-size:13px;color:#f87171}
@@ -423,11 +423,11 @@ body[data-view=students] .toast{bottom:150px}
 <body>
 <div id="splash"><img src="splash.png" alt="" onload="this.classList.add('on')"></div>
 <div id="lock"><form class="lock-card" onsubmit="lockSave();return false">
-  <div class="lock-t">비밀번호</div>
-  <div class="lock-d">처음 한 번만 넣으면 이 폰이 기억해요</div>
-  <input id="lockPw" type="password" autocomplete="off" autocapitalize="off" placeholder="비밀번호">
+  <div class="lock-t" id="lockT">비밀번호</div>
+  <div class="lock-d" id="lockD"></div>
+  <input id="lockPw" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="비밀번호">
   <div class="lock-msg" id="lockMsg"></div>
-  <button type="submit" class="btn-fab">확인</button>
+  <button type="submit" class="btn-fab" id="lockBtn">확인</button>
 </form></div>
 <div class="banner" onclick="goHome()">
   <div class="banner-row">
@@ -472,18 +472,35 @@ if(IS_TEST){
   document.body.appendChild(_testBadge);
 }
 
-// 비밀번호: 서버가 잠겨 있으면('LOCKED') 한 번 묻고 폰에 기억한다. 요청마다 같이 보낸다
-var PW='';try{PW=localStorage.getItem('sori_pw')||''}catch(e){}
-function lockShow(){
+// 비밀번호: 요청마다 같이 보낸다. 서버가 틀렸다고 하면('LOCKED') 묻고, 아직 안 정했다고 하면(nopw) 정하게 한다. 폰에 기억
+var PW='',LOCK_SET=false;try{PW=localStorage.getItem('sori_pw')||''}catch(e){}
+// set이 true면 '비밀번호 정하기'(서버에 아직 없음), 아니면 '비밀번호 넣기'
+function lockShow(set){
   var l=document.getElementById('lock');if(l.classList.contains('on'))return;
   splashOff();
-  document.getElementById('lockMsg').textContent=PW?'비밀번호가 맞지 않아요':'';
+  LOCK_SET=!!set;
+  document.getElementById('lockT').textContent=set?'비밀번호 정하기':'비밀번호';
+  document.getElementById('lockD').textContent=set?'앞으로 이 앱을 열 때 쓸 비밀번호예요. 6자 이상으로 정해 주세요. 다른 폰에서도 이 비밀번호를 한 번 넣어야 열려요':'처음 한 번만 넣으면 이 폰이 기억해요';
+  var i=document.getElementById('lockPw');i.type=set?'text':'password';i.value='';
+  document.getElementById('lockBtn').textContent=set?'이 비밀번호로 정하기':'확인';
+  document.getElementById('lockMsg').textContent=(!set&&PW)?'비밀번호가 맞지 않아요':'';
   l.classList.add('on');
 }
 function lockSave(){
-  var v=document.getElementById('lockPw').value.trim();if(!v)return;
-  try{localStorage.setItem('sori_pw',v)}catch(e){}
-  location.reload();
+  var v=document.getElementById('lockPw').value.trim(),m=document.getElementById('lockMsg');if(!v)return;
+  if(!LOCK_SET){try{localStorage.setItem('sori_pw',v)}catch(e){}location.reload();return}
+  if(v.length<6){m.textContent='6자 이상으로 정해 주세요';return}
+  var b=document.getElementById('lockBtn');b.disabled=true;m.textContent='';
+  apiPost('setPw',{newPw:v}).then(function(){
+    b.disabled=false;PW=v;try{localStorage.setItem('sori_pw',v)}catch(e){}
+    document.getElementById('lock').classList.remove('on');T('비밀번호를 정했어요');
+  }).catch(function(e){
+    b.disabled=false;
+    if(e.message!=='LOCKED'){m.textContent=e.message;return}
+    // 그 사이에 다른 폰에서 먼저 정함 → 넣는 화면으로
+    document.getElementById('lock').classList.remove('on');lockShow(false);
+    document.getElementById('lockMsg').textContent='방금 다른 폰에서 먼저 정했어요. 그 비밀번호를 넣어 주세요';
+  });
 }
 function apiFail(j){if(j.error==='LOCKED')lockShow();throw new Error(j.error)}
 
@@ -494,7 +511,7 @@ function apiGet(action,params){
   if(params)for(var k in params){if(params[k]!=null)url+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k])}
   return fetch(url)
     .then(function(r){return r.json()})
-    .then(function(j){if(!j.ok)apiFail(j);return j.data});
+    .then(function(j){if(!j.ok)apiFail(j);if(j.nopw)lockShow(true);return j.data});
 }
 function apiPost(action,body,keep){
   body.action=action;
