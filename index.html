@@ -675,14 +675,14 @@ function rInput(){
 }
 
 function genLabel(n){return n>0?n+'명 일괄 생성':'일괄 생성'}
-// 아래 버튼: 아직 아무도 생성 안 됐으면 "일괄 생성" 하나, 몇 명이라도 생성돼 있으면 "전체 다시 생성 | 새로 쓴 N명 생성" 둘
+// 아래 버튼: 아직 아무도 생성 안 됐으면 "일괄 생성" 하나, 몇 명이라도 생성돼 있으면 "전체 다시 생성 | 남은 N명 생성" 둘
 function genFab(){
   var tg=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)});
   var fresh=tg.filter(needGen).length;
   if(!tg.some(function(s){return!needGen(s)}))
     return '<button class="btn-fab" id="gbtn" onclick="tryGenAll()" '+(tg.length===0?'disabled':'')+'>'+genLabel(tg.length)+'</button>';
   return '<div class="det-btns"><button type="button" class="btn btn-d" onclick="tryGenAll()">전체 다시 생성</button>'+
-    '<button type="button" class="btn-fab" id="gbtn" onclick="genAllSkip()"'+(fresh?'':' disabled')+'>'+(fresh?'새로 쓴 '+fresh+'명 생성':'새로 쓴 학생이 없어요')+'</button></div>';
+    '<button type="button" class="btn-fab" id="gbtn" onclick="genAllSkip()"'+(fresh?'':' disabled')+'>'+(fresh?'남은 '+fresh+'명 생성':'남은 학생이 없어요')+'</button></div>';
 }
 // 줄 오른쪽 버튼: 생성 중 / 생성(키워드를 새로 적었을 때) / AI 글 확인
 function genPill(s){
@@ -729,7 +729,7 @@ function genOneDone(row){
 }
 
 // ═══ Generate ═══
-// 새로 쓴 학생: 글이 없거나, 생성에 실패했거나, 글을 만든 뒤 키워드를 새로 적음 (GENKW = 지금 글을 만든 키워드)
+// 남은 학생: 글이 없거나, 생성에 실패했거나, 글을 만든 뒤 키워드를 새로 적음 (GENKW = 지금 글을 만든 키워드)
 function needGen(s){
   var m=MSG[s.row];
   return!m||!m.trim()||FAIL.has(s.row)||(KW[s.row]||'').trim()!==(GENKW[s.row]||'').trim();
