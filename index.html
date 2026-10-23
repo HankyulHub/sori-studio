@@ -118,6 +118,16 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 .inp-label{display:flex;align-items:center;gap:8px;margin:0 0 9px;min-height:26px}
 .inp-num{display:none}
 .inp-name{font-size:16px;font-weight:600}.inp-gg{font-size:13px;color:var(--sub)}
+.inp-who{display:flex;align-items:center;gap:8px;background:none;border:none;padding:2px 0;margin:0;color:inherit;font:inherit;cursor:pointer;text-align:left}
+.inp-who svg{color:var(--muted);margin-left:-2px}
+.kw-gg{font-size:13px;font-weight:500;color:var(--sub);margin-left:8px}
+.kw-big{display:block;width:100%;min-height:200px;margin:8px 0 10px;padding:14px 15px;background:var(--field);border:1.5px solid transparent;border-radius:14px;color:var(--ink);font-size:15px;line-height:1.65;outline:none;resize:none;font-family:inherit;text-align:left}
+.kw-big:focus{border-color:var(--ink);background:#fff}
+.kw-big::placeholder{color:var(--muted)}
+.kw-tools{display:flex;gap:8px;flex-wrap:wrap}.kw-tools:empty{display:none}
+.kw-tools .btn{min-height:34px;padding:6px 12px;font-size:13px}
+.kw-past{margin-top:12px}.kw-past:empty{display:none}
+#modalCard .kw-past+.modal-btns{margin-top:16px}
 .inp-wrap input{width:100%;height:42px;padding:0 13px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:15px;outline:none;transition:border-color .15s,background .15s}
 .inp-wrap input:focus{border-color:var(--ink);background:#fff}
 .inp-wrap input::placeholder{color:var(--muted)}
@@ -663,14 +673,14 @@ function rInput(){
         '<span class="pill pill-done">복사 완료</span></div>'+
         '<input value="'+esc('(복사완료)')+'" disabled/></div>';
     }else if(rv){
-      var rvPh=KW[s.row]||ph;
+      var rvPh=KW[s.row]||ph,rvV=(KW[s.row]||'')!==(GENKW[s.row]||'')?KW[s.row]||'':'';
       h+='<div class="inp-wrap review-inp" onclick="if(event.target.tagName!==\'INPUT\')showDet('+s.row+',\'input\')"><div class="inp-label">'+
-        '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+
+        kwWho(s)+
         '<span class="pl-slot" id="pl'+s.row+'">'+genPill(s)+'</span></div>'+
-        '<input value="" placeholder="'+esc(rvPh)+'" oninput="kwCh('+s.row+',this.value)"/></div>';
+        '<input value="'+esc(rvV)+'" placeholder="'+esc(rvPh)+'" oninput="kwCh('+s.row+',this.value)"/></div>';
     }else{
       h+='<div class="inp-wrap"><div class="inp-label">'+
-        '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+
+        kwWho(s)+
         '<span class="pl-slot" id="pl'+s.row+'">'+genPill(s)+'</span></div>'+
         '<input value="'+esc(KW[s.row]||'')+'" '+
         'placeholder="'+esc(ph)+'" oninput="kwCh('+s.row+',this.value)"/></div>';
@@ -678,6 +688,36 @@ function rInput(){
   });
   h+='<div class="fab-wrap">'+genFab()+'</div>';
   Q('app',h);
+}
+
+// ═══ 키워드 넓은 창: 이름(연필)을 누르면 아래에서 올라옴. 지난 키워드 불러오기, 지난 글 보기. 저장을 눌러야 적용 ═══
+function kwWho(s){return '<button type="button" class="inp-who" onclick="event.stopPropagation();kwOpen('+s.row+')"><span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+ICON_PEN+'</button>'}
+function kwOpen(row){
+  var s=S.find(function(x){return x.row===row});if(!s)return;
+  var pk=PrevKW[row]||'',n=pastList(s).length;
+  showModal('<div class="modal-title">'+esc(s.name)+'<span class="kw-gg">'+esc(s.gg)+'</span></div>'+
+    '<textarea id="kwBig" class="kw-big" placeholder="'+esc(pk?'지난달: '+pk:'바이엘 2번, 밝음, 손가락 독립 잘됨')+'">'+esc(KW[row]||'')+'</textarea>'+
+    '<div class="kw-tools">'+(pk?'<button type="button" class="btn btn-d" onclick="kwLoadPrev('+row+')">지난 키워드 불러오기</button>':'')+
+    (n?'<button type="button" class="btn btn-d" id="kwPastB" onclick="kwPastToggle('+row+')">지난 글 보기</button>':'')+'</div>'+
+    '<div id="kwPast" class="kw-past"></div>'+
+    '<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="kwSave('+row+')">저장</button></div>');
+}
+function kwLoadPrev(row){
+  var ta=document.getElementById('kwBig');if(!ta)return;
+  var old=ta.value;ta.value=PrevKW[row]||'';
+  if(old.trim()&&old!==ta.value)T('지난 키워드를 불러왔어요',function(){var t=document.getElementById('kwBig');if(t)t.value=old});
+}
+function kwPastToggle(row){
+  var el=document.getElementById('kwPast'),b=document.getElementById('kwPastB'),s=S.find(function(x){return x.row===row});
+  if(!el||!s)return;
+  if(el.innerHTML){el.innerHTML='';if(b)b.textContent='지난 글 보기';return}
+  el.innerHTML=pastList(s).map(function(x){return '<div class="past-item">'+(x.label?'<div class="past-label">'+esc(x.label)+'</div>':'')+'<div class="past-text">'+esc(x.text)+'</div></div>'}).join('');
+  if(b)b.textContent='지난 글 닫기';
+}
+function kwSave(row){
+  var ta=document.getElementById('kwBig');if(!ta)return;
+  KW[row]=ta.value.replace(/\s+$/,'');closeModal();
+  if(VIEW==='input'){var y=window.scrollY;rInput();window.scrollTo(0,y)}
 }
 
 function genLabel(n){return n>0?n+'명 일괄 생성':'일괄 생성'}
