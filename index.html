@@ -542,7 +542,7 @@ function apiPost(action,body,keep){
 }
 
 // ═══ State ═══
-var S=[],KW={},PrevKW={},MSG={},SHORT={},DONE=new Set(),REGEN=new Set(),EDITED=new Set(),CI=0,CANCEL=false,EDITMODE=false,VIEW='input',GEN=false,GC=0,GT=0,GEN_TG=[];
+var S=[],KW={},PrevKW={},GENKW={},MSG={},SHORT={},FAIL=new Set(),DONE=new Set(),REGEN=new Set(),EDITED=new Set(),CI=0,CANCEL=false,EDITMODE=false,VIEW='input',GEN=false,GC=0,GT=0,GEN_TG=[];
 var DET_FROM='list'; // 상세 화면에 들어온 곳: 'input'(첫 화면) 또는 'list'(목록)
 // 화면 깊이: 탭 화면(0) → 목록(1) → 상세(2). 깊어지면 오른쪽에서, 돌아오면 왼쪽에서 들어온다
 var V_DEPTH={input:0,ledger:0,students:0,list:1,detail:2},V_TM=null;
@@ -681,18 +681,24 @@ function kwCh(row,v){
 }
 
 // ═══ Generate ═══
+// 새로 쓴 학생: 글이 없거나, 생성에 실패했거나, 글을 만든 뒤 키워드를 새로 적음 (GENKW = 지금 글을 만든 키워드)
+function needGen(s){
+  var m=MSG[s.row];
+  return!m||!m.trim()||FAIL.has(s.row)||(KW[s.row]||'').trim()!==(GENKW[s.row]||'').trim();
+}
+function clearMsg(s){delete MSG[s.row];delete SHORT[s.row];FAIL.delete(s.row)}
 function tryGenAll(){
   var targets=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)});
-  var existing=targets.filter(function(s){return MSG[s.row]&&MSG[s.row].trim()});
+  var existing=targets.filter(function(s){return!needGen(s)});
   if(existing.length>0){
     var names=existing.map(function(s){return s.name}).join(', ');
-    var newOnly=targets.filter(function(s){return!(MSG[s.row]&&MSG[s.row].trim())});
+    var newOnly=targets.filter(needGen);
     showModal('<div class="modal-icon">📝</div>'+
       '<div class="modal-title">이미 생성된 메시지가 있습니다</div>'+
       '<div class="modal-desc">아래 '+existing.length+'명은 이미 AI 메시지가 있어요.<br>새로 생성하면 기존 메시지가 사라집니다.</div>'+
       '<div class="modal-names">'+esc(names)+'</div>'+
       '<div class="modal-btns">'+
-      '<button class="btn btn-d" onclick="closeModal();genAllSkip()">'+(newOnly.length>0?'새 학생만 생성 ('+newOnly.length+'명)':'취소')+'</button>'+
+      '<button class="btn btn-d" onclick="closeModal();genAllSkip()">'+(newOnly.length>0?'새로 쓴 학생만 생성 ('+newOnly.length+'명)':'취소')+'</button>'+
       '<button class="btn btn-y" onclick="closeModal();genAllOverwrite()">전체 다시 생성</button></div>');
   }else{genAllOverwrite()}
 }
@@ -701,7 +707,7 @@ function genAllOverwrite(){
   CANCEL=false;GEN=true;REGEN.clear();
   GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)});
   if(!GEN_TG.length){GEN=false;rList();return}
-  GEN_TG.forEach(function(s){delete MSG[s.row];delete SHORT[s.row]});
+  GEN_TG.forEach(clearMsg);
   GT=GEN_TG.length;GC=0;
   apiPost('saveKeywords',{updates:GEN_TG.map(function(s){return{row:s.row,kw:KW[s.row]}})});
   rList();runGen(0);
@@ -709,17 +715,18 @@ function genAllOverwrite(){
 
 function genAllSkip(){
   CANCEL=false;GEN=true;REGEN.clear();
-  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!(MSG[s.row]&&MSG[s.row].trim())});
+  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&needGen(s)});
   if(!GEN_TG.length){GEN=false;T('새로 생성할 학생이 없습니다');rList();return}
-  GEN_TG.forEach(function(s){delete MSG[s.row];delete SHORT[s.row]});
+  GEN_TG.forEach(clearMsg);
   GT=GEN_TG.length;GC=0;
   apiPost('saveKeywords',{updates:GEN_TG.map(function(s){return{row:s.row,kw:KW[s.row]}})});
   rList();runGen(0);
 }
 
 function resumeGen(){
-  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!MSG[s.row]});
+  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&(!MSG[s.row]||FAIL.has(s.row))});
   if(!GEN_TG.length){T('생성할 학생이 없습니다');return}
+  GEN_TG.forEach(clearMsg);
   CANCEL=false;GEN=true;GT=GEN_TG.length;GC=0;
   rList();runGen(0);
 }
@@ -730,17 +737,18 @@ function runGen(idx){
   var s=GEN_TG[idx];
   if(REGEN.has(s.row)||MSG[s.row]){runGen(idx+1);return}
   GC=idx+1;updGB();
-  genKakao(s,KW[s.row],function(){return CANCEL}).then(function(r){
+  var kw=KW[s.row];
+  genKakao(s,kw,function(){return CANCEL}).then(function(r){
     if(CANCEL){GEN=false;if(!hasMsg())rInput();return}
     var m=r.text;if(r.short)SHORT[s.row]=true;
-    MSG[s.row]=m;
+    MSG[s.row]=m;GENKW[s.row]=kw;FAIL.delete(s.row);
     apiPost('saveMessage',{row:s.row,text:m});
     if(VIEW==='list')refreshCards();
     if(VIEW==='detail'){updDetCounter();T(s.name+' 생성 완료 ✓')}
     runGen(idx+1);
   }).catch(function(e){
     if(CANCEL){GEN=false;return}
-    MSG[s.row]='[실패: '+e.message+']';
+    MSG[s.row]='[실패: '+errKo(e)+']';FAIL.add(s.row);
     if(VIEW==='list')refreshCards();
     runGen(idx+1);
   });
@@ -760,9 +768,47 @@ function looksCut(m){
   if(cp>=0x1F000||(cp>=0x2600&&cp<=0x27BF)||(cp>=0x3131&&cp<=0x318E))return false; // 이모지, ㅎㅎ/ㅋㅋ
   return true;
 }
+// 답을 받다가 연결이 끊기면(다른 앱으로 넘어감, 와이파이↔데이터 전환 등) 서버는 글을 끝까지 써서 번호(jid)로 맡아 둔다.
+// 그때는 다시 쓰게 하지 않고, 앱이 화면에 돌아오고 인터넷이 되면 맡아 둔 글을 받아 온다 (genRecover)
+var GEN_POLL_MAX=60; // 4초마다 최대 60번 (서버가 쓰는 중일 때)
+function genWait(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function genBack(isCancelled){ // 앱이 화면에 나와 있고 인터넷이 될 때까지 기다림
+  if(isCancelled&&isCancelled())return Promise.resolve();
+  if(document.visibilityState==='visible'&&navigator.onLine!==false)return Promise.resolve();
+  return genWait(1000).then(function(){return genBack(isCancelled)});
+}
+// 맡아 둔 결과를 돌려줌. 없으면(요청이 서버에 안 닿음, 너무 오래 걸림) null → 다시 쓰기
+function genRecover(jid,isCancelled){
+  var polls=0,miss=0;
+  function poll(){
+    if((isCancelled&&isCancelled())||++polls>GEN_POLL_MAX)return null;
+    return genBack(isCancelled).then(function(){return apiGet('genResult',{jid:jid})}).then(function(d){
+      if(d&&d.error)return null;
+      if(d&&!d.run)return d;
+      if(!d&&++miss>=2)return null;
+      return genWait(4000).then(poll);
+    },function(e){
+      if(e.message==='LOCKED'||/Unknown action/.test(e.message))return null; // 예전 서버
+      return genWait(4000).then(poll);
+    });
+  }
+  return genWait(1500).then(poll);
+}
 function genKakao(s,kw,isCancelled){
   function attempt(n){
-    return apiPost(GEN_V2?'generateKakao2':'generateKakao',{name:s.name,gg:s.gg,kw:kw,hist:s.hist}).then(function(d){
+    var jid=Math.random().toString(36).slice(2)+Date.now().toString(36);
+    return apiPost(GEN_V2?'generateKakao2':'generateKakao',{name:s.name,gg:s.gg,kw:kw,hist:s.hist,jid:jid}).then(got,function(e){
+      if(GEN_V2&&/Unknown action/.test(e.message)){GEN_V2=false;return attempt(n)}
+      var lost=e instanceof TypeError||e instanceof SyntaxError; // 연결이 끊김 (서버가 보낸 오류가 아님)
+      return (lost&&GEN_V2?genRecover(jid,isCancelled):Promise.resolve(null)).then(function(d){
+        if(d)return got(d);
+        if(n<GEN_MAX_TRY&&!(isCancelled&&isCancelled())){
+          return genWait(800*n).then(function(){return genBack(isCancelled)}).then(function(){return attempt(n+1)});
+        }
+        throw e;
+      });
+    });
+    function got(d){
       var m,short=false,cut;
       if(typeof d==='string'){
         m=d;
@@ -774,13 +820,7 @@ function genKakao(s,kw,isCancelled){
       }
       if(cut&&n<GEN_MAX_TRY&&!(isCancelled&&isCancelled()))return attempt(n+1);
       return {text:m,short:short||cut};
-    },function(e){
-      if(GEN_V2&&/Unknown action/.test(e.message)){GEN_V2=false;return attempt(n)}
-      if(n<GEN_MAX_TRY&&!(isCancelled&&isCancelled())){
-        return new Promise(function(res){setTimeout(res,800*n)}).then(function(){return attempt(n+1)});
-      }
-      throw e;
-    });
+    }
   }
   return attempt(1);
 }
@@ -817,7 +857,7 @@ function refreshCards(){
   }
   var prog=document.querySelector('.progress-fill');if(prog)prog.style.width=pct+'%';
   var rb=document.getElementById('resumeBar');
-  var remaining=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!MSG[s.row]}).length;
+  var remaining=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&(!MSG[s.row]||FAIL.has(s.row))}).length;
   if(rb){if(!GEN&&remaining>0){rb.style.display='flex';rb.querySelector('span').textContent=remaining+'명 미생성'}else{rb.style.display='none'}}
 }
 
@@ -829,7 +869,7 @@ function rList(){
   var doneList=S.filter(function(s){return DONE.has(s.row)});
   var total=reviewList.length+ungenList.length+doneList.length;
   var pct=total?Math.round(doneList.length/total*100):0;
-  var remaining=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!MSG[s.row]}).length;
+  var remaining=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&(!MSG[s.row]||FAIL.has(s.row))}).length;
 
   var infoParts=[];
   if(ungenList.length>0)infoParts.push('미생성 <b>'+ungenList.length+'</b>명');
@@ -1052,7 +1092,7 @@ function doRegen(row){
   genKakao(s,kw).then(function(r){
     REGEN.delete(row);
     var m=r.text;SHORT[row]=r.short;
-    MSG[row]=m;apiPost('saveMessage',{row:row,text:m});
+    MSG[row]=m;GENKW[row]=kw;FAIL.delete(row);apiPost('saveMessage',{row:row,text:m});
     if(VIEW==='detail'&&S[CI].row===row)rDet(false);
   }).catch(function(e){REGEN.delete(row);T('실패: '+errKo(e));rDet(false)});
 }
@@ -1506,7 +1546,7 @@ function stuFind(name){
   for(var i=0;i<RET.length;i++)if(RET[i].name===name)return RET[i];
   return null;
 }
-function stuAdopt(s){if(s.kw)KW[s.row]=s.kw;PrevKW[s.row]=s.prevKw||'';if(s.msg)MSG[s.row]=s.msg;if(s.done)DONE.add(s.row)}
+function stuAdopt(s){if(s.kw)KW[s.row]=s.kw;PrevKW[s.row]=s.prevKw||'';if(s.msg){MSG[s.row]=s.msg;GENKW[s.row]=s.kw||''}if(s.done)DONE.add(s.row)}
 function stuFeeNum(t){var n=parseInt(String(t||'').replace(/,/g,''),10);return isNaN(n)?0:n}
 function stuRefresh(){if(VIEW==='ledger')ldgLoad(true);else if(VIEW==='students')rStudents()}
 // 레벨 색: 기초 → 초급 → 중급 → 고급 (요약 막대와 줄 앞 네모가 같은 색). 그 밖의 레벨은 -1(회색)
@@ -1614,7 +1654,7 @@ document.getElementById('modalCard').addEventListener('click',function(e){
 // ── 고르는 칸 (수강료·결제수단·레벨·주 횟수·성별) ──
 // 칸을 누르면 그 줄 밑에 선택지가 펼쳐지고, 고르면 접힌다. 연필을 누르면 목록에 없는 값을 직접 적을 수 있다
 // 전부 하나만 고른다 (고르면 바로 접힘). 결제수단이 둘인 원생은 "앱/카드" 버튼이나 "직접"으로
-var STU_PICK={stFee:['110,000','120,000','130,000','140,000','150,000'],stMethod:LDG_METHODS.concat(['앱/카드']),stLevel:STU_LV,stFreq:['1','2','3','4','5'],
+var STU_PICK={stFee:['110,000','120,000','130,000','140,000','150,000','160,000'],stMethod:LDG_METHODS.concat(['앱/카드']),stLevel:STU_LV,stFreq:['1','2','3','4','5'],
   stGrade:['초1','초2','초3','초4','초5','초6','중1','중2','중3','고1','고2','고3','성인'],stGender:['남','여']};
 var STU_PICK_BR={'중1':1,'성인':1}; // 학년 선택지에서 줄을 바꾸는 자리
 function stuPickLabel(id,x){return id==='stFee'?parseInt(x,10)/10+'만':id==='stFreq'?x+'회':x}
