@@ -138,6 +138,10 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 .car-anim{animation:carSlide .25s ease}
 .det-body{padding:18px 16px 0}
 .det-stu{display:flex;align-items:center;gap:12px;margin:0 6px 16px}
+.past-btn{margin-left:auto;flex-shrink:0}
+.past-item{background:var(--field);border-radius:16px;padding:14px 16px;margin:0 0 10px;text-align:left}
+.past-label{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px}
+.past-text{font-size:14px;line-height:1.7;color:var(--ink);white-space:pre-wrap;word-break:break-word}
 .det-av{display:none}
 .det-name{font-size:26px;font-weight:700;letter-spacing:-.025em}
 .det-gg{font-size:15px;font-weight:400;color:var(--sub);letter-spacing:0}
@@ -644,6 +648,8 @@ function rInput(){
   if(dc>0) infoParts.push('<b class="b-g">'+dc+'</b>명 복사완료');
   h+=barInfo(infoParts)+'</span><div style="display:flex;gap:6px">';
   if(hasMsg())h+='<button class="btn btn-d" onclick="rList()">목록 보기</button>';
+  if(roundHasWork())h+='<button class="btn btn-d" onclick="roundAsk()">새로 시작</button>';
+  else if(roundCanUndo())h+='<button class="btn btn-d" onclick="roundUndo()">되돌리기</button>';
   h+='</div></div>';
 
   S.forEach(function(s,i){
@@ -675,14 +681,13 @@ function rInput(){
 }
 
 function genLabel(n){return n>0?n+'명 일괄 생성':'일괄 생성'}
-// 아래 버튼: 아직 아무도 생성 안 됐으면 "일괄 생성" 하나, 몇 명이라도 생성돼 있으면 "전체 다시 생성 | 남은 N명 생성" 둘
+// 아래 버튼은 하나: 아무도 생성 안 됐으면 "N명 일괄 생성", 몇 명이라도 생성돼 있으면 "남은 N명 생성". 언제나 남은 학생만 만든다
 function genFab(){
-  var tg=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)});
-  var fresh=tg.filter(needGen).length;
-  if(!tg.some(function(s){return!needGen(s)}))
-    return '<button class="btn-fab" id="gbtn" onclick="tryGenAll()" '+(tg.length===0?'disabled':'')+'>'+genLabel(tg.length)+'</button>';
-  return '<div class="det-btns"><button type="button" class="btn btn-d" onclick="tryGenAll()">전체 다시 생성</button>'+
-    '<button type="button" class="btn-fab" id="gbtn" onclick="genAllSkip()"'+(fresh?'':' disabled')+'>'+(fresh?'남은 '+fresh+'명 생성':'남은 학생이 없어요')+'</button></div>';
+  var fresh=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)&&needGen(s)}).length;
+  var made=S.some(function(s){return DONE.has(s.row)||(isReview(s)&&!FAIL.has(s.row))});
+  var label=!made?genLabel(fresh):fresh?'남은 '+fresh+'명 생성':
+    S.every(function(s){return DONE.has(s.row)||REGEN.has(s.row)||(isReview(s)&&!FAIL.has(s.row))})?'모두 생성됐어요':'키워드를 적어 주세요';
+  return '<button class="btn-fab" id="gbtn" onclick="genAllSkip()" '+(fresh?'':'disabled')+'>'+label+'</button>';
 }
 // 줄 오른쪽 버튼: 생성 중 / 생성(키워드를 새로 적었을 때) / AI 글 확인
 function genPill(s){
@@ -728,6 +733,84 @@ function genOneDone(row){
   var y=window.scrollY;rInput();window.scrollTo(0,y);
 }
 
+// ═══ 새로 시작 (메시지 회차) ═══
+// 달이 아니라 선생님이 '새로 시작'을 누를 때 회차가 넘어간다. 지금 글은 서버의 '이전글' 칸으로 옮겨 두고(s.prevMsg),
+// 새 회차에서 아직 아무것도 안 했으면 위의 '되돌리기'가 계속 남아 있다 (앱을 껐다 켜도)
+function roundHasWork(){return!GEN&&!REGEN.size&&S.some(function(s){return MSG[s.row]||DONE.has(s.row)})}
+function roundCanUndo(){return!GEN&&!REGEN.size&&!S.some(function(s){return MSG[s.row]||DONE.has(s.row)})&&S.some(function(s){return s.prevMsg||s.prevSent})}
+function roundAsk(){
+  showModal('<div class="modal-icon">🌱</div>'+
+    '<div class="modal-title">새로 시작할까요?</div>'+
+    '<div class="modal-desc">모든 학생이 미생성으로 돌아가요.<br>지금 글은 학생 화면의 \'지난 글\'에 남고,<br>새로 쓰기 전까지는 위에서 되돌릴 수 있어요.</div>'+
+    '<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button>'+
+    '<button class="btn btn-y" onclick="closeModal();roundStart()">새로 시작</button></div>');
+}
+function roundSnap(){
+  return S.map(function(s){return{s:s,m:MSG[s.row],d:DONE.has(s.row),k:KW[s.row],g:GENKW[s.row],p:PrevKW[s.row],sh:SHORT[s.row],f:FAIL.has(s.row),pm:s.prevMsg,ps:s.prevSent}});
+}
+function roundRestore(b){
+  b.forEach(function(x){var r=x.s.row;
+    if(x.m!==undefined)MSG[r]=x.m;else delete MSG[r];
+    if(x.k!==undefined)KW[r]=x.k;else delete KW[r];
+    if(x.g!==undefined)GENKW[r]=x.g;else delete GENKW[r];
+    if(x.sh!==undefined)SHORT[r]=x.sh;else delete SHORT[r];
+    PrevKW[r]=x.p;if(x.d)DONE.add(r);else DONE.delete(r);if(x.f)FAIL.add(r);else FAIL.delete(r);
+    x.s.prevMsg=x.pm;x.s.prevSent=x.ps;
+  });
+}
+function roundStart(){
+  var b=roundSnap();
+  S.forEach(function(s){var r=s.row;
+    s.prevMsg=(MSG[r]&&!FAIL.has(r))?MSG[r]:'';s.prevSent=DONE.has(r);
+    PrevKW[r]=GENKW[r]||KW[r]||PrevKW[r]||'';
+    delete KW[r];delete GENKW[r];clearMsg(s);DONE.delete(r);
+  });
+  rInput();window.scrollTo(0,0);
+  apiPost('roundReset',{},true).then(function(){T('새로 시작했어요')}).catch(function(e){
+    roundRestore(b);if(VIEW==='input')rInput();T('새로 시작 실패: '+errKo(e));
+  });
+}
+function roundUndo(){
+  var b=roundSnap();
+  S.forEach(function(s){var r=s.row;
+    if(!s.prevMsg&&!s.prevSent)return;
+    if(s.prevMsg){MSG[r]=s.prevMsg;KW[r]=GENKW[r]=PrevKW[r]||''}
+    s.prevMsg='';s.prevSent=false;
+  });
+  rInput();
+  // 복사완료가 달 기준인지 회차 기준인지는 서버가 알므로, 되돌린 뒤 복사완료만 서버 것으로 맞춘다
+  apiPost('roundUndo',{},true).then(function(){
+    T('되돌렸어요');
+    return apiGet('loadStudents2').then(function(data){
+      (data||[]).forEach(function(x){if(!S.some(function(s){return s.row===x.row}))return;if(x.done)DONE.add(x.row);else DONE.delete(x.row)});
+      if(VIEW==='input')rInput();
+    },function(){});
+  }).catch(function(e){
+    roundRestore(b);if(VIEW==='input')rInput();T('되돌리기 실패: '+errKo(e));
+  });
+}
+
+// ═══ 지난 글 (학생 화면의 '지난 글' 버튼, 또는 왼쪽으로 밀기) ═══
+// 복사완료한 글(최근 3개, 서버 기록)과, 새로 시작할 때 옮겨 둔 안 보낸 글
+function pastList(s){
+  var cur=(MSG[s.row]||'').trim(),out=[],seen={};
+  (s.hist||'').split('|||').map(function(x){return x.trim()}).filter(Boolean).reverse().forEach(function(e){
+    var m=e.match(/^\[(\d{4})-(\d{2})\]\s*([\s\S]*)$/),t=m?m[3].trim():e;
+    if(!t||t===cur||seen[t])return;seen[t]=1;
+    out.push({label:m?m[1]+'년 '+parseInt(m[2],10)+'월':'',text:t});
+  });
+  var pm=(s.prevMsg||'').trim();
+  if(pm&&pm!==cur&&!seen[pm])out.unshift({label:s.prevSent?'지난번':'지난번 (복사 안 함)',text:pm});
+  return out;
+}
+function pastOpen(row){
+  var s=S.find(function(x){return x.row===row});if(!s)return;
+  var l=pastList(s);if(!l.length){T('지난 글이 없어요');return}
+  showModal('<div class="modal-title">'+esc(s.name)+' 지난 글</div>'+
+    l.map(function(x){return '<div class="past-item">'+(x.label?'<div class="past-label">'+esc(x.label)+'</div>':'')+'<div class="past-text">'+esc(x.text)+'</div></div>'}).join('')+
+    '<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">닫기</button></div>');
+}
+
 // ═══ Generate ═══
 // 남은 학생: 글이 없거나, 생성에 실패했거나, 글을 만든 뒤 키워드를 새로 적음 (GENKW = 지금 글을 만든 키워드)
 function needGen(s){
@@ -735,33 +818,8 @@ function needGen(s){
   return!m||!m.trim()||FAIL.has(s.row)||(KW[s.row]||'').trim()!==(GENKW[s.row]||'').trim();
 }
 function clearMsg(s){delete MSG[s.row];delete SHORT[s.row];FAIL.delete(s.row)}
-function tryGenAll(){
-  var targets=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)});
-  var existing=targets.filter(function(s){return!needGen(s)});
-  if(existing.length>0){
-    var names=existing.map(function(s){return s.name}).join(', ');
-    showModal('<div class="modal-icon">📝</div>'+
-      '<div class="modal-title">이미 생성된 메시지가 있습니다</div>'+
-      '<div class="modal-desc">아래 '+existing.length+'명은 이미 AI 메시지가 있어요.<br>새로 생성하면 기존 메시지가 사라집니다.</div>'+
-      '<div class="modal-names">'+esc(names)+'</div>'+
-      '<div class="modal-btns">'+
-      '<button class="btn btn-d" onclick="closeModal()">취소</button>'+
-      '<button class="btn btn-y" onclick="closeModal();genAllOverwrite()">전체 다시 생성</button></div>');
-  }else{genAllOverwrite()}
-}
-
-function genAllOverwrite(){
-  CANCEL=false;GEN=true;REGEN.clear();
-  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)});
-  if(!GEN_TG.length){GEN=false;rList();return}
-  GEN_TG.forEach(clearMsg);
-  GT=GEN_TG.length;GC=0;
-  apiPost('saveKeywords',{updates:GEN_TG.map(function(s){return{row:s.row,kw:KW[s.row]}})});
-  rList();runGen(0);
-}
-
 function genAllSkip(){
-  CANCEL=false;GEN=true;REGEN.clear();
+  CANCEL=false;GEN=true;
   GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)&&needGen(s)});
   if(!GEN_TG.length){GEN=false;T('새로 생성할 학생이 없습니다');rList();return}
   GEN_TG.forEach(clearMsg);
@@ -1063,7 +1121,8 @@ function rDet(slide){
     '<div class="carousel" id="carousel">'+buildCarousel(slide)+'</div></div>'+
     wrap+
     '<div class="det-stu"><div class="det-av">'+s.name[0]+'</div><div>'+
-    '<div class="det-name">'+s.name+' <span class="det-gg">'+s.gg+'</span></div><div class="det-sub">'+esc(KW[s.row]||'')+'</div></div></div>'+
+    '<div class="det-name">'+s.name+' <span class="det-gg">'+s.gg+'</span></div><div class="det-sub">'+esc(KW[s.row]||'')+'</div></div>'+
+    (pastList(s).length?'<button type="button" class="btn btn-d past-btn" onclick="pastOpen('+s.row+')">지난 글</button>':'')+'</div>'+
     sentBadge+shortWarn+msgHtml+btns+'</div>');
 }
 
@@ -1923,6 +1982,20 @@ function handleBack(){
   }
   document.addEventListener('touchend',end,{passive:true});
   document.addEventListener('touchcancel',end,{passive:true});
+})();
+
+// ═══ 학생 글 화면에서 왼쪽으로 밀면 지난 글 ═══
+(function(){
+  var sx=0,sy=0,on=false;
+  document.addEventListener('touchstart',function(e){
+    var t=e.touches[0];sx=t.clientX;sy=t.clientY;
+    on=VIEW==='detail'&&sx>=28&&!document.getElementById('modal').classList.contains('on')&&e.target.tagName!=='TEXTAREA';
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(!on)return;on=false;
+    var t=e.changedTouches[0],dx=t.clientX-sx,dy=Math.abs(t.clientY-sy);
+    if(dx<-70&&dy<50&&S[CI]&&pastList(S[CI]).length)pastOpen(S[CI].row);
+  },{passive:true});
 })();
 
 // ═══ 화면 왼쪽 끝에서 오른쪽으로 밀면 뒤로가기 ═══
