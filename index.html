@@ -105,6 +105,9 @@ body[data-view=list] .page-head,body[data-view=detail] .det-head{padding-top:22p
 button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transform:scale(.95)}
 .pill-review{color:var(--review);background:var(--review-bg)}
 .pill-done{color:var(--done);background:var(--done-bg)}
+.pill-gen{color:#fff;background:var(--ink)}
+.pl-slot{margin-left:auto;display:flex}
+.pl-slot .regen-wait{font-size:12px}
 
 /* 첫 화면: 학생별 입력 카드 */
 .inp-wrap{margin:10px 16px 0;padding:12px 14px 14px 16px;background:var(--card);border-radius:18px;box-shadow:var(--lift)}
@@ -641,7 +644,6 @@ function rInput(){
   if(dc>0) infoParts.push('<b class="b-g">'+dc+'</b>명 복사완료');
   h+=barInfo(infoParts)+'</span><div style="display:flex;gap:6px">';
   if(hasMsg())h+='<button class="btn btn-d" onclick="rList()">목록 보기</button>';
-  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()}).length;
   h+='</div></div>';
 
   S.forEach(function(s,i){
@@ -658,26 +660,72 @@ function rInput(){
       var rvPh=KW[s.row]||ph;
       h+='<div class="inp-wrap review-inp" onclick="if(event.target.tagName!==\'INPUT\')showDet('+s.row+',\'input\')"><div class="inp-label">'+
         '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+
-        '<button type="button" class="pill pill-review" onclick="event.stopPropagation();showDet('+s.row+',\'input\')">AI 글 확인</button></div>'+
+        '<span class="pl-slot" id="pl'+s.row+'">'+genPill(s)+'</span></div>'+
         '<input value="" placeholder="'+esc(rvPh)+'" oninput="kwCh('+s.row+',this.value)"/></div>';
     }else{
       h+='<div class="inp-wrap"><div class="inp-label">'+
-        '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span></div>'+
+        '<span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+
+        '<span class="pl-slot" id="pl'+s.row+'">'+genPill(s)+'</span></div>'+
         '<input value="'+esc(KW[s.row]||'')+'" '+
         'placeholder="'+esc(ph)+'" oninput="kwCh('+s.row+',this.value)"/></div>';
     }
   });
-  h+='<div class="fab-wrap"><button class="btn-fab" id="gbtn" onclick="tryGenAll()" '+(genableCount===0?'disabled':'')+'>'+genLabel(genableCount)+'</button></div>';
+  h+='<div class="fab-wrap">'+genFab()+'</div>';
   Q('app',h);
 }
 
 function genLabel(n){return n>0?n+'명 일괄 생성':'일괄 생성'}
+// 아래 버튼: 아직 아무도 생성 안 됐으면 "일괄 생성" 하나, 몇 명이라도 생성돼 있으면 "전체 다시 생성 | 새로 쓴 N명 생성" 둘
+function genFab(){
+  var tg=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)});
+  var fresh=tg.filter(needGen).length;
+  if(!tg.some(function(s){return!needGen(s)}))
+    return '<button class="btn-fab" id="gbtn" onclick="tryGenAll()" '+(tg.length===0?'disabled':'')+'>'+genLabel(tg.length)+'</button>';
+  return '<div class="det-btns"><button type="button" class="btn btn-d" onclick="tryGenAll()">전체 다시 생성</button>'+
+    '<button type="button" class="btn-fab" id="gbtn" onclick="genAllSkip()"'+(fresh?'':' disabled')+'>'+(fresh?'새로 쓴 '+fresh+'명 생성':'새로 쓴 학생이 없어요')+'</button></div>';
+}
+// 줄 오른쪽 버튼: 생성 중 / 생성(키워드를 새로 적었을 때) / AI 글 확인
+function genPill(s){
+  if(REGEN.has(s.row))return '<span class="pill regen-wait"><span class="spin-s"></span>생성 중</span>';
+  if(!GEN&&(KW[s.row]||'').trim()&&needGen(s))return '<button type="button" class="pill pill-gen" onclick="event.stopPropagation();genOne('+s.row+')">생성</button>';
+  if(isReview(s))return '<button type="button" class="pill pill-review" onclick="event.stopPropagation();showDet('+s.row+',\'input\')">AI 글 확인</button>';
+  return '';
+}
+// 첫 화면을 다시 그리지 않고 (입력 중인 칸이 닫히지 않게) 그 줄의 버튼과 아래 버튼만 고친다
+function updRow(row){
+  if(VIEW!=='input')return;
+  var s=S.find(function(x){return x.row===row}),el=document.getElementById('pl'+row);
+  if(s&&el)el.innerHTML=genPill(s);
+  var f=document.querySelector('#app .fab-wrap');if(f)f.innerHTML=genFab();
+}
 
 function kwCh(row,v){
   KW[row]=v;
-  var pending=S.filter(function(s){return!DONE.has(s.row)});
-  var genableCount=pending.filter(function(s){return(KW[s.row]||'').trim()}).length;
-  var b=document.getElementById('gbtn');if(b){b.disabled=genableCount===0;b.textContent=genLabel(genableCount)}
+  updRow(row);
+}
+
+// 한 명만 생성
+function genOne(row){
+  var s=S.find(function(x){return x.row===row}),kw=KW[row]||'';
+  if(!s||!kw.trim()||REGEN.has(row)||GEN)return;
+  REGEN.add(row);clearMsg(s);updRow(row);
+  apiPost('saveKeywords',{updates:[{row:row,kw:kw}]});
+  genKakao(s,kw).then(function(r){
+    REGEN.delete(row);
+    MSG[row]=r.text;if(r.short)SHORT[row]=true;GENKW[row]=kw;
+    apiPost('saveMessage',{row:row,text:r.text});
+    T(s.name+' 생성 완료 ✓');genOneDone(row);
+  }).catch(function(e){
+    REGEN.delete(row);MSG[row]='[실패: '+errKo(e)+']';FAIL.add(row);
+    T(s.name+' 생성 실패: '+errKo(e));genOneDone(row);
+  });
+}
+// 끝나면 위 숫자·목록 보기까지 고치려고 첫 화면을 다시 그린다. 키워드를 적는 중이면 칸이 닫히지 않게 그 줄만
+function genOneDone(row){
+  if(VIEW!=='input')return;
+  var a=document.activeElement;
+  if(a&&a.tagName==='INPUT'){updRow(row);return}
+  var y=window.scrollY;rInput();window.scrollTo(0,y);
 }
 
 // ═══ Generate ═══
@@ -692,20 +740,19 @@ function tryGenAll(){
   var existing=targets.filter(function(s){return!needGen(s)});
   if(existing.length>0){
     var names=existing.map(function(s){return s.name}).join(', ');
-    var newOnly=targets.filter(needGen);
     showModal('<div class="modal-icon">📝</div>'+
       '<div class="modal-title">이미 생성된 메시지가 있습니다</div>'+
       '<div class="modal-desc">아래 '+existing.length+'명은 이미 AI 메시지가 있어요.<br>새로 생성하면 기존 메시지가 사라집니다.</div>'+
       '<div class="modal-names">'+esc(names)+'</div>'+
       '<div class="modal-btns">'+
-      '<button class="btn btn-d" onclick="closeModal();genAllSkip()">'+(newOnly.length>0?'새로 쓴 학생만 생성 ('+newOnly.length+'명)':'취소')+'</button>'+
+      '<button class="btn btn-d" onclick="closeModal()">취소</button>'+
       '<button class="btn btn-y" onclick="closeModal();genAllOverwrite()">전체 다시 생성</button></div>');
   }else{genAllOverwrite()}
 }
 
 function genAllOverwrite(){
   CANCEL=false;GEN=true;REGEN.clear();
-  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)});
+  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)});
   if(!GEN_TG.length){GEN=false;rList();return}
   GEN_TG.forEach(clearMsg);
   GT=GEN_TG.length;GC=0;
@@ -715,7 +762,7 @@ function genAllOverwrite(){
 
 function genAllSkip(){
   CANCEL=false;GEN=true;REGEN.clear();
-  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&needGen(s)});
+  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)&&needGen(s)});
   if(!GEN_TG.length){GEN=false;T('새로 생성할 학생이 없습니다');rList();return}
   GEN_TG.forEach(clearMsg);
   GT=GEN_TG.length;GC=0;
@@ -724,7 +771,7 @@ function genAllSkip(){
 }
 
 function resumeGen(){
-  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&(!MSG[s.row]||FAIL.has(s.row))});
+  GEN_TG=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)&&(!MSG[s.row]||FAIL.has(s.row))});
   if(!GEN_TG.length){T('생성할 학생이 없습니다');return}
   GEN_TG.forEach(clearMsg);
   CANCEL=false;GEN=true;GT=GEN_TG.length;GC=0;
