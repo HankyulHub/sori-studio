@@ -128,6 +128,12 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 .kw-tools .btn{min-height:34px;padding:6px 12px;font-size:13px}
 .kw-past{margin-top:12px}.kw-past:empty{display:none}
 #modalCard .kw-past+.modal-btns{margin-top:16px}
+.kw-hint{font-size:12px;color:var(--sub);line-height:1.5;margin-top:10px;text-align:left}
+.ai-tag{font-size:11px;font-weight:700;color:var(--sub);background:var(--field);border-radius:8px;padding:2px 7px;letter-spacing:.02em}
+.ai-fill{margin:10px 16px 0;padding:14px 14px 14px 16px;background:var(--card);border-radius:18px;box-shadow:var(--lift);display:flex;align-items:center;gap:12px}
+.ai-main{flex:1;min-width:0;font-size:14px;color:var(--ink)}.ai-main b{font-weight:600}
+.ai-sub{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.5}
+.ai-fill .btn{flex-shrink:0}
 .inp-wrap input{width:100%;height:42px;padding:0 13px;background:var(--field);border:1.5px solid transparent;border-radius:12px;color:var(--ink);font-size:15px;outline:none;transition:border-color .15s,background .15s}
 .inp-wrap input:focus{border-color:var(--ink);background:#fff}
 .inp-wrap input::placeholder{color:var(--muted)}
@@ -661,6 +667,7 @@ function rInput(){
   if(roundHasWork())h+='<button class="btn btn-d" onclick="roundAsk()">새로 시작</button>';
   else if(roundCanUndo())h+='<button class="btn btn-d" onclick="roundUndo()">되돌리기</button>';
   h+='</div></div>';
+  h+='<div id="aiFill">'+aiFillHtml()+'</div>';
 
   S.forEach(function(s,i){
     var d=DONE.has(s.row);
@@ -691,14 +698,19 @@ function rInput(){
 }
 
 // ═══ 키워드 넓은 창: 이름(연필)을 누르면 아래에서 올라옴. 지난 키워드 불러오기, 지난 글 보기. 저장을 눌러야 적용 ═══
-function kwWho(s){return '<button type="button" class="inp-who" onclick="event.stopPropagation();kwOpen('+s.row+')"><span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+ICON_PEN+'</button>'}
+function kwWho(s){return '<button type="button" class="inp-who" onclick="event.stopPropagation();kwOpen('+s.row+')"><span class="inp-name">'+s.name+'</span><span class="inp-gg">'+s.gg+'</span>'+ICON_PEN+'</button>'+(AIKW.has(s.row)?'<span class="ai-tag">AI</span>':'')}
+function kwAiHint(row){
+  return PrevKW[row]?'AI 키워드: 지난 키워드와 보낸 글을 참고해 이번 키워드를 만들어 드려요':'AI 키워드: 비슷한 학년 학생들의 키워드를 참고해 만들어 드려요 (교재·진도는 비워 둬요)';
+}
 function kwOpen(row){
   var s=S.find(function(x){return x.row===row});if(!s)return;
   var pk=PrevKW[row]||'',n=pastList(s).length;
   showModal('<div class="modal-title">'+esc(s.name)+'<span class="kw-gg">'+esc(s.gg)+'</span></div>'+
     '<textarea id="kwBig" class="kw-big" placeholder="'+esc(pk?'지난달: '+pk:'바이엘 2번, 밝음, 손가락 독립 잘됨')+'">'+esc(KW[row]||'')+'</textarea>'+
-    '<div class="kw-tools">'+(pk?'<button type="button" class="btn btn-d" onclick="kwLoadPrev('+row+')">지난 키워드 불러오기</button>':'')+
+    '<div class="kw-tools"><button type="button" class="btn btn-d" id="kwAiB" onclick="kwAi('+row+')">AI 키워드</button>'+
+    (pk?'<button type="button" class="btn btn-d" onclick="kwLoadPrev('+row+')">지난 키워드 불러오기</button>':'')+
     (n?'<button type="button" class="btn btn-d" id="kwPastB" onclick="kwPastToggle('+row+')">지난 글 보기</button>':'')+'</div>'+
+    '<div class="kw-hint" id="kwHint">'+(AIKW.has(row)&&KWAI_LAST[row]===KW[row]?'AI가 만든 키워드예요. 실제 수업과 다른 부분만 고쳐 주세요':kwAiHint(row))+'</div>'+
     '<div id="kwPast" class="kw-past"></div>'+
     '<div class="modal-btns"><button class="btn btn-d" onclick="closeModal()">취소</button><button class="btn btn-y" onclick="kwSave('+row+')">저장</button></div>');
 }
@@ -717,6 +729,7 @@ function kwPastToggle(row){
 function kwSave(row){
   var ta=document.getElementById('kwBig');if(!ta)return;
   KW[row]=ta.value.replace(/\s+$/,'');closeModal();
+  if(KW[row]===KWAI_LAST[row])AIKW.add(row);else AIKW.delete(row); // 손대지 않은 AI 키워드만 'AI' 표시
   if(VIEW==='input'){var y=window.scrollY;rInput();window.scrollTo(0,y)}
 }
 
@@ -746,7 +759,75 @@ function updRow(row){
 
 function kwCh(row,v){
   KW[row]=v;
+  AIKW.delete(row);
   updRow(row);
+}
+
+// ═══ AI 키워드 (메시지를 만들기 전, 키워드 칸만 AI가 채움. 서버 draftKeyword) ═══
+// 지난 키워드·보낸 글을 참고한다. 지난 키워드가 없는 학생은 비슷한 학년 학생들의 키워드(이름 없이)를 형식 참고로 보낸다.
+// 채운 줄에는 'AI' 표시가 붙고, 선생님이 고치면 사라진다
+var AIKW=new Set(),KWAI_LAST={},KWFILL=null;
+function kwDraftBody(s){
+  var b={gg:s.gg,prevKw:PrevKW[s.row]||'',hist:s.hist||''};
+  if(!b.prevKw){
+    var g=s.grade||'',lv=g.charAt(0),n=parseInt(g.slice(1),10);
+    var kws=function(f){return S.filter(function(x){return x.row!==s.row&&f(x)}).map(function(x){return KW[x.row]||PrevKW[x.row]||''}).filter(function(k){return k.trim()})};
+    b.peers=kws(function(x){var h=x.grade||'',m=parseInt(h.slice(1),10);return h.charAt(0)===lv&&(isNaN(n)||isNaN(m)||Math.abs(m-n)<=1)}).slice(0,6);
+    if(!b.peers.length)b.peers=kws(function(){return true}).slice(0,6);
+  }
+  return b;
+}
+// 넓은 창의 'AI 키워드' 버튼: 한 명
+function kwAi(row){
+  var s=S.find(function(x){return x.row===row}),b=document.getElementById('kwAiB');if(!s||!b)return;
+  b.disabled=true;b.innerHTML='<span class="spin-s"></span>만드는 중';
+  apiPost('draftKeyword',kwDraftBody(s)).then(function(t){
+    var ta=document.getElementById('kwBig'),h=document.getElementById('kwHint');if(!ta)return;
+    var old=ta.value;ta.value=t;KWAI_LAST[row]=t;
+    if(h)h.textContent='AI가 만든 키워드예요. 실제 수업과 다른 부분만 고쳐 주세요';
+    if(old.trim()&&old!==t)T('AI 키워드를 넣었어요',function(){var x=document.getElementById('kwBig');if(x)x.value=old});
+  }).catch(function(e){T('AI 키워드 실패: '+errKo(e))}).then(function(){
+    var x=document.getElementById('kwAiB');if(x){x.disabled=false;x.textContent='AI 키워드 다시'}
+  });
+}
+// 목록 위 카드: 키워드가 빈 학생들을 한 번에
+function kwEmpty(){return S.filter(function(s){return!DONE.has(s.row)&&!MSG[s.row]&&!REGEN.has(s.row)&&!(KW[s.row]||'').trim()})}
+function aiFillHtml(){
+  if(KWFILL)return '<div class="ai-fill"><span class="spin-s"></span><div class="ai-main">AI 키워드 채우는 중 '+KWFILL.d+'/'+KWFILL.n+'</div>'+
+    '<button type="button" class="btn btn-d" onclick="KWFILL&&(KWFILL.stop=true)">그만</button></div>';
+  var n=kwEmpty().length;if(!n||GEN)return '';
+  return '<div class="ai-fill"><div class="ai-main"><b>키워드가 빈 학생 '+n+'명</b><div class="ai-sub">지난 키워드와 보낸 글을 참고해 AI가 채워 드려요. 채운 뒤 고쳐 쓰면 돼요</div></div>'+
+    '<button type="button" class="btn btn-d" onclick="kwFillAll()">AI로 채우기</button></div>';
+}
+function aiFillUpd(){var el=document.getElementById('aiFill');if(el&&VIEW==='input')el.innerHTML=aiFillHtml()}
+function kwFillAll(){
+  if(KWFILL)return;
+  var tg=kwEmpty(),i=0;if(!tg.length)return;
+  KWFILL={n:tg.length,d:0,f:0,stop:false};aiFillUpd();
+  function next(){
+    if(!KWFILL||KWFILL.stop||i>=tg.length)return Promise.resolve();
+    var s=tg[i++];
+    if((KW[s.row]||'').trim()||MSG[s.row]){KWFILL.d++;aiFillUpd();return next()} // 그 사이에 선생님이 적음
+    return apiPost('draftKeyword',kwDraftBody(s)).then(function(t){
+      if((KW[s.row]||'').trim()||MSG[s.row])return;
+      KW[s.row]=t;KWAI_LAST[s.row]=t;AIKW.add(s.row);kwFillRow(s);
+    },function(){KWFILL.f++}).then(function(){KWFILL.d++;aiFillUpd();return next()});
+  }
+  Promise.all([next(),next(),next()]).then(function(){ // 세 명씩 동시에
+    var f=KWFILL.f,stop=KWFILL.stop;KWFILL=null;
+    T(stop?'AI 키워드 채우기를 멈췄어요':f?f+'명은 못 채웠어요. 다시 누르면 빈 학생만 채워요':'AI 키워드를 채웠어요. 실제 수업과 다른 부분만 고쳐 주세요');
+    kwFillRow(null);
+  });
+}
+// 채운 줄 보여 주기. 입력 중이면 그 칸만, 아니면 화면을 다시 그림 (스크롤 유지)
+function kwFillRow(s){
+  if(VIEW!=='input')return;
+  var a=document.activeElement;
+  if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')){
+    if(s){var el=document.getElementById('pl'+s.row),inp=el&&el.closest('.inp-wrap').querySelector('input');if(inp&&inp!==a)inp.value=KW[s.row];updRow(s.row)}
+    aiFillUpd();return;
+  }
+  var y=window.scrollY;rInput();window.scrollTo(0,y);
 }
 
 // 한 명만 생성
@@ -803,7 +884,7 @@ function roundStart(){
   S.forEach(function(s){var r=s.row;
     s.prevMsg=(MSG[r]&&!FAIL.has(r))?MSG[r]:'';s.prevSent=DONE.has(r);
     PrevKW[r]=GENKW[r]||KW[r]||PrevKW[r]||'';
-    delete KW[r];delete GENKW[r];clearMsg(s);DONE.delete(r);
+    delete KW[r];delete GENKW[r];AIKW.delete(r);clearMsg(s);DONE.delete(r);
   });
   rInput();window.scrollTo(0,0);
   apiPost('roundReset',{},true).then(function(){T('새로 시작했어요')}).catch(function(e){
