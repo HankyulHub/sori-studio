@@ -106,6 +106,7 @@ button.pill{cursor:pointer;transition:transform .12s}button.pill:active{transfor
 .pill-review{color:var(--review);background:var(--review-bg)}
 .pill-done{color:var(--done);background:var(--done-bg)}
 .pill-gen{color:#fff;background:var(--ink)}
+.pill-ai{color:var(--ink);background:var(--field)}
 .pl-slot{margin-left:auto;display:flex}
 .pl-slot .regen-wait{font-size:12px}
 
@@ -734,19 +735,21 @@ function kwSave(row){
 }
 
 function genLabel(n){return n>0?n+'명 일괄 생성':'일괄 생성'}
-// 아래 버튼은 하나: 아무도 생성 안 됐으면 "N명 일괄 생성", 몇 명이라도 생성돼 있으면 "남은 N명 생성". 언제나 남은 학생만 만든다
+// 아래 버튼은 하나: 아무도 생성 안 됐으면 "N명 일괄 생성", 몇 명이라도 생성돼 있으면 "키워드 적은 N명 생성". 언제나 아직 안 만든 학생만 만든다
 function genFab(){
   var fresh=S.filter(function(s){return(KW[s.row]||'').trim()&&!DONE.has(s.row)&&!REGEN.has(s.row)&&needGen(s)}).length;
   var made=S.some(function(s){return DONE.has(s.row)||(isReview(s)&&!FAIL.has(s.row))});
-  var label=!made?genLabel(fresh):fresh?'남은 '+fresh+'명 생성':
+  var label=!made?genLabel(fresh):fresh?'키워드 적은 '+fresh+'명 생성':
     S.every(function(s){return DONE.has(s.row)||REGEN.has(s.row)||(isReview(s)&&!FAIL.has(s.row))})?'모두 생성됐어요':'키워드를 적어 주세요';
   return '<button class="btn-fab" id="gbtn" onclick="genAllSkip()" '+(fresh?'':'disabled')+'>'+label+'</button>';
 }
-// 줄 오른쪽 버튼: 생성 중 / 생성(키워드를 새로 적었을 때) / AI 글 확인
+// 줄 오른쪽 버튼: 생성 중 / 생성(키워드를 새로 적었을 때) / AI 글 확인 / AI 키워드(키워드가 빈 줄)
 function genPill(s){
   if(REGEN.has(s.row))return '<span class="pill regen-wait"><span class="spin-s"></span>생성 중</span>';
+  if(KWBUSY.has(s.row))return '<span class="pill regen-wait"><span class="spin-s"></span>AI 키워드 쓰는 중</span>';
   if(!GEN&&(KW[s.row]||'').trim()&&needGen(s))return '<button type="button" class="pill pill-gen" onclick="event.stopPropagation();genOne('+s.row+')">생성</button>';
   if(isReview(s))return '<button type="button" class="pill pill-review" onclick="event.stopPropagation();showDet('+s.row+',\'input\')">AI 글 확인</button>';
+  if(!GEN&&!DONE.has(s.row)&&!(KW[s.row]||'').trim())return '<button type="button" class="pill pill-ai" onclick="event.stopPropagation();kwAiRow('+s.row+')">AI 키워드</button>';
   return '';
 }
 // 첫 화면을 다시 그리지 않고 (입력 중인 칸이 닫히지 않게) 그 줄의 버튼과 아래 버튼만 고친다
@@ -790,11 +793,28 @@ function kwAi(row){
     var x=document.getElementById('kwAiB');if(x){x.disabled=false;x.textContent='AI 키워드 다시'}
   });
 }
+// 줄의 'AI 키워드' 버튼: 한 명 (KWBUSY = 지금 AI가 키워드를 쓰고 있는 줄)
+var KWBUSY=new Set();
+function kwAiRow(row){
+  var s=S.find(function(x){return x.row===row});if(!s||KWBUSY.has(row))return;
+  KWBUSY.add(row);updRow(row);aiFillUpd();
+  apiPost('draftKeyword',kwDraftBody(s)).then(function(t){
+    KWBUSY.delete(row);
+    if(!(KW[row]||'').trim()&&!MSG[row]){KW[row]=t;KWAI_LAST[row]=t;AIKW.add(row)}
+    kwFillRow(s);
+  },function(e){KWBUSY.delete(row);T('AI 키워드 실패: '+errKo(e));updRow(row);aiFillUpd()});
+}
 // 목록 위 카드: 키워드가 빈 학생들을 한 번에
-function kwEmpty(){return S.filter(function(s){return!DONE.has(s.row)&&!MSG[s.row]&&!REGEN.has(s.row)&&!(KW[s.row]||'').trim()})}
+function kwEmpty(){return S.filter(function(s){return!DONE.has(s.row)&&!MSG[s.row]&&!REGEN.has(s.row)&&!KWBUSY.has(s.row)&&!(KW[s.row]||'').trim()})}
+// 그만: 바로 멈춘다. 이미 보낸 요청의 답은 버린다
+function kwFillStop(){
+  var run=KWFILL;if(!run)return;
+  KWFILL=null;run.busy.forEach(function(r){KWBUSY.delete(r)});
+  T('AI 키워드 채우기를 멈췄어요');kwFillRow(null);
+}
 function aiFillHtml(){
   if(KWFILL)return '<div class="ai-fill"><span class="spin-s"></span><div class="ai-main">AI 키워드 채우는 중 '+KWFILL.d+'/'+KWFILL.n+'</div>'+
-    '<button type="button" class="btn btn-d" onclick="KWFILL&&(KWFILL.stop=true)">그만</button></div>';
+    '<button type="button" class="btn btn-d" onclick="kwFillStop()">그만</button></div>';
   var n=kwEmpty().length;if(!n||GEN)return '';
   return '<div class="ai-fill"><div class="ai-main"><b>키워드가 빈 학생 '+n+'명</b><div class="ai-sub">지난 키워드와 보낸 글을 참고해 AI가 채워 드려요. 채운 뒤 고쳐 쓰면 돼요</div></div>'+
     '<button type="button" class="btn btn-d" onclick="kwFillAll()">AI로 채우기</button></div>';
@@ -803,19 +823,25 @@ function aiFillUpd(){var el=document.getElementById('aiFill');if(el&&VIEW==='inp
 function kwFillAll(){
   if(KWFILL)return;
   var tg=kwEmpty(),i=0;if(!tg.length)return;
-  KWFILL={n:tg.length,d:0,f:0,stop:false};aiFillUpd();
+  var run=KWFILL={n:tg.length,d:0,f:0,busy:new Set()};aiFillUpd();
   function next(){
-    if(!KWFILL||KWFILL.stop||i>=tg.length)return Promise.resolve();
+    if(KWFILL!==run||i>=tg.length)return Promise.resolve();
     var s=tg[i++];
-    if((KW[s.row]||'').trim()||MSG[s.row]){KWFILL.d++;aiFillUpd();return next()} // 그 사이에 선생님이 적음
+    if((KW[s.row]||'').trim()||MSG[s.row]||KWBUSY.has(s.row)){run.d++;aiFillUpd();return next()} // 그 사이에 선생님이 적었거나 줄 버튼으로 쓰는 중
+    run.busy.add(s.row);KWBUSY.add(s.row);updRow(s.row);
     return apiPost('draftKeyword',kwDraftBody(s)).then(function(t){
-      if((KW[s.row]||'').trim()||MSG[s.row])return;
-      KW[s.row]=t;KWAI_LAST[s.row]=t;AIKW.add(s.row);kwFillRow(s);
-    },function(){KWFILL.f++}).then(function(){KWFILL.d++;aiFillUpd();return next()});
+      if(KWFILL!==run)return; // 그만을 누름
+      KWBUSY.delete(s.row);run.busy.delete(s.row);
+      if(!(KW[s.row]||'').trim()&&!MSG[s.row]){KW[s.row]=t;KWAI_LAST[s.row]=t;AIKW.add(s.row)}
+      kwFillRow(s);
+    },function(){if(KWFILL!==run)return;KWBUSY.delete(s.row);run.busy.delete(s.row);run.f++;updRow(s.row)}).then(function(){
+      if(KWFILL!==run)return;run.d++;aiFillUpd();return next();
+    });
   }
   Promise.all([next(),next(),next()]).then(function(){ // 세 명씩 동시에
-    var f=KWFILL.f,stop=KWFILL.stop;KWFILL=null;
-    T(stop?'AI 키워드 채우기를 멈췄어요':f?f+'명은 못 채웠어요. 다시 누르면 빈 학생만 채워요':'AI 키워드를 채웠어요. 실제 수업과 다른 부분만 고쳐 주세요');
+    if(KWFILL!==run)return;
+    KWFILL=null;
+    T(run.f?run.f+'명은 못 채웠어요. 다시 누르면 빈 학생만 채워요':'AI 키워드를 채웠어요. 실제 수업과 다른 부분만 고쳐 주세요');
     kwFillRow(null);
   });
 }
